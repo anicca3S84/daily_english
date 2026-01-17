@@ -1,4 +1,5 @@
 package com.codework.daily_english.presentation.screen.home
+
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -8,7 +9,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.rounded.LocalFireDepartment
@@ -24,12 +24,19 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.codework.daily_english.presentation.components.BaseScreen
 import com.codework.daily_english.presentation.components.CourseCard
-import com.codework.daily_english.presentation.components.LessonItemCard
+import com.codework.daily_english.presentation.components.LessonCard
 import com.codework.daily_english.presentation.components.QuickActionSection
 import com.codework.daily_english.presentation.components.SeeAllHeader
 import com.codework.daily_english.presentation.components.WeeklyProgressCard
 import com.codework.daily_english.presentation.model.CourseItem
-import com.codework.daily_english.presentation.screen.home.HomeData
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 
 @Composable
 fun HomeScreen(
@@ -44,7 +51,7 @@ fun HomeScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(bottom = paddingValues.calculateBottomPadding())
         ) {
             // --- SỬ DỤNG BASESCREEN TẠI ĐÂY ---
             BaseScreen(
@@ -72,7 +79,7 @@ fun HomeContent(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(vertical = 16.dp), // Bỏ padding ngang để lướt full màn hình đẹp hơn
+        contentPadding = PaddingValues(bottom = 16.dp), // Bỏ padding ngang để lướt full màn hình đẹp hơn
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         // 1. Header (Thêm padding ngang thủ công vì LazyColumn đã bỏ padding ngang)
@@ -83,14 +90,24 @@ fun HomeContent(
         }
 
         item {
-            // Giả sử trong HomeData bạn có thêm object wordOfTheDay
-            WordOfTheDayCard(
-                word = "Perseverance",
-                phonetic = "/ˌpərsəˈvirəns/",
-                meaning = "Sự kiên trì, bền bỉ",
-                onListen = { /* onEvent(HomeEvent.OnPlayAudio) */ }
-            )
+            Column {
+                // Tiêu đề đơn giản cho Section
+                Text(
+                    text = "Daily Discovery", // Hoặc "Today's Focus" cho lạ tai
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+
+                WordOfTheDayCard(
+                    word = "Perseverance",
+                    phonetic = "/ˌpərsəˈvirəns/",
+                    meaning = "Sự kiên trì, bền bỉ",
+                    onListen = { /* onEvent(HomeEvent.OnPlayAudio) */ }
+                )
+            }
         }
+
 
         item {
             Column {
@@ -106,7 +123,7 @@ fun HomeContent(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(data.continueLearningList) { lesson ->
-                            LessonItemCard(
+                            LessonCard(
                                 item = lesson,
                                 onClick = { onEvent(HomeEvent.OnContinueLesson) }
                             )
@@ -126,7 +143,6 @@ fun HomeContent(
         item {
             QuickActionSection(onEvent = onEvent)
         }
-
 
 
         // Dữ liệu giả để test giao diện
@@ -203,90 +219,118 @@ fun HomeContent(
 fun HomeHeader(
     name: String,
     streak: Int,
-    hasNotification: Boolean = true, // Giả lập có thông báo mới
-    onNotificationClick: () -> Unit = {}
+    avatarUrl: String? = "https://images.unsplash.com/photo-1504609773096-104ff2c73ba4", // Thêm ảnh đại diện
+    hasNotification: Boolean = true,
+    onNotificationClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp), // Thêm chút padding trên dưới
+            .padding(vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // --- PHẦN 1: CHÀO HỎI (TRÁI) ---
-        Column(
-            verticalArrangement = Arrangement.Center
+        // --- PHẦN 1: PROFILE & CHÀO HỎI (TRÁI) ---
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .clip(RoundedCornerShape(12.dp)) // Bo góc vùng click cho tinh tế
+                .clickable { onProfileClick() }
+                .padding(4.dp)
         ) {
-            Text(
-                text = "Good Morning, 👋", // Thêm icon vẫy tay cho thân thiện
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = name,
-                style = MaterialTheme.typography.headlineSmall, // Dùng headlineSmall cho vừa vặn hơn
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            // Bao quanh Avatar bằng một lớp Border mỏng để trông chuyên nghiệp hơn
+            Surface(
+                shape = CircleShape,
+                modifier = Modifier.size(52.dp), // Tăng nhẹ size tổng thể
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.primaryContainer)
+            ) {
+                AsyncImage(
+                    model = avatarUrl ?: "https://www.CuaHangCuaBan.com/default-avatar.png", // Fallback nếu url null
+                    contentDescription = "User Avatar",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop,
+                    // Hiện icon mặc định trong khi chờ tải ảnh
+                    placeholder = painterResource(id = com.codework.daily_english.R.drawable.ic_launcher_foreground),
+                    // Hiện icon lỗi nếu link ảnh hỏng
+                    error = painterResource(id = com.codework.daily_english.R.drawable.ic_launcher_foreground)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column {
+                Text(
+                    text = "Hello,",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    letterSpacing = 0.5.sp
+                )
+                Text(
+                    text = "$name ✨",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
 
         // --- PHẦN 2: STREAK & NOTIFICATION (PHẢI) ---
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp) // Khoảng cách giữa Lửa và Chuông
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // 2.1 Streak Badge (Hình viên thuốc bo tròn)
+            // Streak Chip - Thiết kế dạng "Pill" hiện đại
             Surface(
-                color = Color(0xFFFF5722).copy(alpha = 0.1f), // Màu Cam Lửa nhạt
-                shape = CircleShape, // Bo tròn hoàn toàn
-                border = BorderStroke(1.dp, Color(0xFFFF5722).copy(alpha = 0.3f))
+                color = Color(0xFFFF5722).copy(alpha = 0.15f),
+                shape = MaterialTheme.shapes.extraLarge,
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.LocalFireDepartment, // Icon Lửa tròn trịa
-                        contentDescription = "Streak",
-                        tint = Color(0xFFFF5722), // Màu cam đậm
-                        modifier = Modifier.size(20.dp)
+                        imageVector = Icons.Rounded.LocalFireDepartment,
+                        contentDescription = null,
+                        tint = Color(0xFFFF5722),
+                        modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = "$streak",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.ExtraBold,
                         color = Color(0xFFFF5722)
                     )
                 }
             }
 
-            // 2.2 Notification Icon (Có chấm đỏ)
-            IconButton(
-                onClick = onNotificationClick,
+            // Nút thông báo - Minimalist
+            Box(
                 modifier = Modifier
-                    .size(44.dp) // Tăng vùng bấm
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        shape = CircleShape
-                    )
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                    .clickable { onNotificationClick() },
+                contentAlignment = Alignment.Center
             ) {
-                // BadgedBox là component chuẩn M3 để tạo chấm đỏ thông báo
                 BadgedBox(
                     badge = {
                         if (hasNotification) {
                             Badge(
-                                containerColor = Color.Red,
-                                contentColor = Color.White,
-                                modifier = Modifier.size(8.dp) // Chấm đỏ nhỏ xinh
+                                modifier = Modifier.size(6.dp),
+                                containerColor = Color(0xFFFF3D00) // Màu đỏ rực
                             )
                         }
                     }
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Notifications,
-                        contentDescription = "Notifications",
+                        contentDescription = null,
+                        modifier = Modifier.size(22.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -296,12 +340,17 @@ fun HomeHeader(
 }
 
 
-
 @Composable
 fun WordOfTheDayCard(word: String, phonetic: String, meaning: String, onListen: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(
+                alpha = 0.3f
+            )
+        ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
     ) {
         Row(
@@ -309,18 +358,38 @@ fun WordOfTheDayCard(word: String, phonetic: String, meaning: String, onListen: 
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "Word of the Day", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
-                Text(text = word, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                Text(text = phonetic, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                Text(
+                    text = "Word of the Day",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = word,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = phonetic,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = meaning, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+                Text(
+                    text = meaning,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium
+                )
             }
 
             IconButton(
                 onClick = onListen,
                 colors = IconButtonDefaults.iconButtonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Icon(imageVector = Icons.Default.VolumeUp, contentDescription = null, tint = Color.White)
+                Icon(
+                    imageVector = Icons.Default.VolumeUp,
+                    contentDescription = null,
+                    tint = Color.White
+                )
             }
         }
     }

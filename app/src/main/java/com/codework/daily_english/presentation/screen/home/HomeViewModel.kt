@@ -47,17 +47,44 @@ class HomeViewModel @Inject constructor() : ViewModel() {
             _uiState.update { it.copy(isLoading = true) }
             delay(2000)
 
-            // Mock List bài đang học
-            val learningList = listOf(
+            // Mock data trong HomeViewModel hoặc HomeScreen
+            val mockLessons = listOf(
                 LessonItem(
                     id = "1",
-                    title = "Unit 3: Shopping",
-                    progress = 0.45f,
-                    topicIcon = "shopping"
+                    title = "Tourist trip",
+                    imageUrl = "https://images.unsplash.com/photo-1504609773096-104ff2c73ba4",
+                    lessonNum = 3,
+                    level = "A1-B1",
+                    progress = 0.6f
                 ),
-                LessonItem(id = "2", title = "Unit 5: Travel", progress = 0.8f, topicIcon = "travel"),
-                LessonItem(id = "3", title = "Unit 1: Intro", progress = 0.1f, topicIcon = "intro")
-            )
+                LessonItem(
+                    id = "2",
+                    title = "Business Meeting",
+                    imageUrl = "https://images.unsplash.com/photo-1517048676732-d65bc937f952",
+                    lessonNum = 5,
+                    level = "B2",
+                    progress = 0.2f
+                ),
+                LessonItem(
+                    id = "2",
+                    title = "Business Meeting",
+                    imageUrl = "https://images.unsplash.com/photo-1517048676732-d65bc937f952",
+                    lessonNum = 5,
+                    level = "B2",
+                    progress = 0.2f
+                ),
+
+                LessonItem(
+                    id = "1",
+                    title = "Tourist trip",
+                    imageUrl = "https://images.unsplash.com/photo-1504609773096-104ff2c73ba4",
+                    lessonNum = 3,
+                    level = "A1-B1",
+                    progress = 0.6f
+                ),
+
+                )
+
 
             val weeklyStats = listOf(
                 DailyStudyTime("Mon", 20),
@@ -72,7 +99,7 @@ class HomeViewModel @Inject constructor() : ViewModel() {
             val data = HomeData(
                 userName = "CodeWork",
                 streakDay = 15,
-                continueLearningList = learningList, // Truyền list vào đây
+                continueLearningList = mockLessons, // Truyền list vào đây
                 dailyQuest = "Hoàn thành 1 bài hội thoại AI",
                 isDailyQuestFinished = false,
                 weeklyStats = weeklyStats
