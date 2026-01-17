@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--Common-->
+    <string name="app_name">Daily English App</string>
+    <string name="common_retry">Retry</string>
+    <string name="common_loading">Loading…</string>
+
+    <!--Nav-->
+    <string name="nav_home">Home</string>
+    <string name="nav_course">Courses</string>
+    <string name="nav_practice">Practice</string>
+    <string name="nav_more">More</string>
+    <string name="nav_ai_assistant">AI Assistant</string>
+
+    <!--Title-->
+    <string name="title_login">Login</string>
+    <string name="title_register">Create Account</string>
+
+    <!--Subtitle-->
+    <string name="subtitle_login">Welcome back to Daily English</string>
+
+    <!--Label-->
+    <string name="label_full_name">Full Name</string>
+    <string name="label_email">Email</string>
+    <string name="label_password">Password</string>
+    <string name="label_confirm_password">Confirm Password</string>
+    <string name="label_login">Login</string>
+    <string name="label_register">Register</string>
+    <string name="label_forgot_password">Forgot Password?</string>
+    <string name="label_go_to_register">Don\'t have an account? Register now</string>
+    <string name="label_go_to_login">Already have an account? Login</string>
+
+    <!--Error-->
+    <string name="error_empty_field">Please do not leave this field empty</string>
+    <string name="error_invalid_email">Invalid email format</string>
+    <string name="error_password_too_short">Password must be at least 6 characters</string>
+    <string name="error_password_not_match">Password confirmation does not match</string>
+    <string name="error_login_failed">Incorrect email or password</string>
+    <string name="error_email_exists">This email is already registered</string>
+    <string name="error_no_internet">No internet connection</string>
+</resources>
