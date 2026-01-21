@@ -1,4 +1,4 @@
-package com.codework.pm25.presentation.navigation
+package com.codework.daily_english.presentation.navigation
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -9,7 +9,6 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.NavDestination.Companion.hasRoute
-import com.codework.daily_english.presentation.navigation.BottomNavItem
 
 @Composable
 fun AppBottomNavigation(navController: NavHostController) {

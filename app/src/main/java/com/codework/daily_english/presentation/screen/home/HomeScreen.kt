@@ -29,29 +29,47 @@ import com.codework.daily_english.presentation.components.QuickActionSection
 import com.codework.daily_english.presentation.components.SeeAllHeader
 import com.codework.daily_english.presentation.components.WeeklyProgressCard
 import com.codework.daily_english.presentation.model.CourseItem
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.TrackChanges
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.codework.daily_english.R
+import com.codework.daily_english.presentation.model.QuickActionItem
+import com.codework.daily_english.presentation.navigation.Route
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel(),
+    onNavigateToAI: () -> Unit,
+    onNavigateToDictionary: () -> Unit,
+    onNavigateToTranslate: () -> Unit
+
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    LaunchedEffect(true) {
+        viewModel.navigationChannel.collect { route ->
+            when (route) {
+                is Route.AIScreen -> onNavigateToAI()
+                is Route.DictionaryScreen -> { onNavigateToDictionary()}
+                is Route.TranslateScreen -> { onNavigateToTranslate()}
+                else -> { /* Xử lý các màn khác nếu có */ }
+            }
+        }
+    }
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = paddingValues.calculateBottomPadding())
         ) {
             // --- SỬ DỤNG BASESCREEN TẠI ĐÂY ---
             BaseScreen(
@@ -89,6 +107,8 @@ fun HomeContent(
             }
         }
 
+
+
         item {
             Column {
                 // Tiêu đề đơn giản cho Section
@@ -106,6 +126,16 @@ fun HomeContent(
                     onListen = { /* onEvent(HomeEvent.OnPlayAudio) */ }
                 )
             }
+        }
+
+        item {
+            // Giả sử lấy dữ liệu từ data.dailyProgress và data.dailyTarget
+            // Nếu chưa có trong data thì bạn fix cứng tạm để test
+                DailyGoalCard(
+                    currentMinutes = 12,  // Ví dụ: đã học 12 phút
+                    targetMinutes = 30,   // Ví dụ: mục tiêu 30 phút
+                    onClick = { /* Mở màn hình thống kê chi tiết */ }
+                )
         }
 
 
@@ -140,8 +170,39 @@ fun HomeContent(
             }
         }
 
+        // Trong HomeContent
+        // fake data
         item {
-            QuickActionSection(onEvent = onEvent)
+            // 1. Định nghĩa danh sách các hành động
+            val actionList = listOf(
+                QuickActionItem(
+                    icon = R.drawable.ic_launcher_foreground,
+                    label = "Ask AI",
+                    color = Color(0xFFE91E63),
+                    onClick = { onEvent(HomeEvent.OnQuickActionGemini) }
+                ),
+                QuickActionItem(
+                    icon = R.drawable.ic_launcher_foreground,
+                    label = "Dictionary",
+                    color = Color(0xFF2196F3),
+                    onClick = { onEvent(HomeEvent.OnQuickActionDictionary) }
+                ),
+                QuickActionItem(
+                    icon = R.drawable.ic_launcher_foreground,
+                    label = "Grammar",
+                    color = Color(0xFFFF9800),
+                    onClick = { onEvent(HomeEvent.OnQuickActionGrammar) }
+                ),
+                QuickActionItem(
+                    icon = R.drawable.ic_launcher_foreground,
+                    label = "Translate",
+                    color = Color(0xFF4CAF50),
+                    onClick = { onEvent(HomeEvent.OnQuickActionTranslate) }
+                )
+            )
+
+            // 2. Gọi Component
+            QuickActionSection(actions = actionList, )
         }
 
 
@@ -227,6 +288,7 @@ fun HomeHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .statusBarsPadding()
             .padding(vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -389,6 +451,99 @@ fun WordOfTheDayCard(word: String, phonetic: String, meaning: String, onListen: 
                     imageVector = Icons.Default.VolumeUp,
                     contentDescription = null,
                     tint = Color.White
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+fun DailyGoalCard(
+    currentMinutes: Int,
+    targetMinutes: Int,
+    onClick: () -> Unit
+) {
+    // Tính phần trăm tiến độ (0.0 -> 1.0)
+    val progress = (currentMinutes.toFloat() / targetMinutes.toFloat()).coerceIn(0f, 1f)
+    val isGoalReached = currentMinutes >= targetMinutes
+
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp), // Căn lề giống các card khác
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // 1. Icon Goal (Target)
+            Surface(
+                shape = CircleShape,
+                color = if (isGoalReached) Color(0xFF4CAF50).copy(alpha = 0.1f) else Color(0xFFFF9800).copy(alpha = 0.1f),
+                modifier = Modifier.size(48.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = if (isGoalReached) Icons.Default.EmojiEvents else Icons.Default.TrackChanges, // Icon Cúp hoặc Mục tiêu
+                        contentDescription = null,
+                        tint = if (isGoalReached) Color(0xFF4CAF50) else Color(0xFFFF9800),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // 2. Thông tin tiến độ
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Daily Goal",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black.copy(alpha = 0.8f)
+                    )
+
+                    // Text: 15/30 mins
+                    Text(
+                        text = "$currentMinutes/$targetMinutes mins",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isGoalReached) Color(0xFF4CAF50) else Color.Gray
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // 3. Thanh chạy (Linear Progress)
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp) // Độ dày thanh
+                        .clip(RoundedCornerShape(4.dp)), // Bo tròn đầu thanh
+                    color = if (isGoalReached) Color(0xFF4CAF50) else Color(0xFFFF9800), // Xanh nếu xong, Cam nếu chưa
+                    trackColor = Color.Gray.copy(alpha = 0.1f),
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Câu động viên
+                Text(
+                    text = if (isGoalReached) "Goal reached! \uD83C\uDF89" else "${targetMinutes - currentMinutes} mins left to go",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray,
+                    fontSize = 11.sp
                 )
             }
         }

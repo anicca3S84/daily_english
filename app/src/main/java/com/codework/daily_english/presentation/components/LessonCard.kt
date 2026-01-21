@@ -35,11 +35,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.codework.daily_english.presentation.model.LessonItem
+import com.codework.daily_english.presentation.screen.lessons.LessonData
 
 @Composable
 fun LessonCard(
-    item: LessonItem,
+    item: LessonData,
     onClick: () -> Unit
 ) {
     Card(
@@ -99,7 +99,7 @@ fun LessonCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Lesson ${item.lessonNum}",
+                            text = "Lesson ${item.level}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.DarkGray
                         )
@@ -136,7 +136,7 @@ fun LessonCard(
                         color = Color.Gray
                     )
                     Text(
-                        text = "${(item.progress * 100).toInt()}%",
+                        text = "${(item.totalProgress * 100).toInt()}%",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -147,7 +147,7 @@ fun LessonCard(
 
                 // Thanh Bar màu cam
                 LinearProgressIndicator(
-                    progress = { item.progress },
+                    progress = { item.totalProgress },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(6.dp)

@@ -4,18 +4,23 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.model.TopicItem
+import com.codework.daily_english.presentation.navigation.Route
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class CourseViewModel : ViewModel() {
+@HiltViewModel
+class CourseViewModel @Inject constructor() : ViewModel() {
 
-    private val _uiState = MutableStateFlow(UiState<CourseData>(isLoading = true))
+    private val _uiState = MutableStateFlow<UiState<CourseData>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    // Cache dữ liệu giả để demo
+    // Cache dữ liệu giả
     private val allLevels = listOf("Beginner (A1)", "Elementary (A2)", "Intermediate (B1)", "Advanced (B2)")
 
     init {
@@ -25,35 +30,27 @@ class CourseViewModel : ViewModel() {
     fun onEvent(event: CourseEvent) {
         when (event) {
             is CourseEvent.OnLevelSelected -> {
-                // Khi đổi tab, load lại data theo level mới
                 loadCourseData(event.level)
-            }
-            is CourseEvent.OnTopicClick -> {
-                // Handle navigation logic here
-                println("Clicked topic: ${event.topicId}")
             }
         }
     }
 
     private fun loadCourseData(level: String) {
         viewModelScope.launch {
-            // Giả lập loading nhẹ để UX mượt hơn
-            _uiState.update { it.copy(isLoading = true) }
-            delay(500)
+            _uiState.value = UiState.Loading
+            delay(500) // Giả lập network
 
             val topics = mockTopicsForLevel(level)
-
             val data = CourseData(
                 selectedLevel = level,
                 availableLevels = allLevels,
                 topics = topics
             )
-
-            _uiState.update { it.copy(isLoading = false, data = data) }
+            _uiState.value = UiState.Success(data)
         }
     }
 
-    // Mock data theo level
+    // ... (Hàm mockTopicsForLevel giữ nguyên như cũ) ...
     private fun mockTopicsForLevel(level: String): List<TopicItem> {
         return when {
             level.contains("A1") -> listOf(
@@ -71,3 +68,4 @@ class CourseViewModel : ViewModel() {
         }
     }
 }
+

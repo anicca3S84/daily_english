@@ -1,165 +1,248 @@
 package com.codework.daily_english.presentation.screen.courses
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.RocketLaunch
+import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.codework.daily_english.presentation.components.BaseScreen
+import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.model.TopicItem
+import com.codework.daily_english.presentation.navigation.Route
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CourseScreen(viewModel: CourseViewModel = viewModel()) {
-    val state by viewModel.uiState.collectAsState()
-
+fun CourseScreen(
+    state: UiState<CourseData>,        // 1. Nhận State từ ngoài truyền vào
+    onEvent: (CourseEvent) -> Unit,    // 2. Bắn Event logic (như đổi Level)
+    onNavigateToLesson: (String) -> Unit // 3. Callback điều hướng (kèm ID bài học)
+) {
     BaseScreen(state = state) { data ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF5F7FA)), // 1. Đổi màu nền sang Xám rất nhạt để làm nổi bật Card trắng
-            contentPadding = PaddingValues(bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .background(Color(0xFFF5F7FA)),
+            contentPadding = PaddingValues(bottom = 24.dp)
         ) {
-            // --- NÂNG CẤP 1: HEADER MÀU SẮC ---
+            // 1. HEADER
             item {
                 CourseHeaderSection(
                     currentLevel = data.selectedLevel,
-                    progress = 0.45f // Ví dụ: Tổng tiến độ của Level này
+                    progress = 0.45f
                 )
             }
 
-            // --- NÂNG CẤP 2: LEVEL SELECTOR NỔI BẬT HƠN ---
-            item {
-                Text(
-                    text = "Select Level",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                LevelSelector(
-                    levels = data.availableLevels,
-                    selectedLevel = data.selectedLevel,
-                    onLevelSelected = { viewModel.onEvent(CourseEvent.OnLevelSelected(it)) }
-                )
+            // 2. LEVEL SELECTOR
+            stickyHeader {
+                Surface(
+                    color = Color(0xFFF5F7FA),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                ) {
+                    Column {
+                        Text(
+                            text = "Select Level",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                        )
+                        LevelSelector(
+                            levels = data.availableLevels,
+                            selectedLevel = data.selectedLevel,
+                            onLevelSelected = {
+                                // Gọi Event đổi Level -> ViewModel xử lý
+                                onEvent(CourseEvent.OnLevelSelected(it))
+                            }
+                        )
+                    }
+                }
             }
 
-            items(data.topics) { topic ->
-                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    TopicItemCard(
-                        item = topic,
-                        onClick = { viewModel.onEvent(CourseEvent.OnTopicClick(topic.id)) }
-                    )
+            // 3. CONTENT
+            if (data.topics.isEmpty()) {
+                item { EmptyCourseState() }
+            } else {
+                itemsIndexed(data.topics) { index, topic ->
+                    Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        TimelineTopicItem(
+                            item = topic,
+                            isFirst = index == 0,
+                            isLast = index == data.topics.lastIndex,
+                            onClick = {
+                                // Khi click vào bài học -> Gọi callback điều hướng luôn
+                                // Không cần vòng vo qua ViewModel nếu không có logic check phức tạp
+                                onNavigateToLesson(topic.id)
+                            }
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-// --- COMPONENT MỚI: HEADER GRADIENT ---
+// ... Các Component con (Header, TimelineItem...) Giữ nguyên như cũ ...
+
+// -----------------------------------------------------------
+// --- COMPONENT: HEADER ---
+// -----------------------------------------------------------
 @Composable
 fun CourseHeaderSection(currentLevel: String, progress: Float) {
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp) // Chiều cao cố định
-            .clip(RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp)) // Bo tròn đáy
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primary,
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-                    )
-                )
-            )
+            .background(Color.White)
+            .statusBarsPadding()
+            .padding(16.dp)
     ) {
-        // Họa tiết trang trí mờ (Circles)
-        Box(
+        Card(
             modifier = Modifier
-                .offset(x = 200.dp, y = (-50).dp)
-                .size(200.dp)
-                .background(Color.White.copy(alpha = 0.1f), CircleShape)
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .fillMaxWidth()
+                .height(200.dp),
+            shape = RoundedCornerShape(32.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
-            // Text bên trái
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Current Level",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = Color.White.copy(alpha = 0.8f)
-                )
-                Text(
-                    text = currentLevel,
-                    style = MaterialTheme.typography.displaySmall, // Chữ to đùng
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Thanh Progress Bar nhỏ trong Header
-                Text(
-                    text = "Overall Progress: ${(progress * 100).toInt()}%",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                LinearProgressIndicator(
-                    progress = { progress },
-                    modifier = Modifier
-                        .fillMaxWidth(0.8f)
-                        .height(6.dp)
-                        .clip(RoundedCornerShape(3.dp)),
-                    color = Color(0xFFFFC107), // Màu vàng nổi bật trên nền xanh
-                    trackColor = Color.White.copy(alpha = 0.3f)
-                )
-            }
-
-            // Icon/Ảnh bên phải (Tạo cảm giác đầy đặn)
-            Icon(
-                imageVector = Icons.Default.EmojiEvents, // Icon cái cúp
-                contentDescription = null,
-                tint = Color.White.copy(alpha = 0.9f),
+            Box(
                 modifier = Modifier
-                    .size(100.dp)
-                    .graphicsLayer {
-                        rotationZ = 15f // Xoay nhẹ cho nghệ thuật
+                    .fillMaxSize()
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(
+                                Color(0xFF4FACFE), // Blue
+                                Color(0xFF8E2DE2), // Purple
+                                Color(0xFFF64F59)  // Soft Pink
+                            )
+                        )
+                    )
+            ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    drawCircle(
+                        color = Color.White.copy(alpha = 0.1f),
+                        radius = size.minDimension / 1.5f,
+                        center = androidx.compose.ui.geometry.Offset(size.width * 0.9f, size.height * 0.1f)
+                    )
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Surface(
+                            color = Color.White.copy(alpha = 0.2f),
+                            shape = CircleShape,
+                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
+                        ) {
+                            Text(
+                                text = "LEVEL $currentLevel",
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = "Keep going,\nExplorer!",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White,
+                            lineHeight = 28.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.Bottom
+                            ) {
+                                Text(
+                                    text = "Current Progress",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color.White.copy(alpha = 0.8f)
+                                )
+                                Text(
+                                    text = "${(progress * 100).toInt()}%",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            LinearProgressIndicator(
+                                progress = { progress },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(8.dp)
+                                    .clip(CircleShape),
+                                color = Color.White,
+                                trackColor = Color.White.copy(alpha = 0.2f),
+                                strokeCap = StrokeCap.Round
+                            )
+                        }
                     }
-            )
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Box(contentAlignment = Alignment.Center) {
+                        Surface(
+                            modifier = Modifier.size(80.dp),
+                            color = Color.White.copy(alpha = 0.15f),
+                            shape = CircleShape
+                        ) {}
+                        Icon(
+                            imageVector = Icons.Default.RocketLaunch,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier
+                                .size(50.dp)
+                                .graphicsLayer { rotationZ = -45f }
+                        )
+                    }
+                }
+            }
         }
     }
 }
 
+// -----------------------------------------------------------
+// --- COMPONENT: LEVEL SELECTOR ---
+// -----------------------------------------------------------
 @Composable
 fun LevelSelector(
     levels: List<String>,
@@ -168,53 +251,107 @@ fun LevelSelector(
 ) {
     LazyRow(
         contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = Modifier.padding(bottom = 16.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         items(levels) { level ->
             val isSelected = level == selectedLevel
-            FilterChip(
-                selected = isSelected,
+            Surface(
                 onClick = { onLevelSelected(level) },
-                label = { Text(level, fontWeight = if(isSelected) FontWeight.Bold else FontWeight.Normal) },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
-                border = FilterChipDefaults.filterChipBorder(
-                    borderColor = Color.Transparent,
-                    selectedBorderColor = Color.Transparent,
-                    enabled = true,
-                    selected = isSelected
-                ),
-                shape = CircleShape
-            )
+                shape = CircleShape,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.White,
+                border = if (isSelected) null else BorderStroke(1.dp, Color.LightGray),
+                shadowElevation = if (isSelected) 4.dp else 0.dp
+            ) {
+                Text(
+                    text = level,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = if (isSelected) Color.White else Color.Gray,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
+                )
+            }
         }
     }
 }
 
+// -----------------------------------------------------------
+// --- COMPONENT: TIMELINE ITEM ---
+// -----------------------------------------------------------
+@Composable
+fun TimelineTopicItem(
+    item: TopicItem,
+    isFirst: Boolean,
+    isLast: Boolean,
+    onClick: () -> Unit
+) {
+    Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.width(32.dp)
+        ) {
+            if (!isFirst) {
+                VerticalDivider(
+                    modifier = Modifier.weight(1f),
+                    color = if (item.isLocked) Color.LightGray else MaterialTheme.colorScheme.primary,
+                    thickness = 2.dp
+                )
+            } else {
+                Spacer(modifier = Modifier.weight(1f))
+            }
+
+            Box(
+                modifier = Modifier
+                    .size(14.dp)
+                    .clip(CircleShape)
+                    .background(if (item.isLocked) Color.LightGray else MaterialTheme.colorScheme.primary)
+                    .border(2.dp, Color.White, CircleShape)
+            )
+
+            if (!isLast) {
+                VerticalDivider(
+                    modifier = Modifier.weight(1f),
+                    color = if (item.isLocked) Color.LightGray else MaterialTheme.colorScheme.primary,
+                    thickness = 2.dp
+                )
+            } else {
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Box(modifier = Modifier.padding(bottom = 16.dp).weight(1f)) {
+            TopicItemCard(item = item, onClick = onClick)
+        }
+    }
+}
+
+// -----------------------------------------------------------
+// --- COMPONENT: TOPIC CARD ---
+// -----------------------------------------------------------
 @Composable
 fun TopicItemCard(
     item: TopicItem,
     onClick: () -> Unit
 ) {
+    val alpha = if (item.isLocked) 0.6f else 1f
+
     Card(
         onClick = if (item.isLocked) {{}} else onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .graphicsLayer { this.alpha = alpha },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = if (item.isLocked) 0.dp else 2.dp)
     ) {
         Box {
             Row(
                 modifier = Modifier.padding(12.dp).fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Ảnh Thumbnail
                 Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                    modifier = Modifier.size(80.dp).clip(RoundedCornerShape(12.dp))
                 ) {
                     AsyncImage(
                         model = item.imageUrl,
@@ -222,8 +359,6 @@ fun TopicItemCard(
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
-
-                    // Overlay khóa
                     if (item.isLocked) {
                         Box(
                             modifier = Modifier.fillMaxSize().background(Color.Black.copy(0.4f)),
@@ -236,9 +371,7 @@ fun TopicItemCard(
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                // Nội dung text
                 Column(modifier = Modifier.weight(1f)) {
-                    // Badge nhỏ trên đầu tiêu đề (Lấp khoảng trống)
                     if (!item.isLocked) {
                         Surface(
                             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
@@ -246,7 +379,7 @@ fun TopicItemCard(
                             modifier = Modifier.padding(bottom = 4.dp)
                         ) {
                             Text(
-                                text = "VOCAB • LISTENING", // Fake tags để nhìn đầy đặn
+                                text = "VOCAB • GRAMMAR",
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontSize = 10.sp,
@@ -260,21 +393,19 @@ fun TopicItemCard(
                         text = item.title,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = if (item.isLocked) Color.Gray else Color.Black
+                        maxLines = 1
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     if (!item.isLocked) {
-                        // Nút Start dạng chữ thay vì icon Play (Tạo điểm nhấn hành động)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             LinearProgressIndicator(
                                 progress = { item.progress },
                                 modifier = Modifier.weight(1f).height(6.dp).clip(RoundedCornerShape(3.dp)),
-                                strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
+                                strokeCap = StrokeCap.Round
                             )
                             Spacer(modifier = Modifier.width(12.dp))
-                            // Nút tròn nhỏ
                             FilledIconButton(
                                 onClick = onClick,
                                 modifier = Modifier.size(32.dp),
@@ -284,20 +415,14 @@ fun TopicItemCard(
                             }
                         }
                     } else {
-                        Text("Locked", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                        Text("Finish previous lesson", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
                     }
                 }
             }
 
-            // --- NÂNG CẤP 3: BADGE TRẠNG THÁI GÓC (FREE / PRO) ---
-            // Một dải ruy băng nhỏ ở góc trái trên (nếu cần) hoặc góc phải
-            // Ở đây tôi dùng icon ngôi sao đơn giản ở góc phải trên để đánh dấu Premium
-            if (item.isLocked) {
-                // Không làm gì
-            } else {
-                // Ví dụ: Đánh dấu bài Free
+            if (!item.isLocked) {
                 Surface(
-                    color = Color(0xFF4CAF50), // Màu xanh Free
+                    color = Color(0xFF4CAF50),
                     shape = RoundedCornerShape(bottomStart = 8.dp),
                     modifier = Modifier.align(Alignment.TopEnd)
                 ) {
@@ -312,5 +437,35 @@ fun TopicItemCard(
                 }
             }
         }
+    }
+}
+
+// -----------------------------------------------------------
+// --- COMPONENT: EMPTY STATE ---
+// -----------------------------------------------------------
+@Composable
+fun EmptyCourseState() {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(top = 60.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = Icons.Default.SearchOff,
+            contentDescription = null,
+            modifier = Modifier.size(80.dp),
+            tint = Color.LightGray
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "No lessons found",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = Color.Gray
+        )
+        Text(
+            text = "Please check back later!",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.LightGray
+        )
     }
 }

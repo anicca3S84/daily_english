@@ -12,43 +12,45 @@ import androidx.compose.ui.Modifier
 @Composable
 fun <T> BaseScreen(
     state: UiState<T>,
-    // 1. THÊM THAM SỐ NÀY VÀO ĐÂY
-    snackbarHostState: SnackbarHostState? = null,
+    snackbarHostState: SnackbarHostState? = null, // Để hiển thị Snackbar nếu cần
     onRetry: (() -> Unit)? = null,
     loadingType: LoadingType = LoadingType.SHIMMER,
     shimmerContent: @Composable () -> Unit = { DefaultShimmer() },
     content: @Composable (T) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-
-        // 1. Hiển thị nội dung chính hoặc Shimmer/Error toàn màn hình
-        if (state.data != null) {
-            content(state.data)
-        } else {
-            if (state.isLoading && loadingType == LoadingType.SHIMMER) {
-                shimmerContent()
-            } else if (state.error != null) {
-                ErrorOverlay(message = state.error, onRetry = onRetry)
+        // Sử dụng 'when' để kiểm tra từng trạng thái của Sealed Class
+        when (state) {
+            is UiState.Loading -> {
+                if (loadingType == LoadingType.SHIMMER) {
+                    shimmerContent()
+                } else {
+                    // Nếu là OVERLAY, hiển thị vòng tròn xoay giữa màn hình trống
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
             }
-        }
 
-        // 2. Hiển thị Loading Overlay (xoay tròn) khi cần
-        val shouldShowOverlayLoading = state.isLoading && (
-                loadingType == LoadingType.OVERLAY || (loadingType == LoadingType.SHIMMER && state.data != null)
+            is UiState.Success -> {
+                // Khi thành công, 'state.data' sẽ khả dụng nhờ Smart Cast
+                content(state.data)
+            }
+
+            is UiState.Error -> {
+                // Hiển thị màn hình lỗi toàn màn hình
+                ErrorOverlay(
+                    message = state.message, // Trong Sealed Class, field tên là 'message'
+                    onRetry = onRetry
                 )
 
-        if (shouldShowOverlayLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        }
-
-        // 3. XỬ LÝ TODO: Có Data nhưng bị lỗi (Ví dụ: Refresh thất bại)
-        // Logic: Khi có error mới xuất hiện, bắn Snackbar thông báo
-        if (state.data != null && state.error != null) {
-            LaunchedEffect(state.error) {
-                snackbarHostState?.showSnackbar(
-                    message = state.error,
-                    withDismissAction = true
-                )
+                // Nếu muốn bắn Snackbar kèm theo màn hình lỗi
+                if (snackbarHostState != null) {
+                    LaunchedEffect(state.message) {
+                        snackbarHostState.showSnackbar(
+                            message = state.message,
+                            withDismissAction = true
+                        )
+                    }
+                }
             }
         }
     }
