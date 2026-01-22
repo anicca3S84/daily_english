@@ -4,12 +4,14 @@ import com.codework.daily_english.presentation.model.ChatSession
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codework.daily_english.presentation.components.UiState
+import com.codework.daily_english.presentation.navigation.Route
 import com.google.ai.client.generativeai.GenerativeModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
@@ -23,6 +25,9 @@ class AiViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<UiState<AiData>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
+
+    private val _navigationChannel = Channel<Route>()
+    val navigationChannel = _navigationChannel.receiveAsFlow()
 
     // Biến giữ phiên chat hiện tại để AI nhớ ngữ cảnh
     private var chat = generativeModel.startChat()

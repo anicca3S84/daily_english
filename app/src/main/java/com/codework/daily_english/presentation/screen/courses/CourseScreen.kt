@@ -43,9 +43,8 @@ import com.codework.daily_english.presentation.navigation.Route
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CourseScreen(
-    state: UiState<CourseData>,        // 1. Nhận State từ ngoài truyền vào
-    onEvent: (CourseEvent) -> Unit,    // 2. Bắn Event logic (như đổi Level)
-    onNavigateToLesson: (String) -> Unit // 3. Callback điều hướng (kèm ID bài học)
+    state: UiState<CourseData>,
+    onEvent: (CourseEvent) -> Unit,
 ) {
     BaseScreen(state = state) { data ->
         LazyColumn(
@@ -66,7 +65,9 @@ fun CourseScreen(
             stickyHeader {
                 Surface(
                     color = Color(0xFFF5F7FA),
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
                 ) {
                     Column {
                         Text(
@@ -87,7 +88,6 @@ fun CourseScreen(
                 }
             }
 
-            // 3. CONTENT
             if (data.topics.isEmpty()) {
                 item { EmptyCourseState() }
             } else {
@@ -98,9 +98,11 @@ fun CourseScreen(
                             isFirst = index == 0,
                             isLast = index == data.topics.lastIndex,
                             onClick = {
-                                // Khi click vào bài học -> Gọi callback điều hướng luôn
-                                // Không cần vòng vo qua ViewModel nếu không có logic check phức tạp
-                                onNavigateToLesson(topic.id)
+                                onEvent(
+                                    CourseEvent.OnNavigateToLesson(
+                                        topic.id
+                                    )
+                                )
                             }
                         )
                     }
@@ -148,7 +150,10 @@ fun CourseHeaderSection(currentLevel: String, progress: Float) {
                     drawCircle(
                         color = Color.White.copy(alpha = 0.1f),
                         radius = size.minDimension / 1.5f,
-                        center = androidx.compose.ui.geometry.Offset(size.width * 0.9f, size.height * 0.1f)
+                        center = androidx.compose.ui.geometry.Offset(
+                            size.width * 0.9f,
+                            size.height * 0.1f
+                        )
                     )
                 }
 
@@ -320,7 +325,9 @@ fun TimelineTopicItem(
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        Box(modifier = Modifier.padding(bottom = 16.dp).weight(1f)) {
+        Box(modifier = Modifier
+            .padding(bottom = 16.dp)
+            .weight(1f)) {
             TopicItemCard(item = item, onClick = onClick)
         }
     }
@@ -337,7 +344,9 @@ fun TopicItemCard(
     val alpha = if (item.isLocked) 0.6f else 1f
 
     Card(
-        onClick = if (item.isLocked) {{}} else onClick,
+        onClick = if (item.isLocked) {
+            {}
+        } else onClick,
         modifier = Modifier
             .fillMaxWidth()
             .graphicsLayer { this.alpha = alpha },
@@ -347,11 +356,15 @@ fun TopicItemCard(
     ) {
         Box {
             Row(
-                modifier = Modifier.padding(12.dp).fillMaxWidth(),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
-                    modifier = Modifier.size(80.dp).clip(RoundedCornerShape(12.dp))
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(12.dp))
                 ) {
                     AsyncImage(
                         model = item.imageUrl,
@@ -361,7 +374,9 @@ fun TopicItemCard(
                     )
                     if (item.isLocked) {
                         Box(
-                            modifier = Modifier.fillMaxSize().background(Color.Black.copy(0.4f)),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black.copy(0.4f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(Icons.Default.Lock, null, tint = Color.White)
@@ -402,7 +417,10 @@ fun TopicItemCard(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             LinearProgressIndicator(
                                 progress = { item.progress },
-                                modifier = Modifier.weight(1f).height(6.dp).clip(RoundedCornerShape(3.dp)),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(6.dp)
+                                    .clip(RoundedCornerShape(3.dp)),
                                 strokeCap = StrokeCap.Round
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -415,7 +433,11 @@ fun TopicItemCard(
                             }
                         }
                     } else {
-                        Text("Finish previous lesson", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                        Text(
+                            "Finish previous lesson",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray
+                        )
                     }
                 }
             }
@@ -446,7 +468,9 @@ fun TopicItemCard(
 @Composable
 fun EmptyCourseState() {
     Column(
-        modifier = Modifier.fillMaxWidth().padding(top = 60.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 60.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(

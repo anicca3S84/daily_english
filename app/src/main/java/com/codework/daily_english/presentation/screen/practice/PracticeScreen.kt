@@ -24,12 +24,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.codework.daily_english.presentation.components.BaseScreen
+import com.codework.daily_english.presentation.components.UiState
 
 @Composable
 fun PracticeScreen(
-    viewModel: PracticeViewModel = hiltViewModel()
+    state: UiState<PracticeData>,
+    onEvent: (PracticeEvent) -> Unit
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     BaseScreen(state = state) { data ->
         LazyColumn(

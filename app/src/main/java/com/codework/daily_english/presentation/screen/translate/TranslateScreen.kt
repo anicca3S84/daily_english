@@ -42,10 +42,10 @@ import com.codework.daily_english.presentation.components.UiState
 
 @Composable
 fun TranslateScreen(
-    viewModel: TranslateViewModel = hiltViewModel(),
+    state: UiState<TranslateData>,
+    onEvent: (TranslateEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Scaffold(
@@ -67,7 +67,7 @@ fun TranslateScreen(
                     LanguageSwitchBar(
                         sourceLang = data.sourceLang,
                         targetLang = data.targetLang,
-                        onSwap = { viewModel.onEvent(TranslateEvent.OnSwapLanguage) }
+                        onSwap = { onEvent(TranslateEvent.OnSwapLanguage) }
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -76,11 +76,11 @@ fun TranslateScreen(
                     InputCard(
                         text = data.sourceText,
                         hint = "Enter text to translate...",
-                        onValueChange = { viewModel.onEvent(TranslateEvent.OnTextChange(it)) },
-                        onClear = { viewModel.onEvent(TranslateEvent.OnClearText) },
+                        onValueChange = { onEvent(TranslateEvent.OnTextChange(it)) },
+                        onClear = { onEvent(TranslateEvent.OnClearText) },
                         onTranslate = {
                             keyboardController?.hide()
-                            viewModel.onEvent(TranslateEvent.OnTranslateClick)
+                            onEvent(TranslateEvent.OnTranslateClick)
                         }
                     )
 

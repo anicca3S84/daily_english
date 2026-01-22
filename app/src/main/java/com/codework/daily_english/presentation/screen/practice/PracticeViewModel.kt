@@ -10,11 +10,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.model.PracticeCategory
+import com.codework.daily_english.presentation.navigation.Route
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,6 +26,9 @@ class PracticeViewModel @Inject constructor() : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<PracticeData>>(UiState.Loading)
     val uiState: StateFlow<UiState<PracticeData>> = _uiState.asStateFlow()
+
+    private val _navigationChannel = Channel<Route>()
+    val navigationChannel = _navigationChannel.receiveAsFlow()
 
     init {
         loadPracticeContent()
@@ -33,7 +39,7 @@ class PracticeViewModel @Inject constructor() : ViewModel() {
             is PracticeEvent.LoadData -> loadPracticeContent()
             is PracticeEvent.OnRetry -> loadPracticeContent()
             is PracticeEvent.OnCategoryClick -> {
-                // Xử lý điều hướng hoặc logic khi click vào category
+
             }
         }
     }

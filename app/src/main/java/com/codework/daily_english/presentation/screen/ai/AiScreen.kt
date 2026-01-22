@@ -42,10 +42,10 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AiScreen(
-    viewModel: AiViewModel = hiltViewModel(),
+    state: UiState<AiData>,
+    onEvent: (AiEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
@@ -70,11 +70,11 @@ fun AiScreen(
                 HistoryDrawerContent(
                     sessions = data.historySessions,
                     onNewChatClick = {
-                        viewModel.onEvent(AiEvent.OnNewChat)
+                        onEvent(AiEvent.OnNewChat)
                         scope.launch { drawerState.close() }
                     },
                     onSessionClick = { id ->
-                        viewModel.onEvent(AiEvent.OnLoadSession(id))
+                        onEvent(AiEvent.OnLoadSession(id))
                         scope.launch { drawerState.close() }
                     }
                 )
@@ -128,7 +128,7 @@ fun AiScreen(
                     ) {
                         if (data.messages.isEmpty()) {
                             SuggestionRow(suggestions) { text ->
-                                viewModel.onEvent(AiEvent.OnSendMessage(text))
+                                onEvent(AiEvent.OnSendMessage(text))
                             }
                         }
 
@@ -136,7 +136,7 @@ fun AiScreen(
                             value = inputText,
                             onValueChange = { inputText = it },
                             onSend = {
-                                viewModel.onEvent(AiEvent.OnSendMessage(inputText))
+                                onEvent(AiEvent.OnSendMessage(inputText))
                                 inputText = ""
                             },
                             isEnabled = !data.isTyping

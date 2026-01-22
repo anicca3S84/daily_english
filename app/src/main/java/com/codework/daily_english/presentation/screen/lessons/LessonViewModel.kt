@@ -4,11 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.model.WordItem
+import com.codework.daily_english.presentation.navigation.Route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -17,9 +20,8 @@ class LessonViewModel @Inject constructor() : ViewModel() {
     private val _uiState = MutableStateFlow<UiState<LessonData>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    // Kênh để bắn sự kiện điều hướng (One-time event) sang màn hình chi tiết
-    // Bạn nên dùng SharedFlow hoặc Channel cho việc navigate
-    // private val _navigationChannel = Channel<LessonNavigationRoute>() ...
+    private val _navigationChannel = Channel<Route>()
+    val navigationChannel = _navigationChannel.receiveAsFlow()
 
     init {
         loadLessonData()
@@ -39,9 +41,7 @@ class LessonViewModel @Inject constructor() : ViewModel() {
                 }
             }
             is LessonEvent.OnRetry -> loadLessonData()
-            is LessonEvent.OnBackClick -> { /* Xử lý back nếu cần custom */ }
             is LessonEvent.OnStartPractice -> TODO()
-
         }
     }
 

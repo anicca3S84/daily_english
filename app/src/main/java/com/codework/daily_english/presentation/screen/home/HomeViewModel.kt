@@ -36,8 +36,6 @@ class HomeViewModel @Inject constructor() : ViewModel() {
             HomeEvent.OnRetry -> loadHomeData()
 
             HomeEvent.OnQuickActionGemini -> {
-                // Gửi event vào channel
-                // check logic điều kiện nếu cần
                 viewModelScope.launch {
                     _navigationChannel.send(Route.AIScreen)
                 }

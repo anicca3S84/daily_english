@@ -31,15 +31,16 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.codework.daily_english.presentation.components.BaseScreen
+import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.model.WordItem
 import com.codework.daily_english.presentation.theme.AppBackground
 
 @Composable
 fun DictionaryScreen(
-    viewModel: DictionaryViewModel = hiltViewModel(),
+    state: UiState<DictionaryData>,
+    onEvent: (DictionaryEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         containerColor = Color.White,
@@ -53,8 +54,8 @@ fun DictionaryScreen(
                     // 1. THANH TÌM KIẾM
                     DictionarySearchBar(
                         query = data.query,
-                        onQueryChange = { viewModel.onEvent(DictionaryEvent.OnSearchQueryChange(it)) },
-                        onClear = { viewModel.onEvent(DictionaryEvent.OnClearSearch) }
+                        onQueryChange = { onEvent(DictionaryEvent.OnSearchQueryChange(it)) },
+                        onClear = { onEvent(DictionaryEvent.OnClearSearch) }
                     )
 
                     // 2. NỘI DUNG CHÍNH
@@ -70,8 +71,8 @@ fun DictionaryScreen(
                                 items(data.searchResults) { word ->
                                     WordResultCard(
                                         word = word,
-                                        onPlayAudioUk = { viewModel.onEvent(DictionaryEvent.OnPlayAudio(word.word)) },
-                                        onPlayAudioUs = { viewModel.onEvent(DictionaryEvent.OnPlayAudio(word.word)) },
+                                        onPlayAudioUk = { onEvent(DictionaryEvent.OnPlayAudio(word.word)) },
+                                        onPlayAudioUs = { onEvent(DictionaryEvent.OnPlayAudio(word.word)) },
                                         onToggleSave = { /* Logic bookmark */ }
                                     )
                                 }
@@ -82,7 +83,7 @@ fun DictionaryScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
                                 WordOfTheDayCardPremium(
                                     word = data.wordOfTheDay,
-                                    onPlayAudio = { viewModel.onEvent(DictionaryEvent.OnPlayAudio(data.wordOfTheDay.word)) }
+                                    onPlayAudio = { onEvent(DictionaryEvent.OnPlayAudio(data.wordOfTheDay.word)) }
                                 )
                             }
 

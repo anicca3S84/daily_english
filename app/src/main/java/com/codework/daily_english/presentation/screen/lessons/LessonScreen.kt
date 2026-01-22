@@ -12,23 +12,17 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.codework.daily_english.presentation.components.BaseScreen
+import com.codework.daily_english.presentation.components.UiState
+import com.codework.daily_english.presentation.screen.courses.CourseData
 
-// --- DATA MODEL CHO UI (Bạn có thể chuyển vào file Model) ---
 enum class LessonStepType { VOCABULARY, DIALOGUE, SPEAKING_AI, QUIZ }
 enum class StepStatus { LOCKED, UNLOCKED, COMPLETED }
 
@@ -40,16 +34,14 @@ data class LessonStep(
     val status: StepStatus
 )
 
-// --- MÀN HÌNH CHÍNH ---
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LessonScreen(
-    viewModel: LessonViewModel = hiltViewModel(),
+    state: UiState<LessonData>,
+    onEvent: (LessonEvent) -> Unit,
     onBackClick: () -> Unit,
-    onStepClick: (String) -> Unit // Điều hướng đến chi tiết từng bước
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     // Mock Data cho UI (Sau này sẽ lấy từ ViewModel)
     val steps = listOf(
@@ -83,18 +75,17 @@ fun LessonScreen(
                 // 1. HEADER ẤN TƯỢNG
                 item {
                     LessonHeaderSection(
-                        title = data.title, // Ví dụ: "At the Coffee Shop"
+                        title = data.title,
                         description = "In this lesson, you will learn how to order drinks and snacks.",
-                        progress = 0.25f // 1/4 bước đã xong
+                        progress = 0.25f
                     )
                 }
 
-                // 2. LỘ TRÌNH BÀI HỌC (PATH)
                 itemsIndexed(steps) { index, step ->
                     LessonPathItem(
                         step = step,
                         isLast = index == steps.lastIndex,
-                        onClick = { onStepClick(step.id) }
+                        onClick = { onEvent(LessonEvent.OnStepClick(step.id)) }
                     )
                 }
 
@@ -105,7 +96,6 @@ fun LessonScreen(
     }
 }
 
-// --- CÁC COMPONENT CON ---
 
 @Composable
 fun LessonHeaderSection(title: String, description: String, progress: Float) {

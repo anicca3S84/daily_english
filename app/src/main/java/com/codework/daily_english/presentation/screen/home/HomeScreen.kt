@@ -40,30 +40,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.codework.daily_english.R
+import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.model.QuickActionItem
 import com.codework.daily_english.presentation.navigation.Route
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = hiltViewModel(),
-    onNavigateToAI: () -> Unit,
-    onNavigateToDictionary: () -> Unit,
-    onNavigateToTranslate: () -> Unit
-
+    state: UiState<HomeData>,
+    onEvent: (HomeEvent) -> Unit
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(true) {
-        viewModel.navigationChannel.collect { route ->
-            when (route) {
-                is Route.AIScreen -> onNavigateToAI()
-                is Route.DictionaryScreen -> { onNavigateToDictionary()}
-                is Route.TranslateScreen -> { onNavigateToTranslate()}
-                else -> { /* Xử lý các màn khác nếu có */ }
-            }
-        }
-    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
@@ -75,12 +63,12 @@ fun HomeScreen(
             BaseScreen(
                 state = state,
                 snackbarHostState = snackbarHostState,
-                onRetry = { viewModel.onEvent(HomeEvent.OnRetry) }
+                onRetry = { onEvent(HomeEvent.OnRetry) }
             ) { data ->
                 // Chỉ vẽ nội dung khi có Data (Success)
                 HomeContent(
                     data = data,
-                    onEvent = viewModel::onEvent
+                    onEvent = onEvent
                 )
             }
         }
@@ -131,11 +119,11 @@ fun HomeContent(
         item {
             // Giả sử lấy dữ liệu từ data.dailyProgress và data.dailyTarget
             // Nếu chưa có trong data thì bạn fix cứng tạm để test
-                DailyGoalCard(
-                    currentMinutes = 12,  // Ví dụ: đã học 12 phút
-                    targetMinutes = 30,   // Ví dụ: mục tiêu 30 phút
-                    onClick = { /* Mở màn hình thống kê chi tiết */ }
-                )
+            DailyGoalCard(
+                currentMinutes = 12,  // Ví dụ: đã học 12 phút
+                targetMinutes = 30,   // Ví dụ: mục tiêu 30 phút
+                onClick = { /* Mở màn hình thống kê chi tiết */ }
+            )
         }
 
 
@@ -549,3 +537,4 @@ fun DailyGoalCard(
         }
     }
 }
+

@@ -11,6 +11,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,11 +21,19 @@ class CourseViewModel @Inject constructor() : ViewModel() {
     private val _uiState = MutableStateFlow<UiState<CourseData>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    // Cache dữ liệu giả
+    private val _navigationChannel = Channel<Route>()
+    val navigationChannel = _navigationChannel.receiveAsFlow()
+
     private val allLevels = listOf("Beginner (A1)", "Elementary (A2)", "Intermediate (B1)", "Advanced (B2)")
 
     init {
         loadCourseData(allLevels.first())
+    }
+
+    fun navigateTo(route: Route){
+        viewModelScope.launch {
+            _navigationChannel.send(route)
+        }
     }
 
     fun onEvent(event: CourseEvent) {
@@ -32,12 +41,18 @@ class CourseViewModel @Inject constructor() : ViewModel() {
             is CourseEvent.OnLevelSelected -> {
                 loadCourseData(event.level)
             }
+            is CourseEvent.OnNavigateToLesson -> {
+              navigateTo(Route.LessonScreen)
+            }
         }
     }
 
     private fun loadCourseData(level: String) {
         viewModelScope.launch {
-            _uiState.value = UiState.Loading
+            _uiState.update {
+                UiState.Loading
+            }
+
             delay(500) // Giả lập network
 
             val topics = mockTopicsForLevel(level)
@@ -46,7 +61,9 @@ class CourseViewModel @Inject constructor() : ViewModel() {
                 availableLevels = allLevels,
                 topics = topics
             )
-            _uiState.value = UiState.Success(data)
+            _uiState.update {
+                UiState.Success(data)
+            }
         }
     }
 

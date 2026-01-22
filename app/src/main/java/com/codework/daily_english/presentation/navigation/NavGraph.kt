@@ -2,6 +2,7 @@ package com.codework.daily_english.presentation.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
@@ -12,16 +13,22 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.codework.daily_english.presentation.screen.ai.AiScreen
+import com.codework.daily_english.presentation.screen.ai.AiViewModel
 import com.codework.daily_english.presentation.screen.courses.CourseScreen
 import com.codework.daily_english.presentation.screen.courses.CourseViewModel
 import com.codework.daily_english.presentation.screen.dictionary.DictionaryScreen
+import com.codework.daily_english.presentation.screen.dictionary.DictionaryViewModel
 import com.codework.daily_english.presentation.screen.home.HomeScreen
+import com.codework.daily_english.presentation.screen.home.HomeViewModel
 import com.codework.daily_english.presentation.screen.lessons.LessonEvent
 import com.codework.daily_english.presentation.screen.lessons.LessonScreen
 import com.codework.daily_english.presentation.screen.lessons.LessonViewModel
 import com.codework.daily_english.presentation.screen.more.MoreScreen
+import com.codework.daily_english.presentation.screen.more.MoreViewModel
 import com.codework.daily_english.presentation.screen.practice.PracticeScreen
+import com.codework.daily_english.presentation.screen.practice.PracticeViewModel
 import com.codework.daily_english.presentation.screen.translate.TranslateScreen
+import com.codework.daily_english.presentation.screen.translate.TranslateViewModel
 
 @Composable
 fun NavGraph(
@@ -33,71 +40,120 @@ fun NavGraph(
         modifier = Modifier.padding(bottom = 0.dp)
     ) {
         composable<Route.HomeScreen> {
+            val viewModel = hiltViewModel<HomeViewModel>()
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
+            LaunchedEffect(viewModel.navigationChannel) {
+                viewModel.navigationChannel.collect { route ->
+                    navController.navigate(route)
+                }
+            }
+
             HomeScreen(
-                onNavigateToAI = { navController.navigate(Route.AIScreen) },
-                onNavigateToDictionary = { navController.navigate(Route.DictionaryScreen) },
-                onNavigateToTranslate = { navController.navigate(Route.TranslateScreen) }
+                state = state,
+                onEvent = viewModel::onEvent
             )
         }
         composable<Route.CourseScreen> {
-            // 1. Khởi tạo ViewModel (Scoped cho màn hình này)
             val viewModel = hiltViewModel<CourseViewModel>()
-
-            // 2. Lấy State
             val state by viewModel.uiState.collectAsStateWithLifecycle()
-
-            // 3. Render UI và Nối dây
+            LaunchedEffect(viewModel.navigationChannel) {
+                viewModel.navigationChannel.collect { route ->
+                    navController.navigate(route)
+                }
+            }
             CourseScreen(
                 state = state,
-                onEvent = viewModel::onEvent, // Truyền hàm onEvent của VM vào UI
-                onNavigateToLesson = { topicId ->
-                    // 4. Xử lý điều hướng TẠI ĐÂY
-                    // Bạn có thể truyền topicId sang màn Lesson nếu cần
-                    // navController.navigate(Route.LessonScreen(topicId))
-                    navController.navigate(Route.LessonScreen)
+                onEvent = viewModel::onEvent,
+            )
+        }
+
+        composable<Route.LessonScreen> {
+            val viewModel = hiltViewModel<LessonViewModel>()
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+            LaunchedEffect(viewModel.navigationChannel) {
+                viewModel.navigationChannel.collect { route ->
+                    navController.navigate(route)
                 }
+            }
+            LessonScreen(
+                state = state,
+                onEvent = viewModel::onEvent,
+                onBackClick = { navController.popBackStack() }
             )
         }
         composable<Route.PracticeScreen> {
-            PracticeScreen()
+            val viewModel = hiltViewModel<PracticeViewModel>()
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+            LaunchedEffect(viewModel.navigationChannel) {
+                viewModel.navigationChannel.collect { route ->
+                    navController.navigate(route)
+                }
+            }
+            PracticeScreen(
+                state = state,
+                onEvent = viewModel::onEvent,
+            )
         }
         composable<Route.MoreScreen> {
-            MoreScreen()
+            val viewModel = hiltViewModel<MoreViewModel>()
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+            LaunchedEffect(viewModel.navigationChannel) {
+                viewModel.navigationChannel.collect { route ->
+                    navController.navigate(route)
+                }
+            }
+            MoreScreen(
+                state = state,
+                onEvent = viewModel::onEvent,
+            )
         }
 
         composable<Route.AIScreen> {
+            val viewModel = hiltViewModel<AiViewModel>()
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
+            LaunchedEffect(viewModel.navigationChannel) {
+                viewModel.navigationChannel.collect { route ->
+                    navController.navigate(route)
+                }
+            }
             AiScreen(
+                state = state,
+                onEvent = viewModel::onEvent,
                 onBackClick = { navController.popBackStack() }
             )
         }
 
         composable<Route.DictionaryScreen> {
+            val viewModel = hiltViewModel<DictionaryViewModel>()
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
+            LaunchedEffect(viewModel.navigationChannel) {
+                viewModel.navigationChannel.collect { route ->
+                    navController.navigate(route)
+                }
+            }
             DictionaryScreen(
+                state = state,
+                onEvent = viewModel::onEvent,
                 onBackClick = { navController.popBackStack() }
             )
         }
         composable<Route.TranslateScreen> {
+            val viewModel = hiltViewModel<TranslateViewModel>()
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
+            LaunchedEffect(viewModel.navigationChannel) {
+                viewModel.navigationChannel.collect { route ->
+                    navController.navigate(route)
+                }
+            }
             TranslateScreen(
+                state = state,
+                onEvent = viewModel::onEvent,
                 onBackClick = { navController.popBackStack() }
             )
         }
 
-// ... bên trong NavHost ...
-
-                composable<Route.LessonScreen> {
-                    // 1. Khởi tạo/Lấy ViewModel tại đây.
-                    // Nó sẽ tự động scoped theo màn hình LessonScreen này.
-                    val viewModel = hiltViewModel<LessonViewModel>()
-                    LessonScreen(
-                        viewModel = viewModel,
-                        onBackClick = { navController.popBackStack() },
-                        onStepClick = { stepId ->
-                            // 2. Gọi event thông qua biến viewModel vừa tạo
-                            viewModel.onEvent(LessonEvent.OnStepClick(stepId))
-                            // Logic điều hướng (nếu cần xử lý tại đây hoặc lắng nghe từ VM)
-                            // Ví dụ: navController.navigate(Route.Vocabulary(stepId))
-                        }
-                    )
-                }
     }
 }

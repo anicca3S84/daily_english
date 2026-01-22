@@ -1,5 +1,4 @@
 package com.codework.daily_english.presentation.screen.more
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,7 +12,6 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,16 +20,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.codework.daily_english.presentation.components.BaseScreen
+import com.codework.daily_english.presentation.components.UiState
 
 @Composable
 fun MoreScreen(
-    viewModel: MoreViewModel = hiltViewModel()
+    state: UiState<MoreData>,
+    onEvent: (MoreEvent) -> Unit
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     BaseScreen(state = state) { data ->
         LazyColumn(
@@ -40,17 +37,12 @@ fun MoreScreen(
                 .background(MaterialTheme.colorScheme.surface),
             contentPadding = PaddingValues(bottom = 24.dp)
         ) {
-            // 1. Profile Header (Avatar to)
             item {
-                ProfileHeaderSection(data, onEditClick = { viewModel.onEvent(MoreEvent.OnEditProfile) })
+                ProfileHeaderSection(data, onEditClick = { onEvent(MoreEvent.OnEditProfile) })
             }
-
-            // 2. Stats Row (Thống kê ngang)
             item {
                 StatsRow(data)
             }
-
-            // 3. Settings Groups
             item {
                 Column(modifier = Modifier.padding(16.dp)) {
                     // Group: Account
@@ -58,40 +50,39 @@ fun MoreScreen(
                     ProfileMenuItem(
                         icon = Icons.Outlined.Person,
                         title = "Personal Information",
-                        onClick = { viewModel.onEvent(MoreEvent.OnMenuClick("Personal")) }
+                        onClick = { onEvent(MoreEvent.OnMenuClick("Personal")) }
                     )
                     ProfileMenuItem(
                         icon = Icons.Outlined.Notifications,
                         title = "Notifications",
-                        onClick = { viewModel.onEvent(MoreEvent.OnMenuClick("Notifications")) }
+                        onClick = { onEvent(MoreEvent.OnMenuClick("Notifications")) }
                     )
                     ProfileMenuItem(
                         icon = Icons.Outlined.Language,
                         title = "App Language",
                         value = "English", // Hiển thị giá trị hiện tại
-                        onClick = { viewModel.onEvent(MoreEvent.OnMenuClick("Language")) }
+                        onClick = { onEvent(MoreEvent.OnMenuClick("Language")) }
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Group: Support
                     SettingsGroupTitle("Support & About")
                     ProfileMenuItem(
                         icon = Icons.Outlined.HelpOutline,
                         title = "Help Center",
-                        onClick = { viewModel.onEvent(MoreEvent.OnMenuClick("Help")) }
+                        onClick = { onEvent(MoreEvent.OnMenuClick("Help")) }
                     )
                     ProfileMenuItem(
                         icon = Icons.Outlined.PrivacyTip,
                         title = "Privacy Policy",
-                        onClick = { viewModel.onEvent(MoreEvent.OnMenuClick("Privacy")) }
+                        onClick = { onEvent(MoreEvent.OnMenuClick("Privacy")) }
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // Button Logout
                     Button(
-                        onClick = { viewModel.onEvent(MoreEvent.OnLogout) },
+                        onClick = { onEvent(MoreEvent.OnLogout) },
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.errorContainer),
                         shape = RoundedCornerShape(12.dp)
