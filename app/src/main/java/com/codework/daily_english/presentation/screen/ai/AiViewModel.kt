@@ -35,6 +35,8 @@ class AiViewModel @Inject constructor(
     // Mock data lịch sử (Giữ nguyên hoặc load từ Room DB sau này)
     private val mockHistory = listOf(
         ChatSession("1", "Grammar Check", "Is this sentence correct?", "Today"),
+        ChatSession("1", "Grammar Check", "Is this sentence correct?", "Today"),
+        ChatSession("1", "Grammar Check", "Is this sentence correct?", "Today"),
     )
 
     init {

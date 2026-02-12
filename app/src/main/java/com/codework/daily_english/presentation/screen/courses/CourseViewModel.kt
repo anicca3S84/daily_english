@@ -72,8 +72,13 @@ class CourseViewModel @Inject constructor() : ViewModel() {
         return when {
             level.contains("A1") -> listOf(
                 TopicItem("1", "Greeting & Introduction", "Learn how to say hello and introduce yourself.", "https://picsum.photos/300/200", 5, 1.0f, false),
+                TopicItem("1", "Family & Friends", "Learn how to say hello and introduce yourself.", "https://picsum.photos/300/201", 5, 1.0f, false),
+                TopicItem("1", "Greeting & Introduction", "Learn how to say hello and introduce yourself.", "https://picsum.photos/300/200", 5, 0.8f, false),
                 TopicItem("2", "Family & Friends", "Talk about your family members.", "https://picsum.photos/300/201", 8, 0.4f, false),
-                TopicItem("3", "Daily Routine", "Describe your everyday activities.", "https://picsum.photos/300/202", 6, 0.0f, true)
+                TopicItem("2", "Family & Friends", "Talk about your family members.", "https://picsum.photos/300/201", 8, 0.4f, false),
+                TopicItem("2", "Family & Friends", "Talk about your family members.", "https://picsum.photos/300/201", 8, 0.4f, false),
+                TopicItem("2", "Family & Friends", "Talk about your family members.", "https://picsum.photos/300/201", 8, 0.4f, false),
+                TopicItem("2", "Family & Friends", "Talk about your family members.", "https://picsum.photos/300/201", 8, 0.4f, false),
             )
             level.contains("A2") -> listOf(
                 TopicItem("4", "Travel & Transport", "Booking tickets and asking for directions.", "https://picsum.photos/300/203", 10, 0.0f, false),

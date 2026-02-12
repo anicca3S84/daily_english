@@ -1,5 +1,6 @@
 package com.codework.daily_english.presentation.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
@@ -8,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import com.codework.daily_english.presentation.theme.AppBackground
 
 @Composable
 fun <T> BaseScreen(
@@ -18,7 +21,8 @@ fun <T> BaseScreen(
     shimmerContent: @Composable () -> Unit = { DefaultShimmer() },
     content: @Composable (T) -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()
+        .background(AppBackground)) {
         // Sử dụng 'when' để kiểm tra từng trạng thái của Sealed Class
         when (state) {
             is UiState.Loading -> {

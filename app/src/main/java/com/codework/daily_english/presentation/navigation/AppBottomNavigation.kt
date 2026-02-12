@@ -9,6 +9,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.NavDestination.Companion.hasRoute
+import com.codework.daily_english.presentation.theme.AppBackground
 
 @Composable
 fun AppBottomNavigation(navController: NavHostController) {
@@ -23,7 +24,7 @@ fun AppBottomNavigation(navController: NavHostController) {
     )
 
     NavigationBar(
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = AppBackground,
         tonalElevation = NavigationBarDefaults.Elevation
     ) {
         items.forEach { item ->

@@ -24,7 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.codework.daily_english.presentation.components.BaseScreen
+import com.codework.daily_english.presentation.components.CurvedHeaderWrapper
+import com.codework.daily_english.presentation.components.HeaderStatItem
 import com.codework.daily_english.presentation.components.UiState
+import com.codework.daily_english.presentation.theme.MainGradient
 
 @Composable
 fun PracticeScreen(
@@ -42,7 +45,50 @@ fun PracticeScreen(
         ) {
             // 1. Header & Stats
             item {
-                PracticeHeaderSection(points = data.totalPoints, streak = data.streak)
+                CurvedHeaderWrapper(
+                    headerHeight = 230.dp, // Màn Practice ngắn hơn chút
+                    gradientHeight = 190.dp,
+                    content = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 24.dp)
+                        ) {
+                            Text(
+                                text = "Practice Arena",
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Surface(color = Color.White.copy(0.2f), shape = CircleShape) {
+                                IconButton(onClick = {}) {
+                                    Icon(Icons.Default.History, null, tint = Color.White)
+                                }
+                            }
+                        }
+                        Text(
+                            text = "Let's boost your skills!",
+                            color = Color.White.copy(0.8f),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(horizontal = 24.dp)
+                        )
+                    },
+                    bottomCardContent = {
+                        HeaderStatItem(
+                            value = "${data.totalPoints}",
+                            label = "Total XP",
+                            icon = Icons.Default.EmojiEvents,
+                            iconColor = Color(0xFFFFC107) // Màu vàng
+                        )
+                        Divider(modifier = Modifier.height(40.dp).width(1.dp), color = Color.LightGray)
+                        HeaderStatItem(
+                            value = "${data.streak}",
+                            label = "Day Streak",
+                            icon = Icons.Default.LocalFireDepartment,
+                            iconColor = Color(0xFFFF5722) // Màu cam lửa
+                        )
+                    }
+                )
             }
 
             // 2. REVIEW ZONE (Spaced Repetition) - Quan trọng nhất
@@ -152,99 +198,6 @@ fun SectionTitle(title: String, subtitle: String) {
     Column {
         Text(text = title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
         Text(text = subtitle, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
-    }
-}
-
-@Composable
-fun PracticeHeaderSection(points: Int, streak: Int) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(230.dp) // Tăng chiều cao tổng để cân bằng khi tràn viền
-    ) {
-        // 1. Background: Tràn lên trên cùng, chỉ bo góc dưới
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(190.dp) // Tăng nhẹ để phủ xuống dưới StatusBar sâu hơn
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            Color(0xFF2196F3), // Xanh dương sáng
-                            Color(0xFF6375DC)  // Tím Indigo đậm
-                        )
-                    ),
-
-
-                    shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
-                )
-        )
-
-        // 2. Nội dung Header: Sử dụng statusBarsPadding để tự động né camera/đồng hồ
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding() // Đây là chìa khóa để nội dung lùi xuống dưới StatusBar
-                .padding(horizontal = 24.dp) // Căn lề trái phải
-                .padding(top = 16.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "Practice Arena",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.weight(1f)
-                )
-                Surface(color = Color.White.copy(0.2f), shape = CircleShape) {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.History, null, tint = Color.White)
-                    }
-                }
-            }
-            Text(
-                text = "Let's boost your skills!",
-                color = Color.White.copy(0.8f),
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-
-        // 3. Card thống kê nổi (Giữ nguyên logic cũ)
-        Card(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(horizontal = 24.dp)
-                .fillMaxWidth()
-                .height(80.dp),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                StatItemValue(value = "$points", label = "Total XP", icon = Icons.Default.EmojiEvents, color = Color(0xFFFFC107))
-                VerticalDivider(modifier = Modifier.height(40.dp).width(1.dp), color = Color.LightGray)
-                StatItemValue(value = "$streak", label = "Day Streak", icon = Icons.Default.LocalFireDepartment, color = Color(0xFFFF5722))
-            }
-        }
-    }
-}
-
-@Composable
-fun StatItemValue(value: String, label: String, icon: ImageVector, color: Color) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Surface(shape = CircleShape, color = color.copy(alpha = 0.1f), modifier = Modifier.size(40.dp)) {
-            Icon(icon, null, tint = color, modifier = Modifier.padding(8.dp))
-        }
-        Spacer(modifier = Modifier.width(12.dp))
-        Column {
-            Text(text = value, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-            Text(text = label, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-        }
     }
 }
 

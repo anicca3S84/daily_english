@@ -1,9 +1,12 @@
 package com.codework.daily_english.presentation.screen.ai
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -11,32 +14,32 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.codework.daily_english.presentation.components.AppTopBar
 import com.codework.daily_english.presentation.components.BaseScreen
 import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.model.ChatMessage
 import com.codework.daily_english.presentation.model.ChatSession
+import com.codework.daily_english.presentation.theme.AppBackground
+import com.codework.daily_english.presentation.theme.BluePrimary
+import com.codework.daily_english.presentation.theme.MainGradient
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,10 +54,14 @@ fun AiScreen(
     val listState = rememberLazyListState()
     var inputText by remember { mutableStateOf("") }
 
-    val suggestions = listOf("Correct my grammar ✍️", "Practice Speaking 🗣️", "Translate 🌐", "Explain Idioms 💡")
+    val suggestions = listOf(
+        "Correct my grammar ✍️", "Practice Speaking 🗣️", "Translate to English 🌐",
+        "Explain Idioms 💡", "Write an email 📧", "IELTS Writing tips 📝",
+        "Daily conversation 👋", "Vocabulary quiz 🧠", "Roleplay interview 👔"
+    )
 
     if (state is UiState.Success) {
-        val data = (state as UiState.Success).data
+        val data = state.data
         LaunchedEffect(data.messages.size, data.isTyping) {
             if (data.messages.isNotEmpty()) {
                 listState.animateScrollToItem(data.messages.size)
@@ -66,23 +73,15 @@ fun AiScreen(
         drawerState = drawerState,
         drawerContent = {
             if (state is UiState.Success) {
-                val data = (state as UiState.Success).data
                 HistoryDrawerContent(
-                    sessions = data.historySessions,
-                    onNewChatClick = {
-                        onEvent(AiEvent.OnNewChat)
-                        scope.launch { drawerState.close() }
-                    },
-                    onSessionClick = { id ->
-                        onEvent(AiEvent.OnLoadSession(id))
-                        scope.launch { drawerState.close() }
-                    }
+                    sessions = state.data.historySessions,
+                    onNewChatClick = { onEvent(AiEvent.OnNewChat); scope.launch { drawerState.close() } },
+                    onSessionClick = { id -> onEvent(AiEvent.OnLoadSession(id)); scope.launch { drawerState.close() } }
                 )
             }
         }
     ) {
         Scaffold(
-            // Vẫn giữ 0 để tránh xung đột với các màn hình khác như bạn mong muốn
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             topBar = {
                 AppTopBar(
@@ -90,28 +89,37 @@ fun AiScreen(
                     onMenuClick = { scope.launch { drawerState.open() } },
                     titleContent = {
                         Row(
+                            modifier = Modifier.fillMaxWidth().statusBarsPadding().padding(end = 16.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.wrapContentWidth()
-                                .statusBarsPadding()
+                            horizontalArrangement = Arrangement.Center
                         ) {
-                            // Avatar (Sử dụng Box cẩn thận)
-                            Box(
-                                modifier = Modifier.size(40.dp), // Chỉnh nhỏ lại 1 chút
-                                contentAlignment = Alignment.Center
+                            Surface(
+                                shape = CircleShape,
+                                color = Color.Transparent, // Để Surface trong suốt
+                                modifier = Modifier.size(36.dp)
                             ) {
-                                // Code avatar của bạn ở đây
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(brush = MainGradient), // Tô màu Gradient vào đúng shape đã clip
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "A",
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        fontSize = 18.sp
+                                    )
+                                }
                             }
-
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            Column {
-                                Text(
-                                    "Gemini Tutor",
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 16.sp, // Đừng để 18sp nếu title quá dài
-                                    maxLines = 1
-                                )
-                                Text("Always active", fontSize = 10.sp, color = Color.Gray)
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Anicca Tutor", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.Black)
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(Color(0xFF4CAF50)))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Always active", fontSize = 13.sp, color = Color.Gray, style = MaterialTheme.typography.labelSmall)
+                                }
                             }
                         }
                     }
@@ -119,69 +127,62 @@ fun AiScreen(
             },
             bottomBar = {
                 if (state is UiState.Success) {
-                    val data = (state as UiState.Success).data
                     Column(
                         modifier = Modifier
-                            .background(Color.White)
-                            .navigationBarsPadding() // Tránh nút điều hướng Android
-                            .imePadding() // Đẩy cụm này lên khi hiện phím
+                            .background(AppBackground)
+                            .navigationBarsPadding()
+                            .padding(bottom = 18.dp)
                     ) {
-                        if (data.messages.isEmpty()) {
-                            SuggestionRow(suggestions) { text ->
-                                onEvent(AiEvent.OnSendMessage(text))
-                            }
+                        if (state.data.messages.isEmpty()) {
+                            AutoScrollingSuggestionSection(suggestions) { onEvent(AiEvent.OnSendMessage(it)) }
                         }
 
                         ModernInputBar(
                             value = inputText,
                             onValueChange = { inputText = it },
-                            onSend = {
-                                onEvent(AiEvent.OnSendMessage(inputText))
-                                inputText = ""
-                            },
-                            isEnabled = !data.isTyping
+                            onSend = { onEvent(AiEvent.OnSendMessage(inputText)); inputText = "" },
+                            isEnabled = !state.data.isTyping
                         )
                     }
                 }
             }
-        ) { innerPadding -> // Bỏ paddingValues vì ta sẽ tự quản lý khoảng cách
+        ) { innerPadding ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(AppBackground)
                     .padding(bottom = innerPadding.calculateBottomPadding())
-                    .background(Color(0xFFF8F9FD))
             ) {
-                // Background trang trí
-                Canvas(modifier = Modifier.fillMaxSize().blur(50.dp)) {
-                    drawCircle(Color(0xFF8E2DE2).copy(alpha = 0.03f), radius = 600f, center = center.copy(x = 0f))
-                    drawCircle(Color(0xFF4FACFE).copy(alpha = 0.03f), radius = 600f, center = center.copy(x = size.width))
-                }
-
                 BaseScreen(state = state) { data ->
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            // SỬA TẠI ĐÂY: Cách TopBar 72dp + Status Bar
-                            .statusBarsPadding()
-                            .padding(top = 72.dp),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        if (data.messages.isEmpty()) {
-                            item { EmptyChatPlaceholder() }
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        AnimatedVisibility(
+                            visible = data.messages.isEmpty(),
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(top = 50.dp)
+                        ) {
+                            EmptyChatPlaceholder()
                         }
 
-                        items(data.messages) { msg ->
-                            EnhancedMessageBubble(message = msg)
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .statusBarsPadding()
+                                .padding(top = 72.dp),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(data.messages) { msg ->
+                                EnhancedMessageBubble(message = msg)
+                            }
+                            if (data.isTyping) {
+                                item { ModernTypingIndicator() }
+                            }
+                            item { Spacer(modifier = Modifier.height(10.dp)) }
                         }
-
-                        if (data.isTyping) {
-                            item { ModernTypingIndicator() }
-                        }
-
-                        // Thêm một khoảng trống ảo cuối danh sách để tin nhắn không bị che
-                        item { Spacer(modifier = Modifier.height(10.dp)) }
                     }
                 }
             }
@@ -189,186 +190,75 @@ fun AiScreen(
     }
 }
 
-// ==========================================
-// CÁC COMPONENT GIAO DIỆN (UI COMPONENTS)
-// ==========================================
-
-@OptIn(ExperimentalMaterial3Api::class)
+// -----------------------------------------------------------
+// --- AUTO SCROLL SUGGESTIONS (Giữ nguyên Style cũ) ---
+// -----------------------------------------------------------
 @Composable
-fun AiTopBarPro(onBackClick: () -> Unit, onMenuClick: () -> Unit) {
-    Surface(
-        color = Color.White.copy(alpha = 0.98f), // Màu trắng hơi trong suốt nhẹ
-        modifier = Modifier.fillMaxWidth(),
-        shadowElevation = 0.dp // Tắt shadow mặc định để dùng Divider tuỳ chỉnh
+fun AutoScrollingSuggestionSection(
+    suggestions: List<String>,
+    onClick: (String) -> Unit
+) {
+    val loopList = if (suggestions.size < 10) suggestions + suggestions + suggestions else suggestions
+    val mid = loopList.size / 2
+    val firstRow = loopList.take(mid)
+    val secondRow = loopList.drop(mid)
+
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Column {
-            TopAppBar(
-                windowInsets = WindowInsets(0), // Giữ nguyên theo yêu cầu của bạn
-                modifier = Modifier.height(72.dp),
-                title = {
-                    Box(
-                        modifier = Modifier.fillMaxHeight(),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            // --- AVATAR PRO (Hiệu ứng 2 vòng viền) ---
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier
-                                    .size(46.dp) // Tăng nhẹ kích thước
-                                    .border(1.5.dp, Color(0xFFF3F4F6), CircleShape) // Viền ngoài xám nhạt
-                                    .padding(3.dp) // Khoảng cách giữa 2 viền
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(
-                                            brush = Brush.linearGradient(
-                                                colors = listOf(Color(0xFF4FACFE), Color(0xFF8E2DE2))
-                                            ),
-                                            shape = CircleShape
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.AutoAwesome,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
+        SuggestionRowWithAutoScroll(items = firstRow, reverseLayout = false, onClick = onClick)
+        SuggestionRowWithAutoScroll(items = secondRow, reverseLayout = true, onClick = onClick)
+    }
+}
 
-                                // Chấm xanh báo Online đè lên góc avatar (Giống Messenger/Insta)
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .size(12.dp)
-                                        .background(Color.White, CircleShape)
-                                        .padding(2.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .background(Color(0xFF4CAF50), CircleShape)
-                                    )
-                                }
-                            }
+@Composable
+fun SuggestionRowWithAutoScroll(
+    items: List<String>,
+    reverseLayout: Boolean = false,
+    onClick: (String) -> Unit
+) {
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = if (reverseLayout) 0 else Int.MAX_VALUE / 2)
 
-                            Spacer(modifier = Modifier.width(14.dp))
+    LaunchedEffect(Unit) {
+        while (true) {
+            listState.scrollBy(if (reverseLayout) 1.5f else 1.5f)
+            delay(10)
+        }
+    }
 
-                            // --- TEXT CONTENT ---
-                            Column(verticalArrangement = Arrangement.Center) {
-                                Text(
-                                    text = "Gemini Tutor",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.ExtraBold, // Đậm hơn
-                                    color = Color(0xFF111827), // Màu đen than (Dark Charcoal) sang trọng
-                                    letterSpacing = (-0.5).sp
-                                )
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = "Always active",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Color(0xFF6B7280), // Màu xám trung tính
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    // Badge PRO nhỏ gọn
-                                    Surface(
-                                        color = Color(0xFFEFF6FF), // Xanh dương siêu nhạt
-                                        shape = RoundedCornerShape(4.dp),
-                                        border = BorderStroke(0.5.dp, Color(0xFFBFDBFE))
-                                    ) {
-                                        Text(
-                                            text = "PRO",
-                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color(0xFF3B82F6)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                navigationIcon = {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .width(64.dp), // Tăng vùng bấm
-                        contentAlignment = Alignment.Center
-                    ) {
-                        // Nút Back tròn, có viền mờ
-                        Surface(
-                            onClick = onBackClick,
-                            shape = CircleShape,
-                            color = Color.White,
-                            border = BorderStroke(1.dp, Color(0xFFE5E7EB)), // Viền xám rất mờ
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Back",
-                                    tint = Color(0xFF374151), // Xám đậm
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                    }
-                },
-                actions = {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .padding(end = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        // Nút Menu tròn, có viền mờ
-                        Surface(
-                            onClick = onMenuClick,
-                            shape = CircleShape,
-                            color = Color.White,
-                            border = BorderStroke(1.dp, Color(0xFFE5E7EB)),
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Default.Menu,
-                                    contentDescription = "Menu",
-                                    tint = Color(0xFF374151),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-            )
-
-            // Đường kẻ Gradient mờ dần 2 đầu (Tinh tế hơn đường kẻ đen đặc)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color(0xFFE5E7EB), // Xám nhạt ở giữa
-                                Color.Transparent
-                            )
-                        )
-                    )
-            )
+    LazyRow(
+        state = listState,
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        userScrollEnabled = true,
+        reverseLayout = reverseLayout
+    ) {
+        items(count = Int.MAX_VALUE) { index ->
+            val item = items[index % items.size]
+            Surface(
+                onClick = { onClick(item) },
+                shape = CircleShape,
+                color = Color.White,
+                // GIỮ NGUYÊN VIỀN CŨ CỦA BẠN
+                border = BorderStroke(1.dp, MainGradient)
+            ) {
+                Text(
+                    text = item,
+                    // GIỮ NGUYÊN PADDING VÀ STYLE CŨ CỦA BẠN
+                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
+                    fontWeight = FontWeight.Medium,
+                    style = TextStyle(brush = MainGradient, fontSize = 13.sp),
+                    maxLines = 1
+                )
+            }
         }
     }
 }
 
+// -----------------------------------------------------------
+// --- MODERN INPUT BAR (Có Dấu Cộng & Mic) ---
+// -----------------------------------------------------------
 @Composable
 fun ModernInputBar(
     value: String,
@@ -376,175 +266,156 @@ fun ModernInputBar(
     onSend: () -> Unit,
     isEnabled: Boolean
 ) {
+    val inputBackgroundColor = Color(0xFFF2F4F7)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.Bottom
     ) {
-        // Khung nhập liệu
+        // 1. NÚT CỘNG
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(inputBackgroundColor)
+                .clickable { /* Handle Attachment */ },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add",
+                tint = Color.Gray,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // 2. Ô NHẬP LIỆU (ĐÃ SỬA LỖI NHẢY KÍCH THƯỚC)
         Surface(
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(24.dp),
-            color = Color(0xFFF2F4F7),
-            border = BorderStroke(1.dp, Color(0xFFE4E7EC))
+            color = inputBackgroundColor,
+            border = BorderStroke(1.dp, Color(0xFFE0E0E0)),
         ) {
-            TextField(
+            BasicTextField(
                 value = value,
                 onValueChange = onValueChange,
-                placeholder = { Text("Type a message...", color = Color.Gray) },
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
+                textStyle = TextStyle(
+                    fontSize = 16.sp,
+                    color = Color(0xFF263238),
+                    lineHeight = 24.sp
                 ),
-                maxLines = 4,
-                modifier = Modifier.fillMaxWidth()
+                maxLines = 5,
+                decorationBox = { innerTextField ->
+                    // SỬA: Thay vì dùng Padding dọc, ta dùng Box có minHeight = 48dp
+                    // và căn giữa nội dung (Alignment.CenterStart).
+                    // Cách này đảm bảo khung luôn cao ít nhất 48dp và text luôn ở giữa
+                    // mà không bị padding đẩy giãn ra.
+                    Box(
+                        contentAlignment = Alignment.CenterStart,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp) // Chiều cao tối thiểu cố định
+                            .padding(horizontal = 16.dp, vertical = 4.dp) // Padding dọc nhỏ để an toàn cho multiline
+                    ) {
+                        if (value.isEmpty()) {
+                            Text(
+                                text = "Message Anicca...",
+                                color = Color.Gray,
+                                fontSize = 16.sp,
+                                lineHeight = 24.sp
+                            )
+                        }
+                        innerTextField()
+                    }
+                }
             )
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
-        // Nút gửi
-        val canSend = value.isNotBlank() && isEnabled
-        IconButton(
-            onClick = onSend,
-            enabled = canSend,
+        // 3. NÚT GỬI / MIC
+        val isTyping = value.isNotBlank()
+        Box(
             modifier = Modifier
                 .size(48.dp)
+                .clip(CircleShape)
                 .background(
-                    brush = if (canSend)
-                        Brush.linearGradient(listOf(Color(0xFF4FACFE), Color(0xFF8E2DE2)))
-                    else
-                        Brush.linearGradient(listOf(Color.LightGray, Color.LightGray)),
-                    shape = CircleShape
+                    brush = if (isTyping) MainGradient else Brush.linearGradient(listOf(Color(0xFF212121), Color(0xFF212121))),
                 )
+                .clickable(
+                    enabled = isEnabled,
+                    onClick = { if (isTyping) onSend() }
+                ),
+            contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.Send,
-                contentDescription = null,
+                imageVector = if (isTyping) Icons.AutoMirrored.Filled.Send else Icons.Default.Mic,
+                contentDescription = if (isTyping) "Send" else "Voice",
                 tint = Color.White,
-                modifier = Modifier.size(22.dp)
+                modifier = Modifier.size(24.dp)
             )
         }
+    }
+}
+
+// -----------------------------------------------------------
+// --- CÁC COMPONENT KHÁC GIỮ NGUYÊN ---
+// -----------------------------------------------------------
+
+@Composable
+fun EmptyChatPlaceholder() {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.padding(32.dp)) {
+        Box(modifier = Modifier.size(120.dp).background(brush = MainGradient, shape = CircleShape, alpha = 0.1f), contentAlignment = Alignment.Center) {
+            Icon(Icons.Rounded.AutoAwesome, null, modifier = Modifier.size(70.dp), tint = BluePrimary)
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(text = "Anicca English Tutor", style = MaterialTheme.typography.headlineSmall.copy(brush = MainGradient, fontWeight = FontWeight.ExtraBold, fontSize = 24.sp, textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth())
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(text = "Your intelligent assistant for everything.\nAsk me anything, from learning languages to solving complex problems!", style = MaterialTheme.typography.bodyLarge, color = Color.Gray, textAlign = TextAlign.Center, lineHeight = 22.sp)
     }
 }
 
 @Composable
 fun EnhancedMessageBubble(message: ChatMessage) {
     val isUser = message.isUser
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = if (isUser) Alignment.End else Alignment.Start
-    ) {
-        Surface(
-            shape = RoundedCornerShape(
-                topStart = 20.dp, topEnd = 20.dp,
-                bottomStart = if (isUser) 20.dp else 4.dp,
-                bottomEnd = if (isUser) 4.dp else 20.dp
-            ),
-            color = if (isUser) Color.Transparent else Color.White,
-            shadowElevation = if (isUser) 0.dp else 1.dp
-        ) {
-            Box(
-                modifier = if (isUser) Modifier.background(
-                    brush = Brush.linearGradient(listOf(Color(0xFF4FACFE), Color(0xFF8E2DE2)))
-                ) else Modifier.background(Color.White)
-            ) {
-                Text(
-                    text = message.text,
-                    modifier = Modifier.padding(12.dp),
-                    color = if (isUser) Color.White else Color(0xFF333333),
-                    style = MaterialTheme.typography.bodyMedium
-                )
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = if (isUser) Alignment.End else Alignment.Start) {
+        Surface(shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = if (isUser) 20.dp else 4.dp, bottomEnd = if (isUser) 4.dp else 20.dp), color = Color.Transparent, shadowElevation = if (isUser) 4.dp else 1.dp) {
+            Box(modifier = Modifier.background(brush = if (isUser) MainGradient else Brush.linearGradient(listOf(Color.White, Color.White)))) {
+                Text(text = message.text, modifier = Modifier.padding(12.dp), color = if (isUser) Color.White else Color(0xFF333333), style = MaterialTheme.typography.bodyMedium)
             }
         }
-    }
-}
-
-@Composable
-fun SuggestionRow(suggestions: List<String>, onClick: (String) -> Unit) {
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(suggestions) { text ->
-            Surface(
-                onClick = { onClick(text) },
-                shape = RoundedCornerShape(12.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, Color(0xFFEEEEEE))
-            ) {
-                Text(
-                    text = text,
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Color.DarkGray
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun EmptyChatPlaceholder() {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(top = 80.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = Icons.Default.AutoAwesome,
-            contentDescription = null,
-            modifier = Modifier
-                .size(64.dp)
-                .graphicsLayer { alpha = 0.15f },
-            tint = Color(0xFF8E2DE2)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("Gemini English Tutor", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
-        Text("I can help you practice and correct grammar", color = Color.Gray, fontSize = 14.sp)
     }
 }
 
 @Composable
 fun ModernTypingIndicator() {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 4.dp)) {
-        CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 2.dp, color = Color(0xFF8E2DE2))
+        CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 2.dp, color = BluePrimary)
         Spacer(modifier = Modifier.width(8.dp))
         Text("Typing...", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
     }
 }
 
 @Composable
-fun HistoryDrawerContent(
-    sessions: List<ChatSession>,
-    onNewChatClick: () -> Unit,
-    onSessionClick: (String) -> Unit
-) {
-    ModalDrawerSheet(drawerContainerColor = Color.White) {
+fun HistoryDrawerContent(sessions: List<ChatSession>, onNewChatClick: () -> Unit, onSessionClick: (String) -> Unit) {
+    ModalDrawerSheet(drawerContainerColor = AppBackground) {
         Column(modifier = Modifier.padding(20.dp).fillMaxHeight()) {
-            Text("Chat History", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
+            Text("Chat History", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = Color(0xFF263238))
             Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = onNewChatClick,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE))
-            ) {
-                Icon(Icons.Default.Add, null)
-                Text("New Conversation", modifier = Modifier.padding(start = 8.dp))
+            Button(onClick = onNewChatClick, modifier = Modifier.fillMaxWidth().background(brush = MainGradient, shape = RoundedCornerShape(12.dp)), colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), contentPadding = PaddingValues(0.dp)) {
+                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Add, null, tint = Color.White)
+                    Text("New Conversation", modifier = Modifier.padding(start = 8.dp), color = Color.White)
+                }
             }
             Spacer(modifier = Modifier.height(20.dp))
             LazyColumn {
                 items(sessions) { session ->
-                    NavigationDrawerItem(
-                        label = { Text(session.title, maxLines = 1) },
-                        selected = false,
-                        onClick = { onSessionClick(session.id) },
-                        icon = { Icon(Icons.Default.History, null) },
-                        shape = RoundedCornerShape(12.dp)
-                    )
+                    NavigationDrawerItem(label = { Text(session.title, maxLines = 1) }, selected = false, onClick = { onSessionClick(session.id) }, icon = { Icon(Icons.Default.History, null, tint = Color.Gray) }, shape = RoundedCornerShape(12.dp), colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.White), modifier = Modifier.padding(vertical = 4.dp))
                 }
             }
         }

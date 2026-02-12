@@ -42,7 +42,6 @@ import coil.compose.AsyncImage
 import com.codework.daily_english.R
 import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.model.QuickActionItem
-import com.codework.daily_english.presentation.navigation.Route
 
 @Composable
 fun HomeScreen(
@@ -95,38 +94,6 @@ fun HomeContent(
             }
         }
 
-
-
-        item {
-            Column {
-                // Tiêu đề đơn giản cho Section
-                Text(
-                    text = "Daily Discovery", // Hoặc "Today's Focus" cho lạ tai
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-
-                WordOfTheDayCard(
-                    word = "Perseverance",
-                    phonetic = "/ˌpərsəˈvirəns/",
-                    meaning = "Sự kiên trì, bền bỉ",
-                    onListen = { /* onEvent(HomeEvent.OnPlayAudio) */ }
-                )
-            }
-        }
-
-        item {
-            // Giả sử lấy dữ liệu từ data.dailyProgress và data.dailyTarget
-            // Nếu chưa có trong data thì bạn fix cứng tạm để test
-            DailyGoalCard(
-                currentMinutes = 12,  // Ví dụ: đã học 12 phút
-                targetMinutes = 30,   // Ví dụ: mục tiêu 30 phút
-                onClick = { /* Mở màn hình thống kê chi tiết */ }
-            )
-        }
-
-
         item {
             Column {
                 SeeAllHeader(
@@ -165,7 +132,7 @@ fun HomeContent(
             val actionList = listOf(
                 QuickActionItem(
                     icon = R.drawable.ic_launcher_foreground,
-                    label = "Ask AI",
+                    label = "Anicca AI",
                     color = Color(0xFFE91E63),
                     onClick = { onEvent(HomeEvent.OnQuickActionGemini) }
                 ),
@@ -389,152 +356,4 @@ fun HomeHeader(
     }
 }
 
-
-@Composable
-fun WordOfTheDayCard(word: String, phonetic: String, meaning: String, onListen: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(
-                alpha = 0.3f
-            )
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Word of the Day",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = word,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = phonetic,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = meaning,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            IconButton(
-                onClick = onListen,
-                colors = IconButtonDefaults.iconButtonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.VolumeUp,
-                    contentDescription = null,
-                    tint = Color.White
-                )
-            }
-        }
-    }
-}
-
-
-@Composable
-fun DailyGoalCard(
-    currentMinutes: Int,
-    targetMinutes: Int,
-    onClick: () -> Unit
-) {
-    // Tính phần trăm tiến độ (0.0 -> 1.0)
-    val progress = (currentMinutes.toFloat() / targetMinutes.toFloat()).coerceIn(0f, 1f)
-    val isGoalReached = currentMinutes >= targetMinutes
-
-    Card(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp), // Căn lề giống các card khác
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // 1. Icon Goal (Target)
-            Surface(
-                shape = CircleShape,
-                color = if (isGoalReached) Color(0xFF4CAF50).copy(alpha = 0.1f) else Color(0xFFFF9800).copy(alpha = 0.1f),
-                modifier = Modifier.size(48.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = if (isGoalReached) Icons.Default.EmojiEvents else Icons.Default.TrackChanges, // Icon Cúp hoặc Mục tiêu
-                        contentDescription = null,
-                        tint = if (isGoalReached) Color(0xFF4CAF50) else Color(0xFFFF9800),
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // 2. Thông tin tiến độ
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Daily Goal",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black.copy(alpha = 0.8f)
-                    )
-
-                    // Text: 15/30 mins
-                    Text(
-                        text = "$currentMinutes/$targetMinutes mins",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isGoalReached) Color(0xFF4CAF50) else Color.Gray
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // 3. Thanh chạy (Linear Progress)
-                LinearProgressIndicator(
-                    progress = { progress },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp) // Độ dày thanh
-                        .clip(RoundedCornerShape(4.dp)), // Bo tròn đầu thanh
-                    color = if (isGoalReached) Color(0xFF4CAF50) else Color(0xFFFF9800), // Xanh nếu xong, Cam nếu chưa
-                    trackColor = Color.Gray.copy(alpha = 0.1f),
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                // Câu động viên
-                Text(
-                    text = if (isGoalReached) "Goal reached! \uD83C\uDF89" else "${targetMinutes - currentMinutes} mins left to go",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
-                    fontSize = 11.sp
-                )
-            }
-        }
-    }
-}
 

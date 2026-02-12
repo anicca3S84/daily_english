@@ -1,10 +1,12 @@
 package com.codework.daily_english.presentation.screen.courses
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -13,230 +15,133 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.RocketLaunch
+import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.SearchOff
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.codework.daily_english.presentation.components.BaseScreen
+import com.codework.daily_english.presentation.components.CurvedHeaderWrapper // Import Base
+import com.codework.daily_english.presentation.components.HeaderStatItem    // Import Base
 import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.model.TopicItem
-import com.codework.daily_english.presentation.navigation.Route
+import com.codework.daily_english.presentation.theme.AppBackground
+import com.codework.daily_english.presentation.theme.BluePrimary
+import com.codework.daily_english.presentation.theme.IndigoPurple
+import com.codework.daily_english.presentation.theme.MainGradient
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CourseScreen(
     state: UiState<CourseData>,
     onEvent: (CourseEvent) -> Unit,
 ) {
     BaseScreen(state = state) { data ->
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF5F7FA)),
-            contentPadding = PaddingValues(bottom = 24.dp)
+                .background(AppBackground)
         ) {
-            // 1. HEADER
-            item {
-                CourseHeaderSection(
-                    currentLevel = data.selectedLevel,
-                    progress = 0.45f
-                )
-            }
+            // 1. NỀN GRID
+            GridBackground()
 
-            // 2. LEVEL SELECTOR
-            stickyHeader {
-                Surface(
-                    color = Color(0xFFF5F7FA),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
-                ) {
-                    Column {
-                        Text(
-                            text = "Select Level",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                        )
-                        LevelSelector(
-                            levels = data.availableLevels,
-                            selectedLevel = data.selectedLevel,
-                            onLevelSelected = {
-                                // Gọi Event đổi Level -> ViewModel xử lý
-                                onEvent(CourseEvent.OnLevelSelected(it))
-                            }
-                        )
-                    }
-                }
-            }
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 100.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // 2. STICKY HEADER (Dùng Base Wrapper)
+                stickyHeader {
+                    val completedLessons = data.topics.count { it.progress >= 1.0f }
+                    val totalLessons = data.topics.size
+                    val progressPercentage = if (totalLessons > 0) (completedLessons.toFloat() / totalLessons * 100).toInt() else 0
 
-            if (data.topics.isEmpty()) {
-                item { EmptyCourseState() }
-            } else {
-                itemsIndexed(data.topics) { index, topic ->
-                    Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        TimelineTopicItem(
-                            item = topic,
-                            isFirst = index == 0,
-                            isLast = index == data.topics.lastIndex,
-                            onClick = {
-                                onEvent(
-                                    CourseEvent.OnNavigateToLesson(
-                                        topic.id
+                    CurvedHeaderWrapper(
+                        headerHeight = 260.dp, // Cao hơn để chứa list Level
+                        gradientHeight = 220.dp,
+                        content = {
+                            // Nội dung riêng: Title + List Level
+                            Text(
+                                text = "Choose your level",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 24.dp)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = 24.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(data.availableLevels) { level ->
+                                    LevelIconCard(
+                                        levelName = level,
+                                        isSelected = level == data.selectedLevel,
+                                        onClick = { onEvent(CourseEvent.OnLevelSelected(level)) }
                                     )
-                                )
+                                }
                             }
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-// ... Các Component con (Header, TimelineItem...) Giữ nguyên như cũ ...
-
-// -----------------------------------------------------------
-// --- COMPONENT: HEADER ---
-// -----------------------------------------------------------
-@Composable
-fun CourseHeaderSection(currentLevel: String, progress: Float) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .statusBarsPadding()
-            .padding(16.dp)
-    ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            shape = RoundedCornerShape(32.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(
-                                Color(0xFF4FACFE), // Blue
-                                Color(0xFF8E2DE2), // Purple
-                                Color(0xFFF64F59)  // Soft Pink
+                        },
+                        bottomCardContent = {
+                            // Card thống kê: Lessons Done + %
+                            HeaderStatItem(
+                                value = "$completedLessons/$totalLessons",
+                                label = "Lessons Done",
+                                icon = Icons.Default.CheckCircle,
+                                iconColor = BluePrimary
                             )
-                        )
-                    )
-            ) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    drawCircle(
-                        color = Color.White.copy(alpha = 0.1f),
-                        radius = size.minDimension / 1.5f,
-                        center = androidx.compose.ui.geometry.Offset(
-                            size.width * 0.9f,
-                            size.height * 0.1f
-                        )
-                    )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Surface(
-                            color = Color.White.copy(alpha = 0.2f),
-                            shape = CircleShape,
-                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
-                        ) {
-                            Text(
-                                text = "LEVEL $currentLevel",
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(
-                            text = "Keep going,\nExplorer!",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Black,
-                            color = Color.White,
-                            lineHeight = 28.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Column {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.Bottom
-                            ) {
-                                Text(
-                                    text = "Current Progress",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White.copy(alpha = 0.8f)
-                                )
-                                Text(
-                                    text = "${(progress * 100).toInt()}%",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            LinearProgressIndicator(
-                                progress = { progress },
+                            Divider(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(8.dp)
-                                    .clip(CircleShape),
-                                color = Color.White,
-                                trackColor = Color.White.copy(alpha = 0.2f),
-                                strokeCap = StrokeCap.Round
+                                    .height(40.dp)
+                                    .width(1.dp),
+                                color = Color.LightGray.copy(alpha = 0.5f)
+                            )
+                            HeaderStatItem(
+                                value = "$progressPercentage%",
+                                label = "Completion",
+                                icon = Icons.Default.PieChart,
+                                iconColor = IndigoPurple
                             )
                         }
-                    }
+                    )
+                }
 
-                    Spacer(modifier = Modifier.width(16.dp))
+                item { Spacer(modifier = Modifier.height(32.dp)) }
 
-                    Box(contentAlignment = Alignment.Center) {
-                        Surface(
-                            modifier = Modifier.size(80.dp),
-                            color = Color.White.copy(alpha = 0.15f),
-                            shape = CircleShape
-                        ) {}
-                        Icon(
-                            imageVector = Icons.Default.RocketLaunch,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier
-                                .size(50.dp)
-                                .graphicsLayer { rotationZ = -45f }
+                if (data.topics.isEmpty()) {
+                    item { EmptyCourseState() }
+                } else {
+                    // 3. DANH SÁCH BÀI HỌC (Giữ nguyên)
+                    itemsIndexed(data.topics) { index, topic ->
+                        val amplitude = 85.dp
+                        val xOffset = when (index % 2) { 0 -> -amplitude / 2; 1 -> amplitude / 2; else -> 0.dp }
+                        val nextIndex = index + 1
+                        val nextXOffset = if (nextIndex < data.topics.size) { when (nextIndex % 2) { 0 -> -amplitude / 2; 1 -> amplitude / 2; else -> 0.dp } } else xOffset
+
+                        GamifiedLessonItem(
+                            item = topic,
+                            xOffset = xOffset,
+                            nextXOffset = nextXOffset,
+                            isLast = index == data.topics.lastIndex,
+                            onClick = { if (!topic.isLocked) onEvent(CourseEvent.OnNavigateToLesson(topic.id)) }
                         )
                     }
                 }
@@ -245,251 +150,138 @@ fun CourseHeaderSection(currentLevel: String, progress: Float) {
     }
 }
 
-// -----------------------------------------------------------
-// --- COMPONENT: LEVEL SELECTOR ---
-// -----------------------------------------------------------
+// ... (Các Component con GridBackground, GamifiedLessonItem, LevelIconCard, LessonNode... giữ nguyên y hệt file cũ)
 @Composable
-fun LevelSelector(
-    levels: List<String>,
-    selectedLevel: String,
-    onLevelSelected: (String) -> Unit
-) {
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+fun GridBackground() {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val canvasWidth = size.width
+        val canvasHeight = size.height
+        val gridSize = 24.dp.toPx()
+        val gridColor = Color.Gray.copy(alpha = 0.1f)
+        val strokeWidth = 1.dp.toPx()
+        var x = 0f
+        while (x < canvasWidth) {
+            drawLine(color = gridColor, start = Offset(x, 0f), end = Offset(x, canvasHeight), strokeWidth = strokeWidth)
+            x += gridSize
+        }
+        var y = 0f
+        while (y < canvasHeight) {
+            drawLine(color = gridColor, start = Offset(0f, y), end = Offset(canvasWidth, y), strokeWidth = strokeWidth)
+            y += gridSize
+        }
+    }
+}
+
+@Composable
+fun GamifiedLessonItem(item: TopicItem, xOffset: Dp, nextXOffset: Dp, isLast: Boolean, onClick: () -> Unit) {
+    val nodeSize = 110.dp
+    val itemHeight = 220.dp
+    val inactivePathColor = Color(0xFFCFD8DC)
+    val isCompleted = item.progress >= 1.0f
+
+    Box(modifier = Modifier.fillMaxWidth().height(itemHeight), contentAlignment = Alignment.TopCenter) {
+        if (!isLast) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val startX = size.width / 2 + xOffset.toPx()
+                val startY = nodeSize.toPx() / 2 + 10.dp.toPx()
+                val endX = size.width / 2 + nextXOffset.toPx()
+                val endY = startY + itemHeight.toPx()
+                val path = Path().apply {
+                    moveTo(startX, startY)
+                    val cpY1 = startY + (endY - startY) * 0.7f
+                    val cpY2 = endY - (endY - startY) * 0.7f
+                    cubicTo(startX, cpY1, endX, cpY2, endX, endY)
+                }
+                val outerPathColor = if (isCompleted) BluePrimary.copy(alpha = 0.3f) else Color.White
+                drawPath(path = path, color = outerPathColor, style = Stroke(width = 24f, cap = StrokeCap.Round))
+                if (isCompleted) {
+                    drawPath(path = path, brush = MainGradient, style = Stroke(width = 10f, cap = StrokeCap.Round))
+                } else {
+                    drawPath(path = path, color = inactivePathColor, style = Stroke(width = 6f, cap = StrokeCap.Round, pathEffect = PathEffect.dashPathEffect(floatArrayOf(20f, 20f), 0f)))
+                }
+            }
+        }
+        Box(modifier = Modifier.offset(x = xOffset)) { LessonNode(item = item, nodeSize = nodeSize, onClick = onClick) }
+    }
+}
+
+@Composable
+fun LevelIconCard(levelName: String, isSelected: Boolean, onClick: () -> Unit) {
+    val iconEmoji = when {
+        levelName.contains("A1") -> "🌱"
+        levelName.contains("A2") -> "🌿"
+        levelName.contains("B1") -> "🌳"
+        else -> "🎓"
+    }
+    val backgroundColor by animateColorAsState(if (isSelected) Color.White else Color.White.copy(alpha = 0.2f), label = "")
+    val contentColor by animateColorAsState(if (isSelected) BluePrimary else Color.White, label = "")
+    Surface(
+        shape = RoundedCornerShape(10.dp), color = backgroundColor, shadowElevation = if (isSelected) 4.dp else 0.dp,
+        modifier = Modifier.height(50.dp).clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onClick() }
     ) {
-        items(levels) { level ->
-            val isSelected = level == selectedLevel
-            Surface(
-                onClick = { onLevelSelected(level) },
-                shape = CircleShape,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.White,
-                border = if (isSelected) null else BorderStroke(1.dp, Color.LightGray),
-                shadowElevation = if (isSelected) 4.dp else 0.dp
-            ) {
-                Text(
-                    text = level,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = if (isSelected) Color.White else Color.Gray,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
-                )
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Text(text = iconEmoji, fontSize = 20.sp)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = levelName, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = contentColor)
+            if (isSelected) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(Icons.Default.Check, null, tint = BluePrimary, modifier = Modifier.size(16.dp))
             }
         }
     }
 }
 
-// -----------------------------------------------------------
-// --- COMPONENT: TIMELINE ITEM ---
-// -----------------------------------------------------------
 @Composable
-fun TimelineTopicItem(
-    item: TopicItem,
-    isFirst: Boolean,
-    isLast: Boolean,
-    onClick: () -> Unit
-) {
-    Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.width(32.dp)
+fun LessonNode(item: TopicItem, nodeSize: Dp, onClick: () -> Unit) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(nodeSize).shadow(if (item.isLocked) 0.dp else 12.dp, CircleShape)
+                .clip(CircleShape).background(if (item.isLocked) Color(0xFFECEFF1) else Color.White)
+                .clickable(enabled = !item.isLocked) { onClick() }
         ) {
-            if (!isFirst) {
-                VerticalDivider(
-                    modifier = Modifier.weight(1f),
-                    color = if (item.isLocked) Color.LightGray else MaterialTheme.colorScheme.primary,
-                    thickness = 2.dp
-                )
-            } else {
-                Spacer(modifier = Modifier.weight(1f))
-            }
-
-            Box(
-                modifier = Modifier
-                    .size(14.dp)
-                    .clip(CircleShape)
-                    .background(if (item.isLocked) Color.LightGray else MaterialTheme.colorScheme.primary)
-                    .border(2.dp, Color.White, CircleShape)
-            )
-
-            if (!isLast) {
-                VerticalDivider(
-                    modifier = Modifier.weight(1f),
-                    color = if (item.isLocked) Color.LightGray else MaterialTheme.colorScheme.primary,
-                    thickness = 2.dp
-                )
-            } else {
-                Spacer(modifier = Modifier.weight(1f))
-            }
-        }
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Box(modifier = Modifier
-            .padding(bottom = 16.dp)
-            .weight(1f)) {
-            TopicItemCard(item = item, onClick = onClick)
-        }
-    }
-}
-
-// -----------------------------------------------------------
-// --- COMPONENT: TOPIC CARD ---
-// -----------------------------------------------------------
-@Composable
-fun TopicItemCard(
-    item: TopicItem,
-    onClick: () -> Unit
-) {
-    val alpha = if (item.isLocked) 0.6f else 1f
-
-    Card(
-        onClick = if (item.isLocked) {
-            {}
-        } else onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .graphicsLayer { this.alpha = alpha },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (item.isLocked) 0.dp else 2.dp)
-    ) {
-        Box {
-            Row(
-                modifier = Modifier
-                    .padding(12.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                ) {
-                    AsyncImage(
-                        model = item.imageUrl,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                    if (item.isLocked) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Black.copy(0.4f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Default.Lock, null, tint = Color.White)
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    if (!item.isLocked) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            shape = RoundedCornerShape(4.dp),
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        ) {
-                            Text(
-                                text = "VOCAB • GRAMMAR",
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                style = MaterialTheme.typography.labelSmall,
-                                fontSize = 10.sp,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-
-                    Text(
-                        text = item.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    if (!item.isLocked) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            LinearProgressIndicator(
-                                progress = { item.progress },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(6.dp)
-                                    .clip(RoundedCornerShape(3.dp)),
-                                strokeCap = StrokeCap.Round
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            FilledIconButton(
-                                onClick = onClick,
-                                modifier = Modifier.size(32.dp),
-                                colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.primary)
-                            ) {
-                                Icon(Icons.Default.PlayArrow, null, modifier = Modifier.size(16.dp))
-                            }
-                        }
-                    } else {
-                        Text(
-                            "Finish previous lesson",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.Gray
-                        )
-                    }
-                }
-            }
-
             if (!item.isLocked) {
-                Surface(
-                    color = Color(0xFF4CAF50),
-                    shape = RoundedCornerShape(bottomStart = 8.dp),
-                    modifier = Modifier.align(Alignment.TopEnd)
-                ) {
-                    Text(
-                        text = "FREE",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                        fontSize = 10.sp
-                    )
+                AsyncImage(model = item.imageUrl, contentDescription = null, modifier = Modifier.fillMaxSize().padding(8.dp).clip(CircleShape), contentScale = ContentScale.Crop, colorFilter = if (item.progress >= 1.0f) androidx.compose.ui.graphics.ColorFilter.tint(Color.Black.copy(alpha = 0.1f), androidx.compose.ui.graphics.BlendMode.Darken) else null)
+            }
+            if (!item.isLocked && item.progress < 1.0f && item.progress > 0f) {
+                Canvas(modifier = Modifier.fillMaxSize().padding(3.dp)) {
+                    val strokeWidthPx = 6.dp.toPx()
+                    drawArc(color = Color(0xFFECEFF1), startAngle = -90f, sweepAngle = 360f, useCenter = false, style = Stroke(width = strokeWidthPx, cap = StrokeCap.Round))
+                    drawArc(brush = MainGradient, startAngle = -90f, sweepAngle = 360f * item.progress, useCenter = false, style = Stroke(width = strokeWidthPx, cap = StrokeCap.Round))
                 }
             }
+            if (item.progress >= 1.0f) {
+                Box(modifier = Modifier.fillMaxSize().padding(8.dp).clip(CircleShape), contentAlignment = Alignment.Center) { Icon(Icons.Default.Check, null, tint = BluePrimary, modifier = Modifier.size(48.dp)) }
+                Box(modifier = Modifier.fillMaxSize().border(BorderStroke(6.dp, MainGradient), shape = CircleShape))
+            }
+            if (item.isLocked) {
+                Box(modifier = Modifier.fillMaxSize().background(Color(0xFFECEFF1)), contentAlignment = Alignment.Center) { Icon(Icons.Default.Lock, null, tint = Color(0xFFB0BEC5), modifier = Modifier.size(40.dp)) }
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        if (item.progress > 0) {
+            Row {
+                repeat(3) { i ->
+                    val starColor = if (item.progress >= (i + 1) * 0.33f) Color(0xFFFFD54F) else Color(0xFFCFD8DC)
+                    Icon(Icons.Default.Star, null, tint = starColor, modifier = Modifier.size(18.dp))
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+        Surface(
+            color = if (item.isLocked) Color.Transparent else Color.White,
+            shape = RoundedCornerShape(12.dp), shadowElevation = if (item.isLocked) 0.dp else 2.dp,
+            border = if (item.isLocked) null else BorderStroke(1.dp, Color(0xFFECEFF1))
+        ) {
+            Text(text = item.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = if (item.isLocked) Color.Gray else Color(0xFF263238), modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp), maxLines = 1)
         }
     }
 }
 
-// -----------------------------------------------------------
-// --- COMPONENT: EMPTY STATE ---
-// -----------------------------------------------------------
 @Composable
 fun EmptyCourseState() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 60.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = Icons.Default.SearchOff,
-            contentDescription = null,
-            modifier = Modifier.size(80.dp),
-            tint = Color.LightGray
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "No lessons found",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color.Gray
-        )
-        Text(
-            text = "Please check back later!",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.LightGray
-        )
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 100.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(Icons.Default.SearchOff, null, modifier = Modifier.size(80.dp), tint = Color(0xFFCFD8DC))
+        Text(text = "No lessons available", color = Color.Gray)
     }
 }

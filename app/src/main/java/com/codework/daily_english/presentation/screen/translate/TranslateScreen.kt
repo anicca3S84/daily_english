@@ -8,37 +8,42 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.ContentCopy
-import androidx.compose.material.icons.rounded.StarBorder
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.codework.daily_english.presentation.components.AppTopBar
 import com.codework.daily_english.presentation.components.BaseScreen
 import com.codework.daily_english.presentation.components.UiState
+import com.codework.daily_english.presentation.theme.AppBackground
+import com.codework.daily_english.presentation.theme.BluePrimary
+import com.codework.daily_english.presentation.theme.MainGradient
 
 @Composable
 fun TranslateScreen(
@@ -47,23 +52,43 @@ fun TranslateScreen(
     onBackClick: () -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
+    val scrollState = rememberScrollState()
 
     Scaffold(
-        containerColor = Color(0xFFF8F9FD),
+        containerColor = AppBackground,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
-            TranslateTopBar(onBackClick)
+            AppTopBar(
+                onBackClick = onBackClick,
+                onMenuClick = null,
+                titleContent = {
+                    Text(
+                        text = "Translate",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF111827)
+                    )
+                }
+            )
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(AppBackground)
+        ) {
             BaseScreen(state = state) { data ->
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(16.dp),
+                        .padding(horizontal = 16.dp)
+                        .verticalScroll(scrollState), // Cho phép cuộn
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    // 1. THANH CHUYỂN ĐỔI NGÔN NGỮ
+                    // 1. LANGUAGE SWITCHER
                     LanguageSwitchBar(
                         sourceLang = data.sourceLang,
                         targetLang = data.targetLang,
@@ -72,10 +97,10 @@ fun TranslateScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // 2. KHU VỰC NHẬP LIỆU (SOURCE)
+                    // 2. INPUT CARD
                     InputCard(
                         text = data.sourceText,
-                        hint = "Enter text to translate...",
+                        hint = "Type to translate...",
                         onValueChange = { onEvent(TranslateEvent.OnTextChange(it)) },
                         onClear = { onEvent(TranslateEvent.OnClearText) },
                         onTranslate = {
@@ -86,17 +111,27 @@ fun TranslateScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 3. KHU VỰC KẾT QUẢ (TARGET) - Có Animation
+                    // 3. RESULT CARD (Hiện khi có kết quả hoặc đang loading)
                     AnimatedVisibility(
                         visible = data.targetText.isNotEmpty() || data.isTranslating,
                         enter = fadeIn() + slideInVertically { it / 2 }
                     ) {
-                        ResultCard(
-                            text = data.targetText,
-                            isLoading = data.isTranslating,
-                            targetLang = data.targetLang
-                        )
+                        Column {
+                            ResultCard(
+                                text = data.targetText,
+                                isLoading = data.isTranslating
+                            )
+                            Spacer(modifier = Modifier.height(24.dp))
+                        }
                     }
+
+                    // 4. HISTORY SECTION
+                    // SỬA: Luôn hiển thị History, không phụ thuộc vào trạng thái loading
+                    HistorySection(
+                        onHistoryItemClick = { /* Handle click history item */ }
+                    )
+
+                    Spacer(modifier = Modifier.height(32.dp)) // Bottom padding
                 }
             }
         }
@@ -104,180 +139,30 @@ fun TranslateScreen(
 }
 
 // ==========================
-// COMPONENTS
+// SHARED COMPONENTS
 // ==========================
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TranslateTopBar(onBackClick: () -> Unit) {
+fun StandardCircleButton(
+    icon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    size: Dp = 40.dp,
+    iconColor: Color = Color(0xFF6B7280)
+) {
     Surface(
-        color = Color.White.copy(alpha = 0.98f), // Màu trắng hơi trong suốt nhẹ
-        modifier = Modifier.fillMaxWidth(),
-        shadowElevation = 0.dp // Tắt shadow mặc định để dùng Divider tuỳ chỉnh
+        onClick = onClick,
+        shape = CircleShape,
+        color = Color.White,
+        border = BorderStroke(1.dp, Color(0xFFE5E7EB)),
+        modifier = modifier.size(size)
     ) {
-        Column {
-            TopAppBar(
-                windowInsets = WindowInsets(0), // Giữ nguyên theo yêu cầu của bạn
-                modifier = Modifier.height(72.dp),
-                title = {
-                    Box(
-                        modifier = Modifier.fillMaxHeight(),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            // --- AVATAR PRO (Hiệu ứng 2 vòng viền) ---
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier
-                                    .size(46.dp) // Tăng nhẹ kích thước
-                                    .border(1.5.dp, Color(0xFFF3F4F6), CircleShape) // Viền ngoài xám nhạt
-                                    .padding(3.dp) // Khoảng cách giữa 2 viền
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(
-                                            brush = Brush.linearGradient(
-                                                colors = listOf(Color(0xFF4FACFE), Color(0xFF8E2DE2))
-                                            ),
-                                            shape = CircleShape
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.AutoAwesome,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-
-                                // Chấm xanh báo Online đè lên góc avatar (Giống Messenger/Insta)
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .size(12.dp)
-                                        .background(Color.White, CircleShape)
-                                        .padding(2.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .background(Color(0xFF4CAF50), CircleShape)
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.width(14.dp))
-
-                            // --- TEXT CONTENT ---
-                            Column(verticalArrangement = Arrangement.Center) {
-                                Text(
-                                    text = "Gemini Tutor",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.ExtraBold, // Đậm hơn
-                                    color = Color(0xFF111827), // Màu đen than (Dark Charcoal) sang trọng
-                                    letterSpacing = (-0.5).sp
-                                )
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = "Always active",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Color(0xFF6B7280), // Màu xám trung tính
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    // Badge PRO nhỏ gọn
-                                    Surface(
-                                        color = Color(0xFFEFF6FF), // Xanh dương siêu nhạt
-                                        shape = RoundedCornerShape(4.dp),
-                                        border = BorderStroke(0.5.dp, Color(0xFFBFDBFE))
-                                    ) {
-                                        Text(
-                                            text = "PRO",
-                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color(0xFF3B82F6)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                navigationIcon = {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .width(64.dp), // Tăng vùng bấm
-                        contentAlignment = Alignment.Center
-                    ) {
-                        // Nút Back tròn, có viền mờ
-                        Surface(
-                            onClick = onBackClick,
-                            shape = CircleShape,
-                            color = Color.White,
-                            border = BorderStroke(1.dp, Color(0xFFE5E7EB)), // Viền xám rất mờ
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Back",
-                                    tint = Color(0xFF374151), // Xám đậm
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                    }
-                },
-                actions = {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .padding(end = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        // Nút Menu tròn, có viền mờ
-                        Surface(
-                            shape = CircleShape,
-                            color = Color.White,
-                            border = BorderStroke(1.dp, Color(0xFFE5E7EB)),
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Default.Menu,
-                                    contentDescription = "Menu",
-                                    tint = Color(0xFF374151),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-            )
-
-            // Đường kẻ Gradient mờ dần 2 đầu (Tinh tế hơn đường kẻ đen đặc)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color(0xFFE5E7EB), // Xám nhạt ở giữa
-                                Color.Transparent
-                            )
-                        )
-                    )
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconColor,
+                modifier = Modifier.size(20.dp)
             )
         }
     }
@@ -286,29 +171,24 @@ fun TranslateTopBar(onBackClick: () -> Unit) {
 @Composable
 fun LanguageSwitchBar(sourceLang: String, targetLang: String, onSwap: () -> Unit) {
     Surface(
-        shape = RoundedCornerShape(50),
+        shape = RoundedCornerShape(16.dp),
         color = Color.White,
-        shadowElevation = 4.dp,
-        modifier = Modifier.height(56.dp)
+        shadowElevation = 2.dp,
+        modifier = Modifier.height(60.dp)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 4.dp),
+            modifier = Modifier.padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Nút nguồn
-            LanguageChip(text = sourceLang, modifier = Modifier.weight(1f))
-
-            // Nút đảo chiều
+            LanguageChip(text = sourceLang, modifier = Modifier.weight(1f), isTarget = false)
             IconButton(onClick = onSwap) {
                 Icon(
                     Icons.AutoMirrored.Filled.CompareArrows,
                     null,
-                    tint = Color(0xFF2563EB),
-                    modifier = Modifier.size(24.dp)
+                    tint = BluePrimary,
+                    modifier = Modifier.size(28.dp)
                 )
             }
-
-            // Nút đích
             LanguageChip(text = targetLang, modifier = Modifier.weight(1f), isTarget = true)
         }
     }
@@ -319,16 +199,31 @@ fun LanguageChip(text: String, modifier: Modifier = Modifier, isTarget: Boolean 
     Box(
         modifier = modifier
             .fillMaxHeight()
-            .padding(vertical = 4.dp)
-            .clip(RoundedCornerShape(50))
-            .clickable { /* Mở dialog chọn ngôn ngữ */ },
+            .padding(vertical = 8.dp, horizontal = 4.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .border(
+                BorderStroke(1.dp, if (isTarget) MainGradient else Brush.linearGradient(listOf(Color.Transparent, Color.Transparent))),
+                RoundedCornerShape(12.dp)
+            )
+            .background(if (isTarget) BluePrimary.copy(alpha = 0.05f) else Color.Transparent)
+            .clickable { /* Handle Language Selection */ },
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = text,
-            fontWeight = FontWeight.SemiBold,
-            color = if (isTarget) Color(0xFF2563EB) else Color.Gray
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = text,
+                fontWeight = FontWeight.SemiBold,
+                style = if (isTarget) TextStyle(brush = MainGradient, fontSize = 16.sp)
+                else TextStyle(color = Color.Gray, fontSize = 16.sp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(
+                imageVector = Icons.Default.ArrowDropDown,
+                contentDescription = null,
+                tint = if (isTarget) BluePrimary else Color.Gray,
+                modifier = Modifier.size(20.dp)
+            )
+        }
     }
 }
 
@@ -344,31 +239,55 @@ fun InputCard(
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier.fillMaxWidth().height(200.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            Box(modifier = Modifier.weight(1f).padding(20.dp)) {
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(20.dp)
+            ) {
                 if (text.isEmpty()) {
                     Text(hint, color = Color.LightGray, fontSize = 20.sp)
                 }
+
                 BasicTextField(
                     value = text,
                     onValueChange = onValueChange,
                     textStyle = TextStyle(fontSize = 20.sp, color = Color.Black),
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(end = 50.dp)
                 )
 
+                // CỘT ICON BÊN PHẢI (Chỉ hiện khi có text)
                 if (text.isNotEmpty()) {
-                    IconButton(
-                        onClick = onClear,
-                        modifier = Modifier.align(Alignment.TopEnd).offset(x = 12.dp, y = (-12).dp)
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .width(40.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(Icons.Default.Close, null, tint = Color.LightGray)
+                        // 1. Nút X
+                        StandardCircleButton(
+                            icon = Icons.Default.Close,
+                            onClick = onClear
+                        )
+
+                        // 2. Nút Loa
+                        StandardCircleButton(
+                            icon = Icons.AutoMirrored.Filled.VolumeUp,
+                            onClick = { /* TTS Input */ }
+                        )
                     }
                 }
             }
 
-            // Thanh công cụ bên dưới thẻ Input
+            // Footer Actions
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -376,26 +295,27 @@ fun InputCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Các nút tính năng phụ (Mic, Camera)
-                Row {
-                    IconButton(onClick = { /* Voice Input */ }) {
-                        Icon(Icons.Default.Mic, null, tint = Color.Gray)
-                    }
-                    IconButton(onClick = { /* Camera Input */ }) {
-                        Icon(Icons.Default.CameraAlt, null, tint = Color.Gray)
-                    }
+                // Hàng nút Image, Camera, Mic
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    StandardCircleButton(icon = Icons.Default.Image, onClick = {})
+                    StandardCircleButton(icon = Icons.Default.CameraAlt, onClick = {})
+                    StandardCircleButton(icon = Icons.Default.Mic, onClick = {})
                 }
 
-                // Nút Dịch (Nổi bật)
-                Button(
-                    onClick = onTranslate,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2563EB) // Blue Premium
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(horizontal = 24.dp)
+                // Nút Translate
+                Box(
+                    modifier = Modifier
+                        .height(44.dp)
+                        .background(BluePrimary, shape = RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onTranslate() }
+                        .padding(horizontal = 24.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text("Translate", fontWeight = FontWeight.Bold)
+                    Text("Translate", fontWeight = FontWeight.Bold, color = Color.White)
                 }
             }
         }
@@ -403,78 +323,156 @@ fun InputCard(
 }
 
 @Composable
-fun ResultCard(text: String, isLoading: Boolean, targetLang: String) {
+fun ResultCard(text: String, isLoading: Boolean) {
     val clipboardManager = LocalClipboardManager.current
 
     Card(
         shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFE5E7EB)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp)
+        ) {
+            // Header: Text & Copy
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
+            ) {
+                Box(modifier = Modifier.weight(1f)) {
+                    if (isLoading) {
+                        Column {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(30.dp),
+                                color = BluePrimary
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("Translating...", color = Color.Gray)
+                        }
+                    } else {
+                        Text(
+                            text = text,
+                            style = TextStyle(
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF1F2937),
+                                lineHeight = 32.sp
+                            )
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                StandardCircleButton(
+                    icon = Icons.Rounded.ContentCopy,
+                    onClick = { clipboardManager.setText(AnnotatedString(text)) },
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Footer: Speaker
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                StandardCircleButton(
+                    icon = Icons.AutoMirrored.Filled.VolumeUp,
+                    onClick = { /* Speak Result */ },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun HistorySection(onHistoryItemClick: () -> Unit) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        // Tiêu đề
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.History,
+                contentDescription = null,
+                tint = Color.Gray,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Recent History",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF374151)
+            )
+        }
+
+        // Dummy Data
+        val dummyHistory = listOf(
+            Pair("Hello world", "Chào thế giới"),
+            Pair("Good morning", "Chào buổi sáng"),
+            Pair("How are you?", "Bạn khỏe không?"),
+            Pair("Delicious food", "Thức ăn ngon")
+        )
+
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            dummyHistory.forEach { (source, target) ->
+                HistoryItem(source = source, target = target, onClick = onHistoryItemClick)
+            }
+        }
+    }
+}
+
+@Composable
+fun HistoryItem(source: String, target: String, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(16.dp),
+        color = Color.White,
+        border = BorderStroke(1.dp, Color(0xFFF3F4F6)),
+        shadowElevation = 1.dp,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Box(
+        Row(
             modifier = Modifier
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(Color(0xFF2563EB), Color(0xFF1E40AF)) // Gradient Xanh đậm
-                    )
-                )
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                // Header của Result
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        targetLang,
-                        color = Color.White.copy(0.7f),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Icon(Icons.Rounded.StarBorder, null, tint = Color.White.copy(0.7f))
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                if (isLoading) {
-                    // Hiệu ứng Loading
-                    CircularProgressIndicator(
-                        color = Color.White,
-                        modifier = Modifier.size(30.dp)
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text("Translating...", color = Color.White.copy(0.8f))
-                } else {
-                    // Kết quả dịch
-                    Text(
-                        text = text,
-                        style = TextStyle(
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.White,
-                            lineHeight = 32.sp
-                        )
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Action Row (Copy, Speak)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = { /* Text To Speech */ }) {
-                        Icon(Icons.AutoMirrored.Filled.VolumeUp, null, tint = Color.White)
-                    }
-                    IconButton(
-                        onClick = { clipboardManager.setText(AnnotatedString(text)) }
-                    ) {
-                        Icon(Icons.Rounded.ContentCopy, null, tint = Color.White)
-                    }
-                }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = source,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF1F2937),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = target,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = BluePrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
+
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = null,
+                tint = Color(0xFF9CA3AF),
+                modifier = Modifier.size(16.dp)
+            )
         }
     }
 }

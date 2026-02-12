@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.codework.daily_english.presentation.theme.AppBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -22,7 +23,7 @@ fun AppTopBar(
     titleContent: @Composable () -> Unit
 ) {
     Surface(
-        color = Color.White.copy(alpha = 0.98f),
+        color = AppBackground.copy(alpha = 0.85f),
         modifier = Modifier.fillMaxWidth(),
         shadowElevation = 0.dp
     ) {
@@ -98,10 +99,10 @@ fun AppTopBar(
             )
 
             // Đường kẻ Gradient
-            Box(
-                modifier = Modifier.fillMaxWidth().height(1.dp)
-                    .background(Brush.horizontalGradient(listOf(Color.Transparent, Color(0xFFE5E7EB), Color.Transparent)))
-            )
+//            Box(
+//                modifier = Modifier.fillMaxWidth().height(1.dp)
+//                    .background(Brush.horizontalGradient(listOf(Color.Transparent, Color(0xFFE5E7EB), Color.Transparent)))
+//            )
         }
     }
 }
