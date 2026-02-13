@@ -10,30 +10,32 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.rounded.Bookmark
-import androidx.compose.material.icons.rounded.BookmarkBorder
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.codework.daily_english.presentation.components.AppTopBar
 import com.codework.daily_english.presentation.components.BaseScreen
 import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.model.WordItem
 import com.codework.daily_english.presentation.theme.AppBackground
+import com.codework.daily_english.presentation.theme.BluePrimary
+import com.codework.daily_english.presentation.theme.MainGradient
 
 @Composable
 fun DictionaryScreen(
@@ -41,16 +43,33 @@ fun DictionaryScreen(
     onEvent: (DictionaryEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
-
     Scaffold(
-        containerColor = Color.White,
+        containerColor = AppBackground,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
-            DictionaryTopBar(onBackClick = onBackClick)
+            AppTopBar(
+                onBackClick = onBackClick,
+                onMenuClick = null,
+                titleContent = {
+                    Text(
+                        text = "Dictionary",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF111827)
+                    )
+                }
+            )
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(AppBackground)
+        ) {
             BaseScreen(state = state) { data ->
                 Column(modifier = Modifier.fillMaxSize()) {
+
                     // 1. THANH TÌM KIẾM
                     DictionarySearchBar(
                         query = data.query,
@@ -58,13 +77,13 @@ fun DictionaryScreen(
                         onClear = { onEvent(DictionaryEvent.OnClearSearch) }
                     )
 
-                    // 2. NỘI DUNG CHÍNH
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         if (data.query.isNotEmpty()) {
+                            // --- TRẠNG THÁI ĐANG TÌM KIẾM ---
                             if (data.searchResults.isEmpty()) {
                                 item { EmptySearchResult(data.query) }
                             } else {
@@ -73,27 +92,43 @@ fun DictionaryScreen(
                                         word = word,
                                         onPlayAudioUk = { onEvent(DictionaryEvent.OnPlayAudio(word.word)) },
                                         onPlayAudioUs = { onEvent(DictionaryEvent.OnPlayAudio(word.word)) },
-                                        onToggleSave = { /* Logic bookmark */ }
+                                        onToggleSave = { /* Logic */ }
                                     )
                                 }
                             }
                         } else {
+                            // --- TRẠNG THÁI DASHBOARD (MỚI) ---
+
+                            // 1. Quick Actions (Lối tắt tính năng)
                             item {
-                                SectionTitle("Word of the Day 🌟")
-                                Spacer(modifier = Modifier.height(8.dp))
-                                WordOfTheDayCardPremium(
-                                    word = data.wordOfTheDay,
-                                    onPlayAudio = { onEvent(DictionaryEvent.OnPlayAudio(data.wordOfTheDay.word)) }
-                                )
+                                SectionTitle("Quick Actions")
+                                Spacer(modifier = Modifier.height(12.dp))
+                                QuickActionsGrid()
                             }
 
+                            // 2. Recent Searches (Lịch sử)
+                            if (data.recentSearches.isNotEmpty()) {
+                                item {
+                                    SectionTitle("Recent Searches")
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    RecentSearchList(data.recentSearches)
+                                }
+                            }
+
+                            // 3. Explore Topics (Các chủ đề từ vựng)
                             item {
+                                SectionTitle("Explore Topics")
                                 Spacer(modifier = Modifier.height(12.dp))
-                                SectionTitle("Recent Searches")
+                                TopicList()
+                            }
+
+                            // 4. Daily Quote (Câu nói hay - Visual filler)
+                            item {
                                 Spacer(modifier = Modifier.height(8.dp))
-                                RecentSearchList(data.recentSearches)
+                                DailyQuoteCard()
                             }
                         }
+
                         item { Spacer(modifier = Modifier.height(80.dp)) }
                     }
                 }
@@ -102,87 +137,215 @@ fun DictionaryScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+// ==========================
+// NEW COMPONENTS (DASHBOARD)
+// ==========================
+
 @Composable
-fun DictionaryTopBar(onBackClick: () -> Unit) {
-    Surface(color = Color.White, modifier = Modifier.fillMaxWidth()) {
-        Column {
-            TopAppBar(
-                windowInsets = WindowInsets(0),
-                modifier = Modifier.height(72.dp),
-                title = {
-                    Box(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.CenterStart) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(42.dp).border(1.dp, Color(0xFFF3F4F6), CircleShape).padding(3.dp)) {
-                                Box(modifier = Modifier.fillMaxSize().background(Brush.linearGradient(listOf(Color(0xFF4FACFE), Color(0xFF8E2DE2))), CircleShape), contentAlignment = Alignment.Center) {
-                                    Icon(Icons.Default.AutoAwesome, null, tint = Color.White, modifier = Modifier.size(16.dp))
-                                }
-                                Box(modifier = Modifier.align(Alignment.BottomEnd).size(10.dp).background(Color.White, CircleShape).padding(1.5.dp)) {
-                                    Box(modifier = Modifier.fillMaxSize().background(Color(0xFF4CAF50), CircleShape))
-                                }
-                            }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
-                                Text("Gemini Tutor", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, color = Color(0xFF111827))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("Always active", fontSize = 11.sp, color = Color.Gray)
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Surface(color = Color(0xFFEFF6FF), shape = RoundedCornerShape(4.dp)) {
-                                        Text("PRO", modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp), fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Color(0xFF3B82F6))
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                navigationIcon = {
-                    Box(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.Center) {
-                        IconButton(onClick = onBackClick, modifier = Modifier.padding(start = 8.dp).size(36.dp).background(Color(0xFFF2F4F7), CircleShape)) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.Black, modifier = Modifier.size(18.dp))
-                        }
-                    }
-                },
-                actions = {
-                    Box(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.Center) {
-                        IconButton(onClick = { }, modifier = Modifier.padding(end = 8.dp).size(36.dp).background(Color(0xFFF2F4F7), CircleShape)) {
-                            Icon(Icons.Default.Menu, null, tint = Color.Black, modifier = Modifier.size(18.dp))
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+fun QuickActionsGrid() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Cột 1
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            QuickActionCard(
+                title = "Saved Words",
+                icon = Icons.Rounded.Bookmark,
+                color = Color(0xFF3B82F6), // Blue
+                onClick = { /* Navigate to Saved */ }
             )
-            HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray.copy(alpha = 0.3f))
+            QuickActionCard(
+                title = "Phrasal Verbs",
+                icon = Icons.Rounded.Spellcheck,
+                color = Color(0xFF10B981), // Green
+                onClick = { /* Navigate to Grammar */ }
+            )
+        }
+        // Cột 2
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            QuickActionCard(
+                title = "Idioms",
+                icon = Icons.Rounded.Lightbulb,
+                color = Color(0xFFF59E0B), // Amber
+                onClick = { /* Navigate to Idioms */ }
+            )
+            QuickActionCard(
+                title = "Flashcards",
+                icon = Icons.Rounded.Quiz,
+                color = Color(0xFF8B5CF6), // Purple
+                onClick = { /* Navigate to Quiz */ }
+            )
         }
     }
 }
 
 @Composable
-fun DictionarySearchBar(query: String, onQueryChange: (String) -> Unit, onClear: () -> Unit) {
+fun QuickActionCard(
+    title: String,
+    icon: ImageVector,
+    color: Color,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(16.dp),
+        color = Color.White,
+        shadowElevation = 1.dp,
+        border = BorderStroke(1.dp, Color(0xFFF1F5F9)),
+        modifier = Modifier.fillMaxWidth().height(80.dp)
+    ) {
         Row(
-            modifier = Modifier.padding(16.dp).fillMaxWidth().height(48.dp).background(Color(0xFFF2F4F7), RoundedCornerShape(12.dp)).padding(horizontal = 12.dp),
+            modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.Search, null, tint = Color.Gray, modifier = Modifier.size(20.dp))
-            Spacer(modifier = Modifier.width(10.dp))
-            androidx.compose.foundation.text.BasicTextField(
-                value = query,
-                onValueChange = onQueryChange,
-                modifier = Modifier.weight(1f),
-                textStyle = MaterialTheme.typography.bodyLarge,
-                singleLine = true,
-                decorationBox = { innerTextField ->
-                    if (query.isEmpty()) Text("Search words, idioms...", color = Color.Gray, fontSize = 15.sp)
-                    innerTextField()
-                }
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(color.copy(alpha = 0.1f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(imageVector = icon, contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = title,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp,
+                color = Color(0xFF334155)
             )
-            if (query.isNotEmpty()) {
-                IconButton(onClick = onClear, modifier = Modifier.size(24.dp)) {
-                    Icon(Icons.Default.Close, null, tint = Color.Gray)
+        }
+    }
+}
+
+@Composable
+fun TopicList() {
+    // Danh sách chủ đề mẫu
+    val topics = listOf(
+        Pair("Business", "💼"),
+        Pair("Travel", "✈️"),
+        Pair("Food", "🍔"),
+        Pair("Technology", "💻"),
+        Pair("Health", "🏥"),
+        Pair("Sport", "⚽")
+    )
+
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(horizontal = 4.dp)
+    ) {
+        items(topics) { (name, emoji) ->
+            Surface(
+                onClick = {},
+                shape = RoundedCornerShape(12.dp),
+                color = Color.White,
+                border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                modifier = Modifier.width(100.dp).height(80.dp)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = emoji, fontSize = 24.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = name, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color(0xFF475569))
                 }
             }
         }
+    }
 }
 
+@Composable
+fun DailyQuoteCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Box(
+            modifier = Modifier.background(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(Color(0xFF8E2DE2).copy(alpha = 0.1f), Color(0xFF4FACFE).copy(alpha = 0.1f))
+                )
+            )
+        ) {
+            Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "DAILY INSPIRATION",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = BluePrimary,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "\"Learning never exhausts the mind.\"",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        fontStyle = FontStyle.Italic,
+                        color = Color(0xFF1F2937)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "- Leonardo da Vinci",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                }
+                Icon(
+                    imageVector = Icons.Rounded.FormatQuote,
+                    contentDescription = null,
+                    tint = BluePrimary.copy(alpha = 0.3f),
+                    modifier = Modifier.size(48.dp)
+                )
+            }
+        }
+    }
+}
+
+// ==========================
+// EXISTING COMPONENTS (Giữ nguyên)
+// ==========================
+
+@Composable
+fun DictionarySearchBar(query: String, onQueryChange: (String) -> Unit, onClear: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .fillMaxWidth()
+            .height(50.dp)
+            .background(Color.White, RoundedCornerShape(16.dp))
+            .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(16.dp))
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(Icons.Default.Search, null, tint = Color.Gray, modifier = Modifier.size(20.dp))
+        Spacer(modifier = Modifier.width(10.dp))
+        BasicTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = Modifier.weight(1f),
+            textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFF1F2937)),
+            singleLine = true,
+            decorationBox = { innerTextField ->
+                Box(contentAlignment = Alignment.CenterStart) {
+                    if (query.isEmpty()) {
+                        Text("Search words, idioms...", color = Color.Gray, fontSize = 15.sp)
+                    }
+                    innerTextField()
+                }
+            }
+        )
+        if (query.isNotEmpty()) {
+            IconButton(onClick = onClear, modifier = Modifier.size(24.dp)) {
+                Icon(Icons.Default.Close, null, tint = Color.Gray)
+            }
+        }
+    }
+}
 @Composable
 fun WordResultCard(
     word: WordItem,
@@ -191,147 +354,213 @@ fun WordResultCard(
     onToggleSave: () -> Unit
 ) {
     Card(
-        // SỬA: Dùng nền trắng để Card nổi bật trên nền màn hình xanh nhạt
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F9FF)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.fillMaxWidth()
+        border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+
+            // --- 1. HEADER (Giữ nguyên) ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Text(
+                    text = word.word,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1E293B)
+                )
+
+                Spacer(modifier = Modifier.width(10.dp))
+
+                Surface(
+                    color = BluePrimary,
+                    shape = RoundedCornerShape(6.dp),
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = word.type,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- 2. AUDIO SECTION (Giữ nguyên) ---
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(text = word.word, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color(0xFF1E293B))
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Surface(color = Color(0xFFF1F5F9), shape = RoundedCornerShape(6.dp)) {
-                        Text(text = word.type, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp), style = MaterialTheme.typography.labelSmall, color = Color(0xFF475569), fontStyle = FontStyle.Italic)
+                PhoneticGroup(
+                    label = "UK",
+                    phonetic = word.phoneticUk,
+                    mainColor = Color(0xFFE91E63),
+                    onClick = onPlayAudioUk
+                )
+                Spacer(modifier = Modifier.width(32.dp))
+                PhoneticGroup(
+                    label = "US",
+                    phonetic = word.phoneticUs,
+                    mainColor = Color(0xFF3B82F6),
+                    onClick = onPlayAudioUs
+                )
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                thickness = 1.dp,
+                color = Color(0xFFE2E8F0)
+            )
+
+            // --- 3. DEFINITION ---
+            Text(
+                text = word.definition,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color(0xFF334155),
+                lineHeight = 22.sp
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // --- 4. FOOTER: EXAMPLE & BOOKMARK ---
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Bottom // Căn đáy để Bookmark nằm dưới
+            ) {
+                // SỬA: Dùng IntrinsicSize.Min để chiều cao Row phụ thuộc vào con cao nhất (Text)
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(IntrinsicSize.Min), // QUAN TRỌNG: Gạch sẽ co giãn theo text
+                    verticalAlignment = Alignment.Top
+                ) {
+                    // Thanh gạch dọc
+                    Box(
+                        modifier = Modifier
+                            .width(3.dp)
+                            .fillMaxHeight() // Chiếm hết chiều cao của Text bên cạnh
+                            .padding(vertical = 2.dp) // Thụt vào 1 xíu ở 2 đầu cho tinh tế
+                            .background(BluePrimary.copy(alpha = 0.5f), CircleShape)
+                    )
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Column {
+                        Text(
+                            text = "Example",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = BluePrimary,
+                            fontSize = 11.sp
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = word.example,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xFF64748B),
+                            fontStyle = FontStyle.Italic
+                        )
                     }
                 }
 
-                // NÚT BOOKMARK: Đã bỏ viền và đổi màu linh hoạt
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Nút Bookmark
                 IconButton(
                     onClick = onToggleSave,
-                    modifier = Modifier
-                        .size(36.dp)
-                        .background(
-                            color = if (word.isSaved) Color(0xFF2563EB) else Color(0xFFF1F5F9),
-                            shape = CircleShape
-                        )
+                    modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
                         imageVector = if (word.isSaved) Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder,
                         contentDescription = null,
-                        tint = if (word.isSaved) Color.White else Color(0xFF64748B),
-                        modifier = Modifier.size(20.dp)
+                        tint = if (word.isSaved) BluePrimary else Color(0xFF94A3B8),
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                PhoneticSimpleItem(label = "UK", phonetic = word.phoneticUk, color = Color(0xFF2563EB), onClick = onPlayAudioUk)
-                Spacer(modifier = Modifier.width(16.dp))
-                PhoneticSimpleItem(label = "US", phonetic = word.phoneticUs, color = Color(0xFFDC2626), onClick = onPlayAudioUs)
-            }
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp, color = Color(0xFFE2E8F0))
-
-            Text(text = word.definition, style = MaterialTheme.typography.bodyMedium, color = Color(0xFF334155), lineHeight = 22.sp)
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "Ex: ",
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF64748B),
-                    fontSize = 13.sp,
-                    modifier = Modifier.alignByBaseline()
-                )
-                Text(
-                    text = word.example,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF64748B),
-                    fontStyle = FontStyle.Italic,
-                    modifier = Modifier.alignByBaseline()
-                )
-            }
         }
     }
 }
 
+// Component PhoneticGroup (Giữ nguyên như cũ)
 @Composable
-fun PhoneticSimpleItem(label: String, phonetic: String, color: Color, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier.clip(RoundedCornerShape(4.dp)).clickable { onClick() }.padding(vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(Icons.Default.VolumeUp, null, tint = color, modifier = Modifier.size(16.dp))
-        Spacer(modifier = Modifier.width(4.dp))
-        Text("$label $phonetic", fontSize = 13.sp, color = Color.DarkGray, fontWeight = FontWeight.Medium)
-    }
-}
-
-@Composable
-fun WordOfTheDayCardPremium(word: WordItem, onPlayAudio: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Box(modifier = Modifier.background(Brush.linearGradient(listOf(Color(0xFF4FACFE), Color(0xFF8E2DE2))))) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(color = Color.White.copy(0.2f), shape = RoundedCornerShape(6.dp)) {
-                        Text("WORD OF THE DAY", modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    // Phiên âm để cạnh label
-                    Text("UK: ${word.phoneticUk}  US: ${word.phoneticUs}", color = Color.White.copy(0.85f), fontSize = 11.sp, fontStyle = FontStyle.Italic)
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(word.word, style = MaterialTheme.typography.headlineSmall, color = Color.White, fontWeight = FontWeight.Black)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(word.definition, color = Color.White, lineHeight = 20.sp, maxLines = 2, overflow = TextOverflow.Ellipsis, fontSize = 14.sp)
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Button(
-                    onClick = onPlayAudio,
-                    modifier = Modifier.height(36.dp).fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                    shape = RoundedCornerShape(10.dp),
-                    contentPadding = PaddingValues(0.dp)
-                ) {
-                    Icon(Icons.Default.VolumeUp, null, tint = Color(0xFF8E2DE2), modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Listen", color = Color(0xFF8E2DE2), fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                }
+fun PhoneticGroup(
+    label: String,
+    phonetic: String,
+    mainColor: Color,
+    onClick: () -> Unit
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Surface(
+            onClick = onClick,
+            shape = CircleShape,
+            color = Color.White,
+            border = BorderStroke(1.dp, mainColor.copy(alpha = 0.3f)),
+            modifier = Modifier.size(32.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Default.VolumeUp,
+                    contentDescription = null,
+                    tint = mainColor,
+                    modifier = Modifier.size(16.dp)
+                )
             }
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "$label:",
+                style = MaterialTheme.typography.labelSmall,
+                color = mainColor,
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.sp
+            )
+
+            Spacer(modifier = Modifier.width(4.dp))
+
+            Text(
+                text = phonetic.ifEmpty { "/.../" },
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color(0xFF475569),
+                fontWeight = FontWeight.Normal
+            )
         }
     }
 }
-
 @Composable
 fun RecentSearchList(items: List<String>) {
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 4.dp)
+    ) {
         items(items) { term ->
             Surface(
                 onClick = {},
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(20.dp),
                 color = Color.White,
-                border = BorderStroke(1.dp, Color(0xFFF1F5F9))
+                border = BorderStroke(1.dp, Color(0xFFE2E8F0))
             ) {
-                Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.History, null, tint = Color.Gray, modifier = Modifier.size(14.dp))
+                Row(modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.History, null, tint = Color.Gray, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(term, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                    Text(term, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1F2937))
                 }
             }
         }
@@ -340,14 +569,24 @@ fun RecentSearchList(items: List<String>) {
 
 @Composable
 fun SectionTitle(title: String) {
-    Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Black, color = Color(0xFF1E293B))
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
+        color = Color(0xFF1E293B),
+        modifier = Modifier.padding(start = 4.dp)
+    )
 }
 
 @Composable
 fun EmptySearchResult(query: String) {
-    Column(modifier = Modifier.fillMaxWidth().padding(top = 40.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(Icons.Default.Search, null, modifier = Modifier.size(64.dp), tint = Color(0xFFF1F5F9))
-        Spacer(modifier = Modifier.height(12.dp))
-        Text("No results for \"$query\"", fontWeight = FontWeight.Bold, color = Color.Gray, fontSize = 14.sp)
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(top = 60.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(Icons.Default.SearchOff, null, modifier = Modifier.size(80.dp), tint = Color(0xFFCBD5E1))
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("No results for \"$query\"", fontWeight = FontWeight.SemiBold, color = Color.Gray, fontSize = 16.sp)
+        Text("Check your spelling or try another word.", color = Color.Gray.copy(0.8f), fontSize = 14.sp)
     }
 }

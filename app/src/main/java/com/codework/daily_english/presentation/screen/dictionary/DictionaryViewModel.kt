@@ -25,7 +25,7 @@ class DictionaryViewModel @Inject constructor() : ViewModel() {
     // Mock Database Từ điển
     private val mockDictionary = listOf(
         WordItem(
-            word = "Apple",
+            word = "apple",
             phoneticUk = "/ˈæp.əl/",
             phoneticUs = "/ˈæp.əl/",
             type = "noun",
@@ -33,7 +33,7 @@ class DictionaryViewModel @Inject constructor() : ViewModel() {
             example = "She ate a fresh apple."
         ),
         WordItem(
-            word = "Application",
+            word = "application",
             phoneticUk = "/ˌæp.lɪˈkeɪ.ʃən/",
             phoneticUs = "/ˌæp.ləˈkeɪ.ʃən/",
             type = "noun",
@@ -42,7 +42,7 @@ class DictionaryViewModel @Inject constructor() : ViewModel() {
         ),
 
         WordItem(
-            word = "Application",
+            word = "application",
             phoneticUk = "/ˌæp.lɪˈkeɪ.ʃən/",
             phoneticUs = "/ˌæp.ləˈkeɪ.ʃən/",
             type = "noun",
@@ -50,23 +50,6 @@ class DictionaryViewModel @Inject constructor() : ViewModel() {
             example = "I submitted my job application."
         ),
 
-        WordItem(
-            word = "Application",
-            phoneticUk = "/ˌæp.lɪˈkeɪ.ʃən/",
-            phoneticUs = "/ˌæp.ləˈkeɪ.ʃən/",
-            type = "noun",
-            definition = "A formal request to be considered for a position.",
-            example = "I submitted my job application."
-        ),
-
-        WordItem(
-            word = "Application",
-            phoneticUk = "/ˌæp.lɪˈkeɪ.ʃən/",
-            phoneticUs = "/ˌæp.ləˈkeɪ.ʃən/",
-            type = "noun",
-            definition = "A formal request to be considered for a position.",
-            example = "I submitted my job application."
-        ),
         // ... Cập nhật tương tự cho các từ khác ...
     )
 

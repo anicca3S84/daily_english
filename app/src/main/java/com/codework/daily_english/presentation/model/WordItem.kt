@@ -3,12 +3,13 @@ package com.codework.daily_english.presentation.model
 import java.util.UUID
 
 data class WordItem(
-    val id: String = UUID.randomUUID().toString(),
     val word: String,
+    val type: String,
     val phoneticUk: String,
     val phoneticUs: String,
-    val type: String,
     val definition: String,
     val example: String,
-    val isSaved: Boolean = false
+    val isSaved: Boolean = false,
+    val synonyms: List<String> = emptyList(), // Thêm cái này
+    val antonyms: List<String> = emptyList()  // Thêm cái này
 )

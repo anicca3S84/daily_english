@@ -168,55 +168,100 @@ fun StandardCircleButton(
     }
 }
 
+// ------------------------------------------------------------------------
+// CẬP NHẬT: LANGUAGE SWITCH BAR & CHIP (Fix lỗi căn giữa)
+// ------------------------------------------------------------------------
+
 @Composable
-fun LanguageSwitchBar(sourceLang: String, targetLang: String, onSwap: () -> Unit) {
+fun LanguageSwitchBar(
+    sourceLang: String,
+    targetLang: String,
+    onSwap: () -> Unit,
+    onSourceClick: () -> Unit = {},
+    onTargetClick: () -> Unit = {}
+) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = Color.White,
-        shadowElevation = 2.dp,
+        shadowElevation = 2.dp, // Đổ bóng nhẹ cho cả thanh
         modifier = Modifier.height(60.dp)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 8.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            LanguageChip(text = sourceLang, modifier = Modifier.weight(1f), isTarget = false)
-            IconButton(onClick = onSwap) {
-                Icon(
-                    Icons.AutoMirrored.Filled.CompareArrows,
-                    null,
-                    tint = BluePrimary,
-                    modifier = Modifier.size(28.dp)
-                )
+            // 1. Language Source
+            LanguageChip(
+                text = sourceLang,
+                modifier = Modifier.weight(1f),
+                isTarget = false,
+                onClick = onSourceClick
+            )
+
+            // 2. Swap Button
+            Box(
+                modifier = Modifier.width(48.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                IconButton(onClick = onSwap) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.CompareArrows,
+                        null,
+                        tint = BluePrimary,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
             }
-            LanguageChip(text = targetLang, modifier = Modifier.weight(1f), isTarget = true)
+
+            // 3. Language Target
+            LanguageChip(
+                text = targetLang,
+                modifier = Modifier.weight(1f),
+                isTarget = true,
+                onClick = onTargetClick
+            )
         }
     }
 }
 
 @Composable
-fun LanguageChip(text: String, modifier: Modifier = Modifier, isTarget: Boolean = false) {
+fun LanguageChip(
+    text: String,
+    modifier: Modifier = Modifier,
+    isTarget: Boolean = false,
+    onClick: () -> Unit
+) {
     Box(
         modifier = modifier
             .fillMaxHeight()
-            .padding(vertical = 8.dp, horizontal = 4.dp)
+            .padding(vertical = 8.dp)
             .clip(RoundedCornerShape(12.dp))
-            .border(
-                BorderStroke(1.dp, if (isTarget) MainGradient else Brush.linearGradient(listOf(Color.Transparent, Color.Transparent))),
-                RoundedCornerShape(12.dp)
-            )
-            .background(if (isTarget) BluePrimary.copy(alpha = 0.05f) else Color.Transparent)
-            .clickable { /* Handle Language Selection */ },
-        contentAlignment = Alignment.Center
+            // ĐÃ BỎ BORDER (KHUNG NGOÀI)
+            // Giữ lại nền nhẹ cho Target để phân biệt (hoặc để Transparent hết nếu muốn phẳng hoàn toàn)
+            .background(Color.Transparent)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center // Căn giữa tuyệt đối
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        // Nội dung co cụm lại ở giữa
+        Row(
+            modifier = Modifier.wrapContentSize(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
             Text(
                 text = text,
                 fontWeight = FontWeight.SemiBold,
                 style = if (isTarget) TextStyle(brush = MainGradient, fontSize = 16.sp)
-                else TextStyle(color = Color.Gray, fontSize = 16.sp)
+                else TextStyle(color = Color.Gray, fontSize = 16.sp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
+
             Spacer(modifier = Modifier.width(4.dp))
+
             Icon(
                 imageVector = Icons.Default.ArrowDropDown,
                 contentDescription = null,
@@ -226,6 +271,7 @@ fun LanguageChip(text: String, modifier: Modifier = Modifier, isTarget: Boolean 
         }
     }
 }
+
 
 @Composable
 fun InputCard(
