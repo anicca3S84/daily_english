@@ -2,6 +2,7 @@ package com.codework.daily_english.presentation.screen.dictionary
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.codework.daily_english.presentation.components.BaseViewModel
 import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.model.WordItem
 import com.codework.daily_english.presentation.navigation.Route
@@ -14,13 +15,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class DictionaryViewModel @Inject constructor() : ViewModel() {
-
-    private val _uiState = MutableStateFlow<UiState<DictionaryData>>(UiState.Loading)
-    val uiState = _uiState.asStateFlow()
-
-    private val _navigationChannel = Channel<Route>()
-    val navigationChannel = _navigationChannel.receiveAsFlow()
+class DictionaryViewModel @Inject constructor() : BaseViewModel<DictionaryData>() {
 
     // Mock Database Từ điển
     private val mockDictionary = listOf(

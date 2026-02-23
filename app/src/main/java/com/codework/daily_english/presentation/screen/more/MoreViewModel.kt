@@ -1,6 +1,7 @@
 package com.codework.daily_english.presentation.screen.more
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.codework.daily_english.presentation.components.BaseViewModel
 import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.navigation.Route
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,13 +14,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MoreViewModel @Inject constructor() : ViewModel() {
-
-    private val _uiState = MutableStateFlow<UiState<MoreData>>(UiState.Loading)
-    val uiState = _uiState.asStateFlow()
-
-    private val _navigationChannel = Channel<Route>()
-    val navigationChannel = _navigationChannel.receiveAsFlow()
+class MoreViewModel @Inject constructor() : BaseViewModel<MoreData>() {
 
     init {
         loadProfile()

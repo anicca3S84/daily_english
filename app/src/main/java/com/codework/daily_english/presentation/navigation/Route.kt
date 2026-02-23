@@ -29,4 +29,10 @@ sealed interface Route {
 
     @Serializable
     data object LessonScreen : Route
+
+    @Serializable
+    data object VocabularyScreen : Route
+
+    @Serializable
+    data object ReviewVocabularyScreen : Route
 }

@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Translate
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.codework.daily_english.presentation.components.BaseViewModel
 import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.model.PracticeCategory
 import com.codework.daily_english.presentation.navigation.Route
@@ -22,13 +23,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class PracticeViewModel @Inject constructor() : ViewModel() {
-
-    private val _uiState = MutableStateFlow<UiState<PracticeData>>(UiState.Loading)
-    val uiState: StateFlow<UiState<PracticeData>> = _uiState.asStateFlow()
-
-    private val _navigationChannel = Channel<Route>()
-    val navigationChannel = _navigationChannel.receiveAsFlow()
+class PracticeViewModel @Inject constructor() : BaseViewModel<PracticeData>() {
 
     init {
         loadPracticeContent()

@@ -2,26 +2,16 @@ package com.codework.daily_english.presentation.screen.lessons
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.codework.daily_english.presentation.components.BaseViewModel
 import com.codework.daily_english.presentation.components.UiState
-import com.codework.daily_english.presentation.model.WordItem
 import com.codework.daily_english.presentation.navigation.Route
 import dagger.hilt.android.lifecycle.HiltViewModel
-import jakarta.inject.Inject
-import kotlinx.coroutines.channels.Channel
+import javax.inject.Inject
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 @HiltViewModel
-class LessonViewModel @Inject constructor() : ViewModel() {
-
-    private val _uiState = MutableStateFlow<UiState<LessonData>>(UiState.Loading)
-    val uiState = _uiState.asStateFlow()
-
-    private val _navigationChannel = Channel<Route>()
-    val navigationChannel = _navigationChannel.receiveAsFlow()
+class LessonViewModel @Inject constructor() : BaseViewModel<LessonData>() {
 
     init {
         loadLessonData()
@@ -30,53 +20,85 @@ class LessonViewModel @Inject constructor() : ViewModel() {
     fun onEvent(event: LessonEvent) {
         when(event) {
             is LessonEvent.OnStepClick -> {
-                // Logic: Kiểm tra xem bước đó có bị khóa không
-                val currentData = (_uiState.value as? UiState.Success)?.data ?: return
-                val clickedStep = currentData.steps.find { it.id == event.stepId }
-
-                if (clickedStep != null && clickedStep.status != StepStatus.LOCKED) {
-                    println("Navigate to step: ${clickedStep.type}")
-                    // TODO: Bắn event điều hướng sang màn hình tương ứng
-                    // sendNavigationEvent(clickedStep.type)
+                // Logic xử lý khi click vào bài học dựa trên stepId
+                when (event.stepId) {
+                    "1" -> {
+                        // Nếu là bước 1 (Vocabulary) -> Chuyển sang VocabularyScreen
+                        println("Navigating to Vocabulary")
+                        navigateTo(Route.VocabularyScreen)
+                    }
+//                    "2" -> {
+//                        // navigateTo(Route.ListeningScreen)
+//                        println("Clicked Step 2: Listening")
+//                    }
+                    // Xử lý các step khác...
+                    //fake
+                    else ->    navigateTo(Route.VocabularyScreen)
                 }
             }
             is LessonEvent.OnRetry -> loadLessonData()
-            is LessonEvent.OnStartPractice -> TODO()
+            is LessonEvent.OnStartPractice -> {
+                // Logic nút "Start Lesson" ở dưới đáy
+                // Ví dụ: Tự động tìm bài chưa học đầu tiên và nhảy vào
+                val currentData = (_uiState.value as? UiState.Success)?.data
+                val nextStep = currentData?.steps?.firstOrNull { it.status != StepStatus.COMPLETED }
+
+                if (nextStep?.id == "1") {
+                    navigateTo(Route.VocabularyScreen)
+                } else {
+                    println("Start learning first unlocked lesson: ${nextStep?.title}")
+                }
+            }
         }
     }
 
     private fun loadLessonData() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
-            delay(500) // Giả lập network
+            delay(500)
 
-            // --- MOCK DATA CHO UI MỚI ---
             val mockSteps = listOf(
+                // BƯỚC 1: VOCABULARY
                 LessonStep(
-                    id = "step_1",
+                    id = "1",
                     title = "Key Vocabulary",
-                    subtitle = "Learn 5 essential words",
+                    subtitle = "Learn 5 new words",
                     type = LessonStepType.VOCABULARY,
-                    status = StepStatus.COMPLETED // Đã xong -> Màu xanh
+                    status = StepStatus.UNLOCKED // Đổi thành UNLOCKED để test click được ngay
                 ),
+
+                // BƯỚC 2: LISTENING
                 LessonStep(
-                    id = "step_2",
+                    id = "2",
                     title = "Dialogue: Ordering",
-                    subtitle = "Listen to a conversation",
-                    type = LessonStepType.DIALOGUE,
-                    status = StepStatus.UNLOCKED // Đang học -> Màu xanh dương/nổi
+                    subtitle = "Fill in the blanks",
+                    type = LessonStepType.LISTENING,
+                    status = StepStatus.LOCKED
                 ),
+
+                // BƯỚC 3: SENTENCE BUILDER
                 LessonStep(
-                    id = "step_3",
-                    title = "Roleplay with AI",
-                    subtitle = "Practice speaking order",
+                    id = "3",
+                    title = "Grammar Focus",
+                    subtitle = "Arrange words correctly",
+                    type = LessonStepType.SENTENCE_BUILDER,
+                    status = StepStatus.LOCKED
+                ),
+
+                // BƯỚC 4: SPEAKING AI
+                LessonStep(
+                    id = "4",
+                    title = "Roleplay Challenge",
+                    subtitle = "Order coffee with AI",
                     type = LessonStepType.SPEAKING_AI,
-                    status = StepStatus.LOCKED // Chưa học -> Màu xám
+                    status = StepStatus.LOCKED
                 ),
+
+                // BƯỚC 5: QUIZ
                 LessonStep(
-                    id = "step_4",
-                    title = "Final Quiz",
-                    subtitle = "Test your knowledge",
+                    id = "5",
+                    title = "Unit Test",
+                    subtitle = "Prove your mastery +50XP",
                     type = LessonStepType.QUIZ,
                     status = StepStatus.LOCKED
                 )
@@ -84,12 +106,12 @@ class LessonViewModel @Inject constructor() : ViewModel() {
 
             val mockData = LessonData(
                 lessonId = "lesson_001",
-                title = "Checking in at the Airport",
-                description = "Learn how to communicate effectively at the check-in counter.",
-                imageUrl = "https://example.com/airport.jpg",
-                totalProgress = 0.25f, // 1 trên 4 bước hoàn thành
-                steps = mutableListOf(),
-                level = "A1 - B1"
+                title = "At the Coffee Shop",
+                description = "Learn how to order drinks and snacks confidently like a local.",
+                imageUrl = "https://picsum.photos/300/200",
+                totalProgress = 0.0f,
+                steps = mockSteps,
+                level = "A1 - Beginner"
             )
 
             _uiState.value = UiState.Success(mockData)

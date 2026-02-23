@@ -1,6 +1,7 @@
 package com.codework.daily_english.presentation.screen.translate
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.codework.daily_english.presentation.components.BaseViewModel
 import com.codework.daily_english.presentation.components.UiState // Import Sealed Class UiState của bạn
 import com.codework.daily_english.presentation.navigation.Route
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,12 +13,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 @HiltViewModel
-class TranslateViewModel @Inject constructor() : ViewModel() {
-    private val _uiState = MutableStateFlow<UiState<TranslateData>>(UiState.Success(TranslateData()))
-    val uiState = _uiState.asStateFlow()
-
-    private val _navigationChannel = Channel<Route>()
-    val navigationChannel = _navigationChannel.receiveAsFlow()
+class TranslateViewModel @Inject constructor() : BaseViewModel<TranslateData>() {
 
     fun onEvent(event: TranslateEvent) {
         val currentState = (_uiState.value as? UiState.Success)?.data ?: return

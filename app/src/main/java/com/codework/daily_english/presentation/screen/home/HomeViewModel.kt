@@ -2,6 +2,7 @@ package com.codework.daily_english.presentation.screen.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.codework.daily_english.presentation.components.BaseViewModel
 import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.model.DailyStudyTime
 import com.codework.daily_english.presentation.navigation.Route
@@ -17,12 +18,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor() : ViewModel() {
-
-    private val _navigationChannel = Channel<Route>()
-    val navigationChannel = _navigationChannel.receiveAsFlow()
-    private val _uiState = MutableStateFlow<UiState<HomeData>>(UiState.Loading)
-    val uiState: StateFlow<UiState<HomeData>> = _uiState.asStateFlow()
+class HomeViewModel @Inject constructor() : BaseViewModel<HomeData>() {
 
     init {
         loadHomeData()

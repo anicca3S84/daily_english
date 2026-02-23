@@ -1,28 +1,19 @@
 package com.codework.daily_english.presentation.screen.courses
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.codework.daily_english.presentation.components.BaseViewModel
 import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.model.TopicItem
 import com.codework.daily_english.presentation.navigation.Route
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class CourseViewModel @Inject constructor() : ViewModel() {
-
-    private val _uiState = MutableStateFlow<UiState<CourseData>>(UiState.Loading)
-    val uiState = _uiState.asStateFlow()
-
-    private val _navigationChannel = Channel<Route>()
-    val navigationChannel = _navigationChannel.receiveAsFlow()
+// 1. CHỈ ĐỊNH KIỂU DỮ LIỆU T LÀ CourseData
+class CourseViewModel @Inject constructor() : BaseViewModel<CourseData>() {
 
     private val allLevels = listOf("Beginner (A1)", "Elementary (A2)", "Intermediate (B1)", "Advanced (B2)")
 
@@ -30,11 +21,7 @@ class CourseViewModel @Inject constructor() : ViewModel() {
         loadCourseData(allLevels.first())
     }
 
-    fun navigateTo(route: Route){
-        viewModelScope.launch {
-            _navigationChannel.send(route)
-        }
-    }
+    // 2. ĐÃ XÓA hàm navigateTo() VÀ CÁC BIẾN Channel/StateFlow VÌ ĐÃ NẰM TRONG BaseViewModel
 
     fun onEvent(event: CourseEvent) {
         when (event) {
@@ -42,13 +29,15 @@ class CourseViewModel @Inject constructor() : ViewModel() {
                 loadCourseData(event.level)
             }
             is CourseEvent.OnNavigateToLesson -> {
-              navigateTo(Route.LessonScreen)
+                // Gọi thẳng hàm navigateTo() từ lớp cha cực kỳ gọn gàng
+                navigateTo(Route.LessonScreen)
             }
         }
     }
 
     private fun loadCourseData(level: String) {
         viewModelScope.launch {
+            // Có thể dùng thẳng _uiState của BaseViewModel
             _uiState.update {
                 UiState.Loading
             }
@@ -61,13 +50,14 @@ class CourseViewModel @Inject constructor() : ViewModel() {
                 availableLevels = allLevels,
                 topics = topics
             )
+
             _uiState.update {
                 UiState.Success(data)
             }
         }
     }
 
-    // ... (Hàm mockTopicsForLevel giữ nguyên như cũ) ...
+    // ... (Hàm mockTopicsForLevel giữ nguyên y như cũ) ...
     private fun mockTopicsForLevel(level: String): List<TopicItem> {
         return when {
             level.contains("A1") -> listOf(
@@ -90,4 +80,3 @@ class CourseViewModel @Inject constructor() : ViewModel() {
         }
     }
 }
-

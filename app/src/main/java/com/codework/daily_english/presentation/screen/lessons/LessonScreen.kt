@@ -1,5 +1,6 @@
 package com.codework.daily_english.presentation.screen.lessons
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,22 +9,40 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.codework.daily_english.presentation.components.AppTopBar
 import com.codework.daily_english.presentation.components.BaseScreen
 import com.codework.daily_english.presentation.components.UiState
-import com.codework.daily_english.presentation.screen.courses.CourseData
+import com.codework.daily_english.presentation.theme.BluePrimary
+import com.codework.daily_english.presentation.theme.GrayText
+import com.codework.daily_english.presentation.theme.MainGradient
+import com.codework.daily_english.presentation.theme.ReviewGradient
+import com.codework.daily_english.presentation.theme.SuccessGreen
 
-enum class LessonStepType { VOCABULARY, DIALOGUE, SPEAKING_AI, QUIZ }
+// --- COLORS ---
+
+// --- DATA ---
+enum class LessonStepType {
+    VOCABULARY,
+    LISTENING,
+    SENTENCE_BUILDER,
+    SPEAKING_AI,
+    QUIZ
+}
+
 enum class StepStatus { LOCKED, UNLOCKED, COMPLETED }
 
 data class LessonStep(
@@ -34,237 +53,419 @@ data class LessonStep(
     val status: StepStatus
 )
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LessonScreen(
     state: UiState<LessonData>,
     onEvent: (LessonEvent) -> Unit,
     onBackClick: () -> Unit,
 ) {
+    val lessonData = (state as? UiState.Success)?.data
+    val steps = lessonData?.steps ?: emptyList()
 
-    // Mock Data cho UI (Sau này sẽ lấy từ ViewModel)
-    val steps = listOf(
-        LessonStep("1", "Key Vocabulary", "Learn 5 new words", LessonStepType.VOCABULARY, StepStatus.COMPLETED),
-        LessonStep("2", "Dialogue", "Ordering at a cafe", LessonStepType.DIALOGUE, StepStatus.UNLOCKED),
-        LessonStep("3", "Roleplay with AI", "Practice speaking", LessonStepType.SPEAKING_AI, StepStatus.LOCKED),
-        LessonStep("4", "Final Quiz", "Test your knowledge", LessonStepType.QUIZ, StepStatus.LOCKED)
-    )
+    val completedCount = steps.count { it.status == StepStatus.COMPLETED }
+    val totalCount = steps.size
+
+    val bottomButtonText = when {
+        completedCount == 0 -> "Start lesson"
+        completedCount == totalCount -> "Review lesson"
+        else -> "Continue learning"
+    }
+
+    val buttonBackground = if (completedCount == totalCount && totalCount > 0) {
+        ReviewGradient
+    } else {
+        MainGradient
+    }
 
     Scaffold(
-        containerColor = Color.White,
+        containerColor = Color(0xFFF9FAFB),
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
-            TopAppBar(
-                title = {},
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
-                    }
+            AppTopBar(
+                onBackClick = onBackClick,
+                titleContent = {
+                    Text(
+                        text = "Unit 1",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1F2937)
+                    )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                onMenuClick = null,
             )
+        },
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 32.dp)
+                    .background(Color.Transparent)
+            ) {
+                Button(
+                    onClick = { onEvent(LessonEvent.OnStartPractice) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .shadow(12.dp, CircleShape, spotColor = BluePrimary.copy(alpha = 0.4f)),
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    contentPadding = PaddingValues()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(buttonBackground, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = bottomButtonText,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            letterSpacing = 1.sp
+                        )
+                    }
+                }
+            }
         }
     ) { paddingValues ->
-        BaseScreen(state = state) { data -> // data ở đây là LessonDetail tổng quan
-            LazyColumn(
+        BaseScreen(state = state) { data ->
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                // 1. HEADER ẤN TƯỢNG
-                item {
-                    LessonHeaderSection(
-                        title = data.title,
-                        description = "In this lesson, you will learn how to order drinks and snacks.",
-                        progress = 0.25f
-                    )
-                }
-
-                itemsIndexed(steps) { index, step ->
-                    LessonPathItem(
-                        step = step,
-                        isLast = index == steps.lastIndex,
-                        onClick = { onEvent(LessonEvent.OnStepClick(step.id)) }
-                    )
-                }
-
-                // Padding dưới cùng
-                item { Spacer(modifier = Modifier.height(40.dp)) }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun LessonHeaderSection(title: String, description: String, progress: Float) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(bottom = 32.dp)
-    ) {
-        // Ảnh minh họa nhỏ hoặc Icon chủ đề
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
-            modifier = Modifier.size(80.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Text(
-                    text = "☕", // Hoặc AsyncImage
-                    fontSize = 40.sp
+                LessonHeaderCoverSection(
+                    imageUrl = data.imageUrl,
+                    title = data.title,
+                    description = data.description,
+                    completedSteps = data.steps.count { it.status == StepStatus.COMPLETED },
+                    totalSteps = data.steps.size
                 )
+
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(Color(0xFFF9FAFB))
+                ) {
+                    item { Spacer(modifier = Modifier.height(16.dp)) }
+
+                    item {
+                        Text(
+                            text = "Contents",
+                            fontSize = 18.sp, // <--- Thêm dòng này để chỉnh size theo ý muốn
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1F2937),
+                            modifier = Modifier.padding(horizontal = 24.dp)
+                        )
+                    }
+
+                    item { Spacer(modifier = Modifier.height(12.dp)) }
+
+
+                    itemsIndexed(data.steps) { index, step ->
+                        LessonPathItemModern(
+                            step = step,
+                            isLast = index == data.steps.lastIndex,
+                            onClick = { onEvent(LessonEvent.OnStepClick(step.id)) }
+                        )
+                    }
+
+                    item { Spacer(modifier = Modifier.height(120.dp)) }
+                }
             }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.ExtraBold,
-            color = Color.Black
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = description,
-            style = MaterialTheme.typography.bodyLarge,
-            color = Color.Gray,
-            lineHeight = 24.sp
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Thanh tiến độ tổng quan
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            LinearProgressIndicator(
-                progress = { progress },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp)),
-                color = MaterialTheme.colorScheme.primary,
-                trackColor = Color(0xFFE0E0E0)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = "${(progress * 100).toInt()}%",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
         }
     }
 }
 
 @Composable
-fun LessonPathItem(
-    step: LessonStep,
-    isLast: Boolean,
-    onClick: () -> Unit
+fun LessonHeaderCoverSection(
+    imageUrl: String,
+    title: String,
+    description: String,
+    completedSteps: Int,
+    totalSteps: Int
 ) {
-    // Màu sắc dựa trên trạng thái
-    val (iconColor, ringColor, textColor) = when (step.status) {
-        StepStatus.COMPLETED -> Triple(Color.White, Color(0xFF4CAF50), Color.Gray) // Xanh lá
-        StepStatus.UNLOCKED -> Triple(Color.White, Color(0xFF2196F3), Color.Black) // Xanh dương
-        StepStatus.LOCKED -> Triple(Color(0xFFBDBDBD), Color(0xFFF5F5F5), Color(0xFFBDBDBD)) // Xám
-    }
-
-    val iconBgColor = if (step.status == StepStatus.LOCKED) Color(0xFFF5F5F5) else ringColor
-
-    Row(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min) // Quan trọng để vẽ đường kẻ nối
-            .clickable(enabled = step.status != StepStatus.LOCKED) { onClick() }
-            .padding(horizontal = 24.dp)
+            .height(220.dp)
+            .background(MainGradient)
     ) {
-        // CỘT TRÁI: Icon & Đường kẻ
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.width(48.dp)
-        ) {
-            // Vòng tròn Icon
-            Surface(
-                shape = CircleShape,
-                color = iconBgColor,
-                modifier = Modifier.size(48.dp),
-                shadowElevation = if (step.status == StepStatus.UNLOCKED) 6.dp else 0.dp // Hiệu ứng nổi cho bài đang học
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = when (step.type) {
-                            LessonStepType.VOCABULARY -> Icons.Default.Style // Thẻ bài
-                            LessonStepType.DIALOGUE -> Icons.Default.Headphones // Tai nghe
-                            LessonStepType.SPEAKING_AI -> Icons.Default.Mic // Mic
-                            LessonStepType.QUIZ -> Icons.Default.EmojiEvents // Cúp
-                        },
-                        contentDescription = null,
-                        tint = if (step.status == StepStatus.LOCKED) Color.Gray else Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
+        AsyncImage(
+            model = imageUrl,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
 
-                    // Nếu đã hoàn thành, hiện dấu tick nhỏ
-                    if (step.status == StepStatus.COMPLETED) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.4f))
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Bottom
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = Color.White.copy(alpha = 0.2f),
+                    modifier = Modifier.size(56.dp),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(text = "☕", fontSize = 28.sp)
+                    }
+                }
+
+                Surface(
+                    color = Color.Black.copy(alpha = 0.6f),
+                    shape = RoundedCornerShape(50),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = null,
-                            tint = Color(0xFF4CAF50),
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .background(Color.White, CircleShape)
-                                .padding(1.dp)
-                                .size(16.dp)
+                            if (completedSteps == totalSteps) Icons.Default.CheckCircle else Icons.Default.TrendingUp,
+                            null,
+                            modifier = Modifier.size(14.dp),
+                            tint = if (completedSteps == totalSteps) SuccessGreen else Color.White
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "$completedSteps/$totalSteps",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = if (completedSteps == totalSteps) SuccessGreen else Color.White
                         )
                     }
                 }
             }
 
-            // Đường kẻ nối (Line)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Black,
+                color = Color.White,
+                lineHeight = 32.sp
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.White.copy(alpha = 0.9f),
+                lineHeight = 24.sp,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+fun LessonPathItemModern(
+    step: LessonStep,
+    isLast: Boolean,
+    onClick: () -> Unit
+) {
+    val isActive = step.status == StepStatus.UNLOCKED
+    val isCompleted = step.status == StepStatus.COMPLETED
+    val isLocked = step.status == StepStatus.LOCKED
+
+    val mainColor = when {
+        isCompleted -> SuccessGreen
+        isActive -> BluePrimary
+        else -> Color(0xFFD1D5DB)
+    }
+
+    val iconVector = when (step.type) {
+        LessonStepType.VOCABULARY -> Icons.Default.Style
+        LessonStepType.LISTENING -> Icons.Default.Headphones
+        LessonStepType.SENTENCE_BUILDER -> Icons.Default.Build
+        LessonStepType.SPEAKING_AI -> Icons.Default.Mic
+        LessonStepType.QUIZ -> Icons.Default.EmojiEvents
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .clickable(enabled = !isLocked) { onClick() }
+            .padding(horizontal = 24.dp)
+    ) {
+        // CỘT 1: TIMELINE
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.width(40.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                if (isActive) {
+                    Box(modifier = Modifier.size(40.dp).background(BluePrimary.copy(alpha = 0.2f), CircleShape))
+                }
+
+                Surface(
+                    shape = CircleShape,
+                    color = if (isLocked) Color.White else mainColor,
+                    border = if (isLocked) BorderStroke(2.dp, mainColor) else null,
+                    modifier = Modifier.size(32.dp),
+                    shadowElevation = if (isActive) 4.dp else 0.dp
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        if (isCompleted) {
+                            Icon(Icons.Default.Check, null, tint = Color.White, modifier = Modifier.size(16.dp))
+                        } else {
+                            Icon(iconVector, null, tint = if (isLocked) mainColor else Color.White, modifier = Modifier.size(16.dp))
+                        }
+                    }
+                }
+            }
             if (!isLast) {
                 Box(
                     modifier = Modifier
                         .width(2.dp)
                         .fillMaxHeight()
-                        .background(
-                            if (step.status == StepStatus.COMPLETED) Color(0xFF4CAF50) else Color(0xFFE0E0E0)
-                        )
-                        .padding(vertical = 4.dp)
+                        .padding(top = 4.dp, bottom = 4.dp)
+                        .background(if (isCompleted) SuccessGreen else Color(0xFFE5E7EB))
                 )
             }
         }
 
-        Spacer(modifier = Modifier.width(20.dp))
+        Spacer(modifier = Modifier.width(16.dp))
 
-        // CỘT PHẢI: Nội dung Text
-        Column(
+        // CỘT 2: CONTENT
+        Box(
             modifier = Modifier
-                .padding(vertical = 4.dp) // Căn chỉnh với Icon
+                .padding(bottom = 24.dp)
                 .weight(1f)
         ) {
-            Text(
-                text = step.type.name.replace("_", " "), // VOCABULARY
-                style = MaterialTheme.typography.labelSmall,
-                color = ringColor.copy(alpha = 0.8f),
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = step.title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = textColor
-            )
-            Text(
-                text = step.subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (step.status == StepStatus.LOCKED) Color.Gray else Color.DarkGray
-            )
+            // CASE 1: ĐANG HỌC
+            if (isActive) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                    border = BorderStroke(1.dp, BluePrimary.copy(alpha = 0.5f)),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = step.type.name.replace("_", " "),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = BluePrimary
+                        )
+                        // SỬA ĐỔI QUAN TRỌNG: Giảm khoảng cách từ 6.dp xuống 2.dp
+                        Spacer(modifier = Modifier.height(2.dp))
 
-            Spacer(modifier = Modifier.height(32.dp)) // Khoảng cách giữa các item
+                        Text(
+                            text = step.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1F2937)
+                        )
+                        Text(
+                            text = step.subtitle,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = GrayText
+                        )
+                    }
+                }
+            }
+            // CASE 2: ĐÃ XONG
+            else if (isCompleted) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF0FDF4)),
+                    border = BorderStroke(1.dp, SuccessGreen.copy(alpha = 0.3f)),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = step.title,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1F2937).copy(alpha = 0.8f)
+                            )
+                            Text(
+                                text = step.subtitle,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = GrayText,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Completed",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = SuccessGreen,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        // Nút Replay
+                        Surface(
+                            shape = CircleShape,
+                            color = Color.White,
+                            modifier = Modifier.size(32.dp),
+                            border = BorderStroke(1.dp, SuccessGreen.copy(alpha = 0.3f))
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    Icons.Default.Refresh,
+                                    contentDescription = "Review",
+                                    tint = SuccessGreen,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            // CASE 3: KHÓA
+            else {
+                Column(modifier = Modifier.padding(top = 4.dp)) {
+                    Text(
+                        text = step.type.name.replace("_", " "),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Gray
+                    )
+                    // SỬA ĐỔI: Giảm khoảng cách cho đồng bộ
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    Text(
+                        text = step.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Gray
+                    )
+                    Text(
+                        text = step.subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color(0xFFD1D5DB),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
         }
     }
 }

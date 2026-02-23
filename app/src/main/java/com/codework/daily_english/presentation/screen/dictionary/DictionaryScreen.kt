@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codework.daily_english.presentation.components.AppTopBar
 import com.codework.daily_english.presentation.components.BaseScreen
+import com.codework.daily_english.presentation.components.PhoneticGroup
 import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.model.WordItem
 import com.codework.daily_english.presentation.theme.AppBackground
@@ -497,53 +498,7 @@ fun WordResultCard(
 }
 
 // Component PhoneticGroup (Giữ nguyên như cũ)
-@Composable
-fun PhoneticGroup(
-    label: String,
-    phonetic: String,
-    mainColor: Color,
-    onClick: () -> Unit
-) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Surface(
-            onClick = onClick,
-            shape = CircleShape,
-            color = Color.White,
-            border = BorderStroke(1.dp, mainColor.copy(alpha = 0.3f)),
-            modifier = Modifier.size(32.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Default.VolumeUp,
-                    contentDescription = null,
-                    tint = mainColor,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-        }
 
-        Spacer(modifier = Modifier.width(8.dp))
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = "$label:",
-                style = MaterialTheme.typography.labelSmall,
-                color = mainColor,
-                fontWeight = FontWeight.Bold,
-                fontSize = 13.sp
-            )
-
-            Spacer(modifier = Modifier.width(4.dp))
-
-            Text(
-                text = phonetic.ifEmpty { "/.../" },
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF475569),
-                fontWeight = FontWeight.Normal
-            )
-        }
-    }
-}
 @Composable
 fun RecentSearchList(items: List<String>) {
     LazyRow(
