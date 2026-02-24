@@ -38,16 +38,15 @@ import androidx.compose.ui.graphics.SolidColor
 // Đảm bảo import đúng đường dẫn của project bạn
 import com.codework.daily_english.presentation.components.AudioRegion
 import com.codework.daily_english.presentation.components.BaseScreen
+import com.codework.daily_english.presentation.components.PrimaryButton
 import com.codework.daily_english.presentation.components.VocabularyCompleteDialog
 import com.codework.daily_english.presentation.components.ProgressTopBar
 import com.codework.daily_english.presentation.components.QuizOption
 import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.theme.AppBackground
 import com.codework.daily_english.presentation.theme.BluePrimary
-import com.codework.daily_english.presentation.theme.DisableBtn
 import com.codework.daily_english.presentation.theme.GrayText
 import com.codework.daily_english.presentation.theme.HintBackGround
-import com.codework.daily_english.presentation.theme.MainGradient
 import com.codework.daily_english.presentation.theme.TextPrimary
 
 @Composable
@@ -81,19 +80,20 @@ fun VocabularyScreen(
         bottomBar = {
             if (state is UiState.Success) {
                 val data = state.data
+                val isSelected = data.selectedOptionIndex != null
                 val textBtn = if (data.progressCurrent >= data.progressTotal) "Finish" else "Next"
 
+                // Giữ nguyên Box bọc ngoài với padding 32.dp bottom để không bị sát lề
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 16.dp, end = 16.dp, bottom = 32.dp, top = 16.dp)
-                        .height(50.dp)
-                        .clip(RoundedCornerShape(28.dp))
-                        .background(
-                            brush = if (data.selectedOptionIndex != null) MainGradient else SolidColor(DisableBtn)
-                        )
-                        .clickable {
-                            if (data.selectedOptionIndex == null) {
+                ) {
+                    PrimaryButton(
+                        text = textBtn,
+                        enabled = isSelected, // Truyền trạng thái để tự đổi màu
+                        onClick = {
+                            if (!isSelected) {
                                 showWarningTrigger++
                             } else {
                                 if (data.progressCurrent < data.progressTotal) {
@@ -103,13 +103,7 @@ fun VocabularyScreen(
                                 }
                             }
                         },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = textBtn,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }

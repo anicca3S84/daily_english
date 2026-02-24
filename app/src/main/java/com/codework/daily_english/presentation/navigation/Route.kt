@@ -1,5 +1,6 @@
 package com.codework.daily_english.presentation.navigation
 
+import com.codework.daily_english.presentation.model.QuizType
 import kotlinx.serialization.Serializable
 
 sealed interface Route {
@@ -34,5 +35,8 @@ sealed interface Route {
     data object VocabularyScreen : Route
 
     @Serializable
-    data object ReviewVocabularyScreen : Route
+    data class QuizReviewScreen(val quizType: QuizType) : Route
+
+    @Serializable
+    data object ListeningScreen : Route
 }

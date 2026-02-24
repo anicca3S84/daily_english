@@ -2,6 +2,7 @@ package com.codework.daily_english.presentation.screen.lessons.vocabulary
 import androidx.lifecycle.viewModelScope
 import com.codework.daily_english.presentation.components.BaseViewModel
 import com.codework.daily_english.presentation.components.UiState
+import com.codework.daily_english.presentation.model.QuizType
 import com.codework.daily_english.presentation.navigation.Route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -66,7 +67,7 @@ class VocabularyViewModel @Inject constructor() : BaseViewModel<VocabularyData>(
             }
 
             is VocabularyEvent.OnNavigateToReviewScreen -> {
-                navigateTo(Route.ReviewVocabularyScreen)
+                navigateTo(Route.QuizReviewScreen(QuizType.VOCABULARY))
             }
         }
     }

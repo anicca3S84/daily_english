@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.codework.daily_english.presentation.components.AppTopBar
 import com.codework.daily_english.presentation.components.BaseScreen
+import com.codework.daily_english.presentation.components.PrimaryButton
 import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.theme.BluePrimary
 import com.codework.daily_english.presentation.theme.GrayText
@@ -95,36 +96,23 @@ fun LessonScreen(
             )
         },
         bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, bottom = 32.dp)
-                    .background(Color.Transparent)
-            ) {
-                Button(
-                    onClick = { onEvent(LessonEvent.OnStartPractice) },
+            // Chỉ hiển thị khi load data thành công
+            if (state is UiState.Success) {
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp)
-                        .shadow(12.dp, CircleShape, spotColor = BluePrimary.copy(alpha = 0.4f)),
-                    shape = CircleShape,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                    contentPadding = PaddingValues()
+                        .padding(start = 16.dp, end = 16.dp, bottom = 32.dp, top = 8.dp)
                 ) {
-                    Box(
+                    PrimaryButton(
+                        text = bottomButtonText,
+                        onClick = { onEvent(LessonEvent.OnStartPractice) },
                         modifier = Modifier
-                            .fillMaxSize()
-                            .background(buttonBackground, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = bottomButtonText,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            letterSpacing = 1.sp
-                        )
-                    }
+                            .fillMaxWidth()
+                            // Giữ hiệu ứng đổ bóng cho nút ở màn hình lộ trình
+                            .shadow(12.dp, CircleShape, spotColor = BluePrimary.copy(alpha = 0.4f)),
+                        // Truyền Brush đã tính toán (MainGradient hoặc ReviewGradient)
+                        brush = buttonBackground
+                    )
                 }
             }
         }

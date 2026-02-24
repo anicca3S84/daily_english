@@ -193,10 +193,10 @@ fun QuizVocabularyCompleteDialog(
                 ) {
                     when {
                         isPerfect -> {
-                            PrimaryButton(text = "Continue to Grammar", onClick = onContinue)
+                            PrimaryButton(text = "Continue to Listening", onClick = onContinue)
                         }
                         isPassed -> {
-                            PrimaryButton(text = "Continue to Grammar", onClick = onContinue)
+                            PrimaryButton(text = "Continue to Listening", onClick = onContinue)
                             SecondaryGradientButton(text = "Retry Quiz", onClick = onRetryQuiz)
                         }
                         else -> {

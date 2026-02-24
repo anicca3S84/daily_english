@@ -23,8 +23,10 @@ import com.codework.daily_english.presentation.screen.home.HomeScreen
 import com.codework.daily_english.presentation.screen.home.HomeViewModel
 import com.codework.daily_english.presentation.screen.lessons.LessonScreen
 import com.codework.daily_english.presentation.screen.lessons.LessonViewModel
-import com.codework.daily_english.presentation.screen.lessons.review.ReviewVocabularyScreen
-import com.codework.daily_english.presentation.screen.lessons.review.ReviewVocabularyViewModel
+import com.codework.daily_english.presentation.screen.lessons.listening.ListeningScreen
+import com.codework.daily_english.presentation.screen.lessons.listening.ListeningViewModel
+import com.codework.daily_english.presentation.screen.lessons.review.QuizReviewScreen
+import com.codework.daily_english.presentation.screen.lessons.review.QuizReviewViewModel
 import com.codework.daily_english.presentation.screen.lessons.vocabulary.VocabularyScreen
 import com.codework.daily_english.presentation.screen.lessons.vocabulary.VocabularyViewModel
 import com.codework.daily_english.presentation.screen.more.MoreScreen
@@ -169,13 +171,26 @@ fun NavGraph(
             )
         }
 
-        composable<Route.ReviewVocabularyScreen> {
-            val viewModel = hiltViewModel<ReviewVocabularyViewModel>()
+        composable<Route.QuizReviewScreen> {
+            val viewModel = hiltViewModel<QuizReviewViewModel>()
             val state by viewModel.uiState.collectAsStateWithLifecycle()
 
             ObserveNavigation(viewModel.navigationChannel, navController)
 
-            ReviewVocabularyScreen(
+            QuizReviewScreen(
+                state = state,
+                onEvent = viewModel::onEvent,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable<Route.ListeningScreen> {
+            val viewModel = hiltViewModel<ListeningViewModel>()
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+            ObserveNavigation(viewModel.navigationChannel, navController)
+
+            ListeningScreen(
                 state = state,
                 onEvent = viewModel::onEvent,
                 onBackClick = { navController.popBackStack() }

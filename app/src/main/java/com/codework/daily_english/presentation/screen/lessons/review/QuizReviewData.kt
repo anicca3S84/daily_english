@@ -1,6 +1,8 @@
 package com.codework.daily_english.presentation.screen.lessons.review
 
-data class ReviewVocabularyData(
+import com.codework.daily_english.presentation.model.QuizType
+
+data class QuizReviewData(
     val id: String,
     val sentence: String, // Ví dụ: "The company provides ________ for its employees."
     val translatedSentence: String, // Dịch nghĩa phụ trợ khi hiện đáp án
@@ -9,5 +11,6 @@ data class ReviewVocabularyData(
     val selectedOptionIndex: Int? = null,
     val isAnswerRevealed: Boolean = false,
     val progressCurrent: Int,
-    val progressTotal: Int
+    val progressTotal: Int,
+    val type: QuizType = QuizType.VOCABULARY, // Thêm dòng này
 )

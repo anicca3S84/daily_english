@@ -4,9 +4,9 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -24,29 +23,29 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codework.daily_english.presentation.components.BaseScreen
+import com.codework.daily_english.presentation.components.PrimaryButton
 import com.codework.daily_english.presentation.components.ProgressTopBar
 import com.codework.daily_english.presentation.components.QuizOption
 import com.codework.daily_english.presentation.components.QuizVocabularyCompleteDialog
 import com.codework.daily_english.presentation.components.UiState
+import com.codework.daily_english.presentation.model.QuizType
 import com.codework.daily_english.presentation.theme.AppBackground
 import com.codework.daily_english.presentation.theme.BluePrimary
-import com.codework.daily_english.presentation.theme.DisableBtn
 import com.codework.daily_english.presentation.theme.HintBackGround
 import com.codework.daily_english.presentation.theme.MainGradient
 import com.codework.daily_english.presentation.theme.TextPrimary
 
 @Composable
-fun ReviewVocabularyScreen(
-    state: UiState<ReviewVocabularyData>,
-    onEvent: (ReviewVocabularyEvent) -> Unit,
+fun QuizReviewScreen(
+    state: UiState<QuizReviewData>,
+    onEvent: (QuizReviewEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     var showWarningTrigger by remember { mutableIntStateOf(0) }
     var showCompletionDialog by remember { mutableStateOf(false) }
 
-    // Xử lý nút Back vật lý
-    BackHandler { onEvent(ReviewVocabularyEvent.OnGoBack) }
+    BackHandler { onEvent(QuizReviewEvent.OnGoBack) }
 
     val progressCurrent = (state as? UiState.Success)?.data?.progressCurrent ?: 0
     val progressTotal = (state as? UiState.Success)?.data?.progressTotal ?: 10
@@ -58,45 +57,35 @@ fun ReviewVocabularyScreen(
             ProgressTopBar(
                 currentStep = progressCurrent,
                 totalSteps = progressTotal,
-                onBackClick = { onEvent(ReviewVocabularyEvent.OnGoBack) }
+                onBackClick = { onEvent(QuizReviewEvent.OnGoBack) }
             )
         },
         bottomBar = {
             if (state is UiState.Success) {
                 val data = state.data
-                var textBtn = ""
-                if (data.progressCurrent >= data.progressTotal) {
-                    textBtn = "Finish"
-                } else {
-                    textBtn = "Next"
-                }
+                val isSelected = data.selectedOptionIndex != null
+                val textBtn = if (data.progressCurrent >= data.progressTotal) "Finish" else "Next"
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 16.dp, end = 16.dp, bottom = 32.dp, top = 16.dp)
-                        .height(50.dp)
-                        .clip(RoundedCornerShape(28.dp))
-                        .background(
-                            brush = if (data.selectedOptionIndex != null) MainGradient else SolidColor(DisableBtn)
-                        )
-                        .clickable {
-                            if (data.selectedOptionIndex == null) {
+                ) {
+                    PrimaryButton(
+                        text = textBtn,
+                        enabled = isSelected,
+                        onClick = {
+                            if (!isSelected) {
                                 showWarningTrigger++
                             } else {
                                 if (data.progressCurrent < data.progressTotal) {
-                                    onEvent(ReviewVocabularyEvent.OnNextQuestion)
+                                    onEvent(QuizReviewEvent.OnNextQuestion)
                                 } else {
                                     showCompletionDialog = true
                                 }
                             }
                         },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = textBtn,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
@@ -108,7 +97,7 @@ fun ReviewVocabularyScreen(
                 if (showWarningTrigger > 0) {
                     snackbarHostState.currentSnackbarData?.dismiss()
                     snackbarHostState.showSnackbar(
-                        message = "Vui lòng chọn 1 đáp án để tiếp tục nhé! \uD83D\uDCAA",
+                        message = "Vui lòng chọn 1 đáp án để tiếp tục nhé! 💪",
                         duration = SnackbarDuration.Short,
                         withDismissAction = true
                     )
@@ -119,53 +108,59 @@ fun ReviewVocabularyScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(horizontal = 20.dp), // Trả lại padding 2 bên màn hình
+                    .padding(horizontal = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-//                item {
-//                    Spacer(modifier = Modifier.height(16.dp))
-//
-//                    // --- BADGE "REVIEW PHASE" ---
-//                    Row(
-//                        verticalAlignment = Alignment.CenterVertically,
-//                        horizontalArrangement = Arrangement.Center,
-//                        modifier = Modifier
-//                            .clip(RoundedCornerShape(50))
-//                            .background(Color.Transparent)
-//                            .padding(horizontal = 16.dp, vertical = 10.dp)
-//                    ) {
-//                        Text(
-//                            text = "REVIEW PHASE",
-//                            style = TextStyle(
-//                                brush = MainGradient,
-//                            ),
-//                            fontWeight = FontWeight.ExtraBold,
-//                            fontSize = 20.sp,
-//                            letterSpacing = 1.5.sp
-//                        )
-//                    }
-//
-//                    Spacer(modifier = Modifier.height(20.dp))
-//                }
+                // ==========================================
+                // BADGE "REVIEW PHASE" HOẶC "COMPREHENSION"
+                // ==========================================
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    val badgeIcon = if (data.type == QuizType.VOCABULARY) "🧠" else "🎧"
+                    val badgeText = if (data.type == QuizType.VOCABULARY) "REVIEW PHASE" else "COMPREHENSION"
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(50))
+                            .background(HintBackGround)
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(text = badgeIcon, fontSize = 16.sp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = badgeText,
+                            color = BluePrimary,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 14.sp,
+                            letterSpacing = 1.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
 
                 // ==========================================
                 // KHỐI BACKGROUND LỚN CHỨA TOÀN BỘ CÂU HỎI VÀ ĐÁP ÁN
                 // ==========================================
                 item {
-                    Spacer(modifier = Modifier.height(20.dp))
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp)) // Bo đều 4 góc và bo ít đi (16.dp)
+                            .clip(RoundedCornerShape(16.dp))
                             .background(HintBackGround)
-                            .padding(horizontal = 20.dp, vertical = 24.dp), // Padding trong vừa phải
+                            .padding(horizontal = 20.dp, vertical = 24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         // 1. TIÊU ĐỀ
                         Spacer(modifier = Modifier.height(10.dp))
 
+                        val headerText = if (data.type == QuizType.VOCABULARY) "Fill in the blank" else "Choose the correct answer"
+
                         Text(
-                            text = "Fill in the blank",
+                            text = headerText,
                             color = TextPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
@@ -176,7 +171,7 @@ fun ReviewVocabularyScreen(
                         // 2. THẺ CÂU HỎI
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp), // Giảm độ bo góc ô điền từ (12.dp)
+                            shape = RoundedCornerShape(12.dp),
                             color = Color.White,
                             shadowElevation = 4.dp,
                             border = BorderStroke(1.5.dp, MainGradient)
@@ -189,7 +184,7 @@ fun ReviewVocabularyScreen(
                                     text = formatBlankSentence(
                                         sentence = data.sentence,
                                         isRevealed = data.selectedOptionIndex != null,
-                                        correctWord = data.options[data.correctAnswerIndex]
+                                        correctWord = data.options.getOrNull(data.correctAnswerIndex) ?: ""
                                     ),
                                     style = TextStyle(
                                         color = TextPrimary,
@@ -210,42 +205,59 @@ fun ReviewVocabularyScreen(
                                 color = Color(0xFF64748B),
                                 fontSize = 16.sp,
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(horizontal = 8.dp).padding(bottom = 24.dp)
+                                modifier = Modifier
+                                    .padding(horizontal = 8.dp)
+                                    .padding(bottom = 24.dp)
                             )
                         }
 
                         // 4. GRID ĐÁP ÁN
-                        val rows = data.options.chunked(2)
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            rows.forEach { rowItems ->
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                ) {
-                                    rowItems.forEachIndexed { columnIndex, optionText ->
-                                        val currentIndexInOptions = data.options.indexOf(optionText)
-
-                                        Box(modifier = Modifier.weight(1f)) {
-                                            QuizOption(
-                                                text = optionText,
-                                                index = currentIndexInOptions,
-                                                selectedIndex = data.selectedOptionIndex,
-                                                correctIndex = data.correctAnswerIndex,
-                                                onClick = { index ->
-                                                    onEvent(ReviewVocabularyEvent.OnSelectOption(index))
-                                                }
-                                            )
+                        if (data.type == QuizType.VOCABULARY) {
+                            val rows = data.options.chunked(2)
+                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                rows.forEach { rowItems ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        rowItems.forEachIndexed { _, optionText ->
+                                            val currentIndexInOptions = data.options.indexOf(optionText)
+                                            Box(modifier = Modifier.weight(1f)) {
+                                                QuizOption(
+                                                    text = optionText,
+                                                    index = currentIndexInOptions,
+                                                    selectedIndex = data.selectedOptionIndex,
+                                                    correctIndex = data.correctAnswerIndex,
+                                                    onClick = { index ->
+                                                        onEvent(QuizReviewEvent.OnSelectOption(index))
+                                                    }
+                                                )
+                                            }
                                         }
+                                        if (rowItems.size < 2) Spacer(modifier = Modifier.weight(1f))
                                     }
-                                    if (rowItems.size < 2) Spacer(modifier = Modifier.weight(1f))
+                                }
+                            }
+                        } else {
+                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                data.options.forEachIndexed { currentIndexInOptions, optionText ->
+                                    Box(modifier = Modifier.fillMaxWidth()) {
+                                        QuizOption(
+                                            text = optionText,
+                                            index = currentIndexInOptions,
+                                            selectedIndex = data.selectedOptionIndex,
+                                            correctIndex = data.correctAnswerIndex,
+                                            onClick = { index ->
+                                                onEvent(QuizReviewEvent.OnSelectOption(index))
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }
+
                         Spacer(modifier = Modifier.height(20.dp))
-
                     }
-
-                    // Thêm một Spacer nhỏ ở ngoài thẻ xanh để cách Bottom Bar một chút nếu cần thiết
                 }
             }
         }
@@ -254,7 +266,7 @@ fun ReviewVocabularyScreen(
             QuizVocabularyCompleteDialog(
                 onContinue = {
                     showCompletionDialog = false
-                    onEvent(ReviewVocabularyEvent.OnNavigateToGrammarScreen)
+                    onEvent(QuizReviewEvent.OnNavigateToListeningScreen)
                 },
                 onRetryQuiz = { showCompletionDialog = false },
                 onRelearnWords = { showCompletionDialog = false },

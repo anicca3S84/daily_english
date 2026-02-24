@@ -38,7 +38,8 @@ fun SecondaryGradientButton(text: String, onClick: () -> Unit) {
             style = MaterialTheme.typography.bodyMedium.copy(
                 brush = MainGradient,
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                letterSpacing = 1.sp
             )
         )
     }
