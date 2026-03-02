@@ -61,6 +61,10 @@ class QuizReviewViewModel @Inject constructor(
             is QuizReviewEvent.OnNavigateToListeningScreen -> {
                 navigateTo(Route.ListeningScreen)
             }
+
+            is QuizReviewEvent.OnNavigateToGrammarScreen -> {
+                navigateTo(Route.GrammarScreen)
+            }
         }
     }
 

@@ -1,8 +1,6 @@
 package com.codework.daily_english.presentation.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,15 +12,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle // Import cái này để dùng Brush cho Text
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-
-// Import màu từ Theme của bạn
 import com.codework.daily_english.presentation.theme.BluePrimary
 import com.codework.daily_english.presentation.theme.MainGradient
 
@@ -33,7 +29,9 @@ fun QuizVocabularyCompleteDialog(
     onContinue: () -> Unit,
     onRetryQuiz: () -> Unit,
     onRelearnWords: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    // Thêm tham số để tùy chỉnh text nút tiếp theo
+    nextButtonText: String = "Continue to Listening"
 ) {
     val percentageRate = if (total > 0) score.toFloat() / total else 0f
     val percentValue = if (total > 0) (score * 100) / total else 0
@@ -47,9 +45,9 @@ fun QuizVocabularyCompleteDialog(
     }
 
     val subMsg = when {
-        isPerfect -> "You've perfectly memorized all the\nwords in this lesson."
+        isPerfect -> "You've perfectly completed the review."
         isPassed -> "You passed!\nBut a quick review wouldn't hurt."
-        else -> "You need a bit more practice\nto master these words."
+        else -> "You need a bit more practice\nto master these."
     }
 
     Dialog(
@@ -115,7 +113,7 @@ fun QuizVocabularyCompleteDialog(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // ==========================================
-                // SCORE BOARD (CỠ CHỮ NHỎ HƠN & MÀU GRADIENT)
+                // SCORE BOARD
                 // ==========================================
                 Row(
                     modifier = Modifier
@@ -125,7 +123,6 @@ fun QuizVocabularyCompleteDialog(
                         .padding(vertical = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // CỘT 1: ĐIỂM SỐ
                     Column(
                         modifier = Modifier.weight(1f),
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -140,16 +137,14 @@ fun QuizVocabularyCompleteDialog(
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "$score / $total",
-                            // SỬ DỤNG TEXTSTYLE ĐỂ TRUYỀN BRUSH (GRADIENT)
                             style = TextStyle(
                                 brush = MainGradient,
                                 fontWeight = FontWeight.Black,
-                                fontSize = 22.sp // Đã giảm cỡ chữ cho thanh thoát
+                                fontSize = 22.sp
                             )
                         )
                     }
 
-                    // ĐƯỜNG KẺ DỌC
                     Box(
                         modifier = Modifier
                             .width(1.dp)
@@ -157,7 +152,6 @@ fun QuizVocabularyCompleteDialog(
                             .background(Color(0xFFCBD5E1))
                     )
 
-                    // CỘT 2: TỈ LỆ PHẦN TRĂM
                     Column(
                         modifier = Modifier.weight(1f),
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -172,11 +166,10 @@ fun QuizVocabularyCompleteDialog(
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "${percentValue}%",
-                            // SỬ DỤNG TEXTSTYLE ĐỂ TRUYỀN BRUSH (GRADIENT)
                             style = TextStyle(
                                 brush = MainGradient,
                                 fontWeight = FontWeight.Black,
-                                fontSize = 22.sp // Đã giảm cỡ chữ
+                                fontSize = 22.sp
                             )
                         )
                     }
@@ -193,10 +186,11 @@ fun QuizVocabularyCompleteDialog(
                 ) {
                     when {
                         isPerfect -> {
-                            PrimaryButton(text = "Continue to Listening", onClick = onContinue)
+                            // Sử dụng text động được truyền vào
+                            PrimaryButton(text = nextButtonText, onClick = onContinue)
                         }
                         isPassed -> {
-                            PrimaryButton(text = "Continue to Listening", onClick = onContinue)
+                            PrimaryButton(text = nextButtonText, onClick = onContinue)
                             SecondaryGradientButton(text = "Retry Quiz", onClick = onRetryQuiz)
                         }
                         else -> {

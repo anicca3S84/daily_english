@@ -42,7 +42,11 @@ class HomeViewModel @Inject constructor() : BaseViewModel<HomeData>() {
                     _navigationChannel.send(Route.DictionaryScreen)
                 }
             }
-            HomeEvent.OnQuickActionGrammar -> {}
+            HomeEvent.OnQuickActionGrammar -> {
+                viewModelScope.launch {
+                    _navigationChannel.send(Route.GrammarScreen)
+                }
+            }
             HomeEvent.OnQuickActionTranslate -> {
                 viewModelScope.launch {
                     _navigationChannel.send(Route.TranslateScreen)

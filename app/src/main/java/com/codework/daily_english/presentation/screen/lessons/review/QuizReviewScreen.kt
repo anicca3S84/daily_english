@@ -6,7 +6,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -112,7 +111,7 @@ fun QuizReviewScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // ==========================================
-                // BADGE "REVIEW PHASE" HOẶC "COMPREHENSION"
+                // BADGE
                 // ==========================================
                 item {
                     Spacer(modifier = Modifier.height(16.dp))
@@ -143,7 +142,7 @@ fun QuizReviewScreen(
                 }
 
                 // ==========================================
-                // KHỐI BACKGROUND LỚN CHỨA TOÀN BỘ CÂU HỎI VÀ ĐÁP ÁN
+                // QUESTION & ANSWERS CARD
                 // ==========================================
                 item {
                     Column(
@@ -154,8 +153,7 @@ fun QuizReviewScreen(
                             .padding(horizontal = 20.dp, vertical = 24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // 1. TIÊU ĐỀ
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
 
                         val headerText = if (data.type == QuizType.VOCABULARY) "Fill in the blank" else "Choose the correct answer"
 
@@ -168,13 +166,13 @@ fun QuizReviewScreen(
                         )
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // 2. THẺ CÂU HỎI
+                        // QUESTION
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
                             color = Color.White,
                             shadowElevation = 4.dp,
-                            border = BorderStroke(1.5.dp, MainGradient)
+                            border = BorderStroke(1.5.dp, BluePrimary)
                         ) {
                             Box(
                                 modifier = Modifier.padding(20.dp),
@@ -198,7 +196,7 @@ fun QuizReviewScreen(
                         }
                         Spacer(modifier = Modifier.height(28.dp))
 
-                        // 3. DỊCH NGHĨA (HIỆN KHI CHỌN)
+                        // TRANSLATION
                         AnimatedVisibility(visible = data.selectedOptionIndex != null) {
                             Text(
                                 text = data.translatedSentence,
@@ -211,7 +209,7 @@ fun QuizReviewScreen(
                             )
                         }
 
-                        // 4. GRID ĐÁP ÁN
+                        // OPTIONS GRID
                         if (data.type == QuizType.VOCABULARY) {
                             val rows = data.options.chunked(2)
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -260,20 +258,31 @@ fun QuizReviewScreen(
                     }
                 }
             }
-        }
 
-        if (showCompletionDialog) {
-            QuizVocabularyCompleteDialog(
-                onContinue = {
-                    showCompletionDialog = false
-                    onEvent(QuizReviewEvent.OnNavigateToListeningScreen)
-                },
-                onRetryQuiz = { showCompletionDialog = false },
-                onRelearnWords = { showCompletionDialog = false },
-                onDismiss = { showCompletionDialog = false },
-                score = 7,
-                total = 10
-            )
+            if (showCompletionDialog) {
+                // Xác định hướng đi tiếp theo dựa trên loại bài kiểm tra
+                val isListening = data.type == QuizType.LISTENING
+                val nextButtonLabel = if (isListening) "Continue to Grammar" else "Continue to Listening"
+
+                QuizVocabularyCompleteDialog(
+                    score = 7,
+                    total = 10,
+                    // Truyền nhãn nút bấm
+                    nextButtonText = nextButtonLabel,
+                    // Xử lý logic chuyển màn hình
+                    onContinue = {
+                        showCompletionDialog = false
+                        if (isListening) {
+                            onEvent(QuizReviewEvent.OnNavigateToGrammarScreen)
+                        } else {
+                            onEvent(QuizReviewEvent.OnNavigateToListeningScreen)
+                        }
+                    },
+                    onRetryQuiz = { showCompletionDialog = false },
+                    onRelearnWords = { showCompletionDialog = false },
+                    onDismiss = { showCompletionDialog = false }
+                )
+            }
         }
     }
 }

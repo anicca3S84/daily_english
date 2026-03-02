@@ -20,17 +20,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.codework.daily_english.presentation.components.AppTopBar
 import com.codework.daily_english.presentation.components.BaseScreen
 import com.codework.daily_english.presentation.components.PrimaryButton
-import com.codework.daily_english.presentation.components.ProgressTopBar
 import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.model.DialogueLine
-import com.codework.daily_english.presentation.screen.lessons.review.QuizReviewEvent
 import com.codework.daily_english.presentation.theme.*
 
 @Composable

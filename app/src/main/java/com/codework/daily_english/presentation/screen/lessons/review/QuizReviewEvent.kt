@@ -6,4 +6,5 @@ sealed interface QuizReviewEvent {
     data object OnNextQuestion : QuizReviewEvent
     data object OnGoBack : QuizReviewEvent
     data object OnNavigateToListeningScreen : QuizReviewEvent
+    data object OnNavigateToGrammarScreen : QuizReviewEvent
 }
