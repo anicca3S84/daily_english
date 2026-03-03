@@ -24,7 +24,6 @@ class GrammarViewModel @Inject constructor() : BaseViewModel<GrammarData>() {
     fun onEvent(event: GrammarEvent) {
         when (event) {
             is GrammarEvent.OnTopicClick -> {
-                // Navigate to lesson detail or quiz (Giả lập chuyển sang LessonScreen)
                 navigateTo(Route.LessonScreen)
             }
             is GrammarEvent.OnLevelFilterSelected -> {

@@ -1,9 +1,16 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fs = require("fs");
 const path = require("path");
+require('dotenv').config();
 
 // 1. Dán API Key từ Google AI Studio vào đây
-const API_KEY = "AIzaSyDJpDDGEtA8zjnd6IweyHzHrpL7lg6d68Y";
+const API_KEY = process.env.GEMINI_API_KEY;
+
+if (!API_KEY) {
+    console.error("❌ Lỗi: GEMINI_API_KEY không tồn tại trong file .env");
+    process.exit(1);
+}
+
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 const model = genAI.getGenerativeModel({

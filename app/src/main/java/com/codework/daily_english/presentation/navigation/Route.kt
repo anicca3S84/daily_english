@@ -39,4 +39,7 @@ sealed interface Route {
 
     @Serializable
     data object ListeningScreen : Route
+
+    @Serializable
+    data object SentenceBuilderScreen : Route
 }

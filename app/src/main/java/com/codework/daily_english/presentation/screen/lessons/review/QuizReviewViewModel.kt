@@ -63,7 +63,7 @@ class QuizReviewViewModel @Inject constructor(
             }
 
             is QuizReviewEvent.OnNavigateToGrammarScreen -> {
-                navigateTo(Route.GrammarScreen)
+                navigateTo(Route.SentenceBuilderScreen)
             }
         }
     }

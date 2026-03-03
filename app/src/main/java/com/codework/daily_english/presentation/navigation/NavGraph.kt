@@ -29,6 +29,8 @@ import com.codework.daily_english.presentation.screen.lessons.listening.Listenin
 import com.codework.daily_english.presentation.screen.lessons.listening.ListeningViewModel
 import com.codework.daily_english.presentation.screen.lessons.review.QuizReviewScreen
 import com.codework.daily_english.presentation.screen.lessons.review.QuizReviewViewModel
+import com.codework.daily_english.presentation.screen.lessons.sentence_builder.SentenceBuilderScreen
+import com.codework.daily_english.presentation.screen.lessons.sentence_builder.SentenceBuilderViewModel
 import com.codework.daily_english.presentation.screen.lessons.vocabulary.VocabularyScreen
 import com.codework.daily_english.presentation.screen.lessons.vocabulary.VocabularyViewModel
 import com.codework.daily_english.presentation.screen.more.MoreScreen
@@ -206,6 +208,19 @@ fun NavGraph(
             ObserveNavigation(viewModel.navigationChannel, navController)
 
             GrammarScreen(
+                state = state,
+                onEvent = viewModel::onEvent,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable<Route.SentenceBuilderScreen> {
+            val viewModel = hiltViewModel<SentenceBuilderViewModel>()
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+            ObserveNavigation(viewModel.navigationChannel, navController)
+
+            SentenceBuilderScreen(
                 state = state,
                 onEvent = viewModel::onEvent,
                 onBackClick = { navController.popBackStack() }
