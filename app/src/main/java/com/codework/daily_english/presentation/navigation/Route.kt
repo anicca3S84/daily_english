@@ -42,4 +42,7 @@ sealed interface Route {
 
     @Serializable
     data object SentenceBuilderScreen : Route
+
+    @Serializable
+    data object SpeakingScreen : Route
 }

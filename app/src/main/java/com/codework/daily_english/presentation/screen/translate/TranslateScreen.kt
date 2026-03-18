@@ -47,7 +47,7 @@ import com.codework.daily_english.presentation.theme.MainGradient
 
 @Composable
 fun TranslateScreen(
-    state: UiState<TranslateData>,
+    state: UiState<TranslateState>, // SỬA: Đổi TranslateData thành TranslateState
     onEvent: (TranslateEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -83,12 +83,11 @@ fun TranslateScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 16.dp)
-                        .verticalScroll(scrollState), // Cho phép cuộn
+                        .verticalScroll(scrollState),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 1. LANGUAGE SWITCHER
                     LanguageSwitchBar(
                         sourceLang = data.sourceLang,
                         targetLang = data.targetLang,
@@ -97,7 +96,6 @@ fun TranslateScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // 2. INPUT CARD
                     InputCard(
                         text = data.sourceText,
                         hint = "Type to translate...",
@@ -106,12 +104,14 @@ fun TranslateScreen(
                         onTranslate = {
                             keyboardController?.hide()
                             onEvent(TranslateEvent.OnTranslateClick)
-                        }
+                        },
+                        onImageClick = { onEvent(TranslateEvent.OnImageClick) }, // NỐI EVENT
+                        onCameraClick = { onEvent(TranslateEvent.OnCameraClick) }, // NỐI EVENT
+                        onMicClick = { onEvent(TranslateEvent.OnMicClick) } // NỐI EVENT
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 3. RESULT CARD (Hiện khi có kết quả hoặc đang loading)
                     AnimatedVisibility(
                         visible = data.targetText.isNotEmpty() || data.isTranslating,
                         enter = fadeIn() + slideInVertically { it / 2 }
@@ -125,13 +125,11 @@ fun TranslateScreen(
                         }
                     }
 
-                    // 4. HISTORY SECTION
-                    // SỬA: Luôn hiển thị History, không phụ thuộc vào trạng thái loading
                     HistorySection(
                         onHistoryItemClick = { /* Handle click history item */ }
                     )
 
-                    Spacer(modifier = Modifier.height(32.dp)) // Bottom padding
+                    Spacer(modifier = Modifier.height(32.dp))
                 }
             }
         }
@@ -279,7 +277,10 @@ fun InputCard(
     hint: String,
     onValueChange: (String) -> Unit,
     onClear: () -> Unit,
-    onTranslate: () -> Unit
+    onTranslate: () -> Unit,
+    onImageClick: () -> Unit, // THÊM
+    onCameraClick: () -> Unit, // THÊM
+    onMicClick: () -> Unit // THÊM
 ) {
     Card(
         shape = RoundedCornerShape(24.dp),
@@ -309,7 +310,6 @@ fun InputCard(
                         .padding(end = 50.dp)
                 )
 
-                // CỘT ICON BÊN PHẢI (Chỉ hiện khi có text)
                 if (text.isNotEmpty()) {
                     Column(
                         modifier = Modifier
@@ -318,22 +318,12 @@ fun InputCard(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        // 1. Nút X
-                        StandardCircleButton(
-                            icon = Icons.Default.Close,
-                            onClick = onClear
-                        )
-
-                        // 2. Nút Loa
-                        StandardCircleButton(
-                            icon = Icons.AutoMirrored.Filled.VolumeUp,
-                            onClick = { /* TTS Input */ }
-                        )
+                        StandardCircleButton(icon = Icons.Default.Close, onClick = onClear)
+                        StandardCircleButton(icon = Icons.AutoMirrored.Filled.VolumeUp, onClick = { /* TTS Input */ })
                     }
                 }
             }
 
-            // Footer Actions
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -341,17 +331,15 @@ fun InputCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Hàng nút Image, Camera, Mic
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    StandardCircleButton(icon = Icons.Default.Image, onClick = {})
-                    StandardCircleButton(icon = Icons.Default.CameraAlt, onClick = {})
-                    StandardCircleButton(icon = Icons.Default.Mic, onClick = {})
+                    StandardCircleButton(icon = Icons.Default.Image, onClick = onImageClick) // SỬA
+                    StandardCircleButton(icon = Icons.Default.CameraAlt, onClick = onCameraClick) // SỬA
+                    StandardCircleButton(icon = Icons.Default.Mic, onClick = onMicClick) // SỬA
                 }
 
-                // Nút Translate
                 Box(
                     modifier = Modifier
                         .height(44.dp)

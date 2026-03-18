@@ -51,7 +51,7 @@ import com.codework.daily_english.presentation.theme.MainGradient
 
 @Composable
 fun CourseScreen(
-    state: UiState<CourseData>,
+    state: UiState<CourseState>,
     onEvent: (CourseEvent) -> Unit,
 ) {
     BaseScreen(state = state) { data ->

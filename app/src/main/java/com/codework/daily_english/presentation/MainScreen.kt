@@ -23,6 +23,7 @@ fun MainScreen() {
     val showBottomBar = currentDestination?.hasRoute<Route.HomeScreen>() == true ||
             currentDestination?.hasRoute<Route.CourseScreen>() == true ||
             currentDestination?.hasRoute<Route.PracticeScreen>() == true ||
+            currentDestination?.hasRoute<Route.GrammarScreen>() == true ||
             currentDestination?.hasRoute<Route.MoreScreen>() == true
 
     Scaffold(

@@ -11,6 +11,7 @@
     <string name="nav_practice">Practice</string>
     <string name="nav_more">More</string>
     <string name="nav_ai_assistant">AI Assistant</string>
+    <string name="nav_grammar">Grammar</string>
 
     <!--Title-->
     <string name="title_login">Login</string>

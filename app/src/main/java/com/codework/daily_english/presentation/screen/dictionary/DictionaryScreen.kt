@@ -40,7 +40,7 @@ import com.codework.daily_english.presentation.theme.MainGradient
 
 @Composable
 fun DictionaryScreen(
-    state: UiState<DictionaryData>,
+    state: UiState<DictionaryState>, // SỬA: Đổi DictionaryData thành DictionaryState
     onEvent: (DictionaryEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -71,7 +71,6 @@ fun DictionaryScreen(
             BaseScreen(state = state) { data ->
                 Column(modifier = Modifier.fillMaxSize()) {
 
-                    // 1. THANH TÌM KIẾM
                     DictionarySearchBar(
                         query = data.query,
                         onQueryChange = { onEvent(DictionaryEvent.OnSearchQueryChange(it)) },
@@ -84,30 +83,25 @@ fun DictionaryScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         if (data.query.isNotEmpty()) {
-                            // --- TRẠNG THÁI ĐANG TÌM KIẾM ---
                             if (data.searchResults.isEmpty()) {
                                 item { EmptySearchResult(data.query) }
                             } else {
                                 items(data.searchResults) { word ->
                                     WordResultCard(
                                         word = word,
-                                        onPlayAudioUk = { onEvent(DictionaryEvent.OnPlayAudio(word.word)) },
-                                        onPlayAudioUs = { onEvent(DictionaryEvent.OnPlayAudio(word.word)) },
-                                        onToggleSave = { /* Logic */ }
+                                        onPlayAudioUk = { onEvent(DictionaryEvent.OnPlayAudio(word.word, "UK")) }, // SỬA: Thêm accent
+                                        onPlayAudioUs = { onEvent(DictionaryEvent.OnPlayAudio(word.word, "US")) }, // SỬA: Thêm accent
+                                        onToggleSave = { onEvent(DictionaryEvent.OnToggleSaveWord(word)) } // SỬA: Gắn Event
                                     )
                                 }
                             }
                         } else {
-                            // --- TRẠNG THÁI DASHBOARD (MỚI) ---
-
-                            // 1. Quick Actions (Lối tắt tính năng)
                             item {
                                 SectionTitle("Quick Actions")
                                 Spacer(modifier = Modifier.height(12.dp))
-                                QuickActionsGrid()
+                                QuickActionsGrid(onEvent = onEvent) // SỬA: Truyền onEvent
                             }
 
-                            // 2. Recent Searches (Lịch sử)
                             if (data.recentSearches.isNotEmpty()) {
                                 item {
                                     SectionTitle("Recent Searches")
@@ -116,14 +110,12 @@ fun DictionaryScreen(
                                 }
                             }
 
-                            // 3. Explore Topics (Các chủ đề từ vựng)
                             item {
                                 SectionTitle("Explore Topics")
                                 Spacer(modifier = Modifier.height(12.dp))
-                                TopicList()
+                                TopicList(onEvent = onEvent) // SỬA: Truyền onEvent
                             }
 
-                            // 4. Daily Quote (Câu nói hay - Visual filler)
                             item {
                                 Spacer(modifier = Modifier.height(8.dp))
                                 DailyQuoteCard()
@@ -138,45 +130,20 @@ fun DictionaryScreen(
     }
 }
 
-// ==========================
-// NEW COMPONENTS (DASHBOARD)
-// ==========================
-
+// SỬA: Cập nhật hàm này để nhận onEvent
 @Composable
-fun QuickActionsGrid() {
+fun QuickActionsGrid(onEvent: (DictionaryEvent) -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Cột 1
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            QuickActionCard(
-                title = "Saved Words",
-                icon = Icons.Rounded.Bookmark,
-                color = Color(0xFF3B82F6), // Blue
-                onClick = { /* Navigate to Saved */ }
-            )
-            QuickActionCard(
-                title = "Phrasal Verbs",
-                icon = Icons.Rounded.Spellcheck,
-                color = Color(0xFF10B981), // Green
-                onClick = { /* Navigate to Grammar */ }
-            )
+            QuickActionCard("Saved Words", Icons.Rounded.Bookmark, Color(0xFF3B82F6)) { onEvent(DictionaryEvent.OnQuickActionClick("Saved")) }
+            QuickActionCard("Phrasal Verbs", Icons.Rounded.Spellcheck, Color(0xFF10B981)) { onEvent(DictionaryEvent.OnQuickActionClick("Grammar")) }
         }
-        // Cột 2
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            QuickActionCard(
-                title = "Idioms",
-                icon = Icons.Rounded.Lightbulb,
-                color = Color(0xFFF59E0B), // Amber
-                onClick = { /* Navigate to Idioms */ }
-            )
-            QuickActionCard(
-                title = "Flashcards",
-                icon = Icons.Rounded.Quiz,
-                color = Color(0xFF8B5CF6), // Purple
-                onClick = { /* Navigate to Quiz */ }
-            )
+            QuickActionCard("Idioms", Icons.Rounded.Lightbulb, Color(0xFFF59E0B)) { onEvent(DictionaryEvent.OnQuickActionClick("Idioms")) }
+            QuickActionCard("Flashcards", Icons.Rounded.Quiz, Color(0xFF8B5CF6)) { onEvent(DictionaryEvent.OnQuickActionClick("Flashcards")) }
         }
     }
 }
@@ -220,15 +187,10 @@ fun QuickActionCard(
 }
 
 @Composable
-fun TopicList() {
-    // Danh sách chủ đề mẫu
+fun TopicList(onEvent: (DictionaryEvent) -> Unit) {
     val topics = listOf(
-        Pair("Business", "💼"),
-        Pair("Travel", "✈️"),
-        Pair("Food", "🍔"),
-        Pair("Technology", "💻"),
-        Pair("Health", "🏥"),
-        Pair("Sport", "⚽")
+        Pair("Business", "💼"), Pair("Travel", "✈️"), Pair("Food", "🍔"),
+        Pair("Technology", "💻"), Pair("Health", "🏥"), Pair("Sport", "⚽")
     )
 
     LazyRow(
@@ -237,7 +199,7 @@ fun TopicList() {
     ) {
         items(topics) { (name, emoji) ->
             Surface(
-                onClick = {},
+                onClick = { onEvent(DictionaryEvent.OnTopicClick(name)) }, // SỬA: Gọi sự kiện
                 shape = RoundedCornerShape(12.dp),
                 color = Color.White,
                 border = BorderStroke(1.dp, Color(0xFFE2E8F0)),

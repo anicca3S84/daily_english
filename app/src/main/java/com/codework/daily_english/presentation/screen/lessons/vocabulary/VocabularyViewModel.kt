@@ -1,28 +1,26 @@
 package com.codework.daily_english.presentation.screen.lessons.vocabulary
+
 import androidx.lifecycle.viewModelScope
 import com.codework.daily_english.presentation.components.BaseViewModel
 import com.codework.daily_english.presentation.components.UiState
-import com.codework.daily_english.presentation.model.QuizType
-import com.codework.daily_english.presentation.navigation.Route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class VocabularyViewModel @Inject constructor() : BaseViewModel<VocabularyData>() {
+class VocabularyViewModel @Inject constructor() : BaseViewModel<VocabularyState, VocabularyEvent, VocabularyEffect>() {
 
-    private var vocabularyList = listOf<VocabularyData>()
+    private var vocabularyList = listOf<VocabularyState>() // Dùng VocabularyState
     private var currentIndex = 0
 
     init {
         loadVocabularyList()
     }
 
-    fun onEvent(event: VocabularyEvent) {
+    override fun onEvent(event: VocabularyEvent) {
         when (event) {
-            is VocabularyEvent.OnPlayAudio -> { /* Logic Audio */
-            }
+            is VocabularyEvent.OnPlayAudio -> sendEffect(VocabularyEffect.PlayAudio(event.region))
 
             is VocabularyEvent.OnNextWord -> {
                 if (currentIndex < vocabularyList.size - 1) {
@@ -36,11 +34,11 @@ class VocabularyViewModel @Inject constructor() : BaseViewModel<VocabularyData>(
                     currentIndex--
                     updateUiWithCurrentWord()
                 } else {
-                    viewModelScope.launch { _navigationChannel.send(Route.LessonScreen) }
+                    // Trở về màn hình bài học trước đó
+                    sendEffect(VocabularyEffect.NavigateBack)
                 }
             }
 
-            // XỬ LÝ CLICK XEM GỢI Ý
             is VocabularyEvent.OnRevealHint -> {
                 val currentWord = vocabularyList.getOrNull(currentIndex) ?: return
                 if (!currentWord.isHintRevealed) {
@@ -66,9 +64,7 @@ class VocabularyViewModel @Inject constructor() : BaseViewModel<VocabularyData>(
                 }
             }
 
-            is VocabularyEvent.OnNavigateToReviewScreen -> {
-                navigateTo(Route.QuizReviewScreen(QuizType.VOCABULARY))
-            }
+            is VocabularyEvent.OnNavigateToReviewScreen -> sendEffect(VocabularyEffect.NavigateToReview)
         }
     }
 
@@ -77,10 +73,8 @@ class VocabularyViewModel @Inject constructor() : BaseViewModel<VocabularyData>(
             _uiState.value = UiState.Loading
             delay(500)
 
-            // Cập nhật Mock Data với các từ KHÁC NHAU để kiểm tra
             vocabularyList = listOf(
-                // --- TỪ SỐ 1: ACCOMMODATION (Danh từ) ---
-                VocabularyData(
+                VocabularyState(
                     id = "vocab_001",
                     word = "Accommodation",
                     ukPhonetic = "/əˌkɒm.əˈdeɪ.ʃən/",
@@ -90,26 +84,14 @@ class VocabularyViewModel @Inject constructor() : BaseViewModel<VocabularyData>(
                     level = "B1",
                     partOfSpeech = "Danh từ",
                     grammar = "accommodation for somebody/something",
-                    hints = listOf(
-                        "Nơi bạn ở khi đi du lịch (khách sạn, nhà nghỉ...)",
-                        "Có thể là chỗ ở tạm thời hoặc dài hạn"
-                    ),
-                    examples = listOf(
-                        "They paid for his flights and hotel accommodation.",
-                        "The company provides accommodation for its employees."
-                    ),
-                    relatedWords = emptyList(),
+                    hints = listOf("Nơi bạn ở khi đi du lịch (khách sạn, nhà nghỉ...)", "Có thể là chỗ ở tạm thời hoặc dài hạn"),
+                    examples = listOf("They paid for his flights and hotel accommodation.", "The company provides accommodation for its employees."),
                     progressCurrent = 1,
                     progressTotal = 3,
                     quizOptions = listOf("Phương tiện", "Nơi ở", "Vé máy bay", "Hành lý"),
-                    correctAnswerIndex = 1, // Đáp án đúng nằm ở vị trí thứ 2
-                    isHintRevealed = false,
-                    selectedOptionIndex = null,
-                    isMeaningRevealed = false
+                    correctAnswerIndex = 1
                 ),
-
-                // --- TỪ SỐ 2: EVALUATE (Động từ) ---
-                VocabularyData(
+                VocabularyState(
                     id = "vocab_002",
                     word = "Evaluate",
                     ukPhonetic = "/ɪˈvæl.ju.eɪt/",
@@ -119,26 +101,14 @@ class VocabularyViewModel @Inject constructor() : BaseViewModel<VocabularyData>(
                     level = "B2",
                     partOfSpeech = "Động từ",
                     grammar = "evaluate something/somebody",
-                    hints = listOf(
-                        "Xem xét kỹ lưỡng để đưa ra nhận xét về chất lượng hoặc giá trị",
-                        "Thường dùng trong môi trường giáo dục (chấm điểm) hoặc công việc"
-                    ),
-                    examples = listOf(
-                        "We need to evaluate the success of the campaign.",
-                        "The students will be evaluated on their daily performance."
-                    ),
-                    relatedWords = emptyList(),
+                    hints = listOf("Xem xét kỹ lưỡng để đưa ra nhận xét về chất lượng hoặc giá trị", "Thường dùng trong môi trường giáo dục (chấm điểm) hoặc công việc"),
+                    examples = listOf("We need to evaluate the success of the campaign.", "The students will be evaluated on their daily performance."),
                     progressCurrent = 2,
                     progressTotal = 3,
                     quizOptions = listOf("Đánh giá", "Sản xuất", "Bỏ qua", "Chấp nhận"),
-                    correctAnswerIndex = 0, // Đáp án đúng nằm ở vị trí đầu tiên
-                    isHintRevealed = false,
-                    selectedOptionIndex = null,
-                    isMeaningRevealed = false
+                    correctAnswerIndex = 0
                 ),
-
-                // --- TỪ SỐ 3: PERSISTENT (Tính từ) ---
-                VocabularyData(
+                VocabularyState(
                     id = "vocab_003",
                     word = "Persistent",
                     ukPhonetic = "/pəˈsɪs.tənt/",
@@ -148,22 +118,12 @@ class VocabularyViewModel @Inject constructor() : BaseViewModel<VocabularyData>(
                     level = "C1",
                     partOfSpeech = "Tính từ",
                     grammar = "persistent in doing something",
-                    hints = listOf(
-                        "Không bỏ cuộc dù gặp rất nhiều khó khăn và thử thách",
-                        "Tiếp tục làm một việc gì đó dù bị người khác phản đối"
-                    ),
-                    examples = listOf(
-                        "She has been persistent in her pursuit of the truth.",
-                        "Symptoms of the illness include a persistent cough."
-                    ),
-                    relatedWords = emptyList(),
+                    hints = listOf("Không bỏ cuộc dù gặp rất nhiều khó khăn và thử thách", "Tiếp tục làm một việc gì đó dù bị người khác phản đối"),
+                    examples = listOf("She has been persistent in her pursuit of the truth.", "Symptoms of the illness include a persistent cough."),
                     progressCurrent = 3,
                     progressTotal = 3,
                     quizOptions = listOf("Lười biếng", "Thông minh", "Nhanh nhẹn", "Kiên trì"),
-                    correctAnswerIndex = 3, // Đáp án đúng nằm ở vị trí cuối cùng
-                    isHintRevealed = false,
-                    selectedOptionIndex = null,
-                    isMeaningRevealed = false
+                    correctAnswerIndex = 3
                 )
             )
             currentIndex = 0

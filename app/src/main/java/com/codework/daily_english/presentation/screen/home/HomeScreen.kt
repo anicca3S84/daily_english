@@ -45,7 +45,7 @@ import com.codework.daily_english.presentation.model.QuickActionItem
 
 @Composable
 fun HomeScreen(
-    state: UiState<HomeData>,
+    state: UiState<HomeState>,
     onEvent: (HomeEvent) -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -78,7 +78,7 @@ fun HomeScreen(
 
 @Composable
 fun HomeContent(
-    data: HomeData,
+    data: HomeState,
     onEvent: (HomeEvent) -> Unit
 ) {
 

@@ -36,7 +36,7 @@ import com.codework.daily_english.presentation.theme.TextPrimary
 
 @Composable
 fun QuizReviewScreen(
-    state: UiState<QuizReviewData>,
+    state: UiState<QuizReviewState>, // SỬA: Đổi QuizReviewData thành QuizReviewState
     onEvent: (QuizReviewEvent) -> Unit,
     onBackClick: () -> Unit
 ) {

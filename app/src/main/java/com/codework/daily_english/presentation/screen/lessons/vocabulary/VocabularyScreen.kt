@@ -51,7 +51,7 @@ import com.codework.daily_english.presentation.theme.TextPrimary
 
 @Composable
 fun VocabularyScreen(
-    state: UiState<VocabularyData>,
+    state: UiState<VocabularyState>, // SỬA: Đổi từ VocabularyData -> VocabularyState
     onEvent: (VocabularyEvent) -> Unit,
     onBackClick: () -> Unit
 ) {

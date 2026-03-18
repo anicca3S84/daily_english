@@ -9,74 +9,64 @@ import com.codework.daily_english.presentation.model.QuizType
 import com.codework.daily_english.presentation.navigation.Route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class QuizReviewViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
-) : BaseViewModel<QuizReviewData>() {
+) : BaseViewModel<QuizReviewState, QuizReviewEvent, QuizReviewEffect>() {
 
-    // Lưu trữ toàn bộ danh sách câu hỏi
-    private var reviewList: List<QuizReviewData> = emptyList()
-    // Lưu vị trí câu hỏi hiện tại
+    // Dùng QuizReviewState thay vì QuizReviewData
+    private var reviewList: List<QuizReviewState> = emptyList()
     private var currentIndex = 0
-    // Lưu loại bài tập hiện tại (Lấy từ Navigation)
     private var currentQuizType: QuizType = QuizType.VOCABULARY
 
     init {
-        // Hứng biến quizType từ Route (Nhờ Jetpack Navigation Type-Safe)
         val args = savedStateHandle.toRoute<Route.QuizReviewScreen>()
         currentQuizType = args.quizType
-
-        // Gọi hàm load data
         loadQuizData(currentQuizType)
     }
 
-    fun onEvent(event: QuizReviewEvent) {
+    override fun onEvent(event: QuizReviewEvent) {
         val currentState = (_uiState.value as? UiState.Success)?.data ?: return
 
         when (event) {
-            is QuizReviewEvent.OnGoBack -> {
-                // Xử lý khi bấm nút Back (Có thể emit event để quay lại màn trước)
-            }
+            is QuizReviewEvent.OnGoBack -> sendEffect(QuizReviewEffect.NavigateBack)
 
             is QuizReviewEvent.OnSelectOption -> {
-                // Chỉ cho phép chọn 1 lần (nếu chưa chọn thì mới cập nhật)
                 if (currentState.selectedOptionIndex == null) {
-                    _uiState.value = UiState.Success(
-                        currentState.copy(selectedOptionIndex = event.index)
-                    )
+                    val updatedState = currentState.copy(selectedOptionIndex = event.index)
+                    // Cập nhật lại list ở background để khi bấm Next vẫn giữ nguyên đáp án nếu lùi lại
+                    val mutableList = reviewList.toMutableList()
+                    mutableList[currentIndex] = updatedState
+                    reviewList = mutableList
+
+                    _uiState.update { UiState.Success(updatedState) }
                 }
             }
 
             is QuizReviewEvent.OnNextQuestion -> {
-                // Chuyển sang câu hỏi tiếp theo
                 if (currentIndex < reviewList.size - 1) {
                     currentIndex++
                     updateUiWithCurrentQuestion()
                 }
             }
 
-            is QuizReviewEvent.OnNavigateToListeningScreen -> {
-                navigateTo(Route.ListeningScreen)
-            }
-
-            is QuizReviewEvent.OnNavigateToGrammarScreen -> {
-                navigateTo(Route.SentenceBuilderScreen)
-            }
+            is QuizReviewEvent.OnNavigateToListeningScreen -> sendEffect(QuizReviewEffect.NavigateToListening)
+            is QuizReviewEvent.OnNavigateToGrammarScreen -> sendEffect(QuizReviewEffect.NavigateToGrammar)
         }
     }
 
     private fun loadQuizData(type: QuizType) {
         viewModelScope.launch {
-            _uiState.value = UiState.Loading
-            delay(400) // Giả lập load data
+            _uiState.update { UiState.Loading }
+            delay(400) // Giả lập mạng
 
             if (type == QuizType.VOCABULARY) {
-                // DATA TỪ VỰNG (Hiển thị 2 cột)
                 reviewList = listOf(
-                    QuizReviewData(
+                    QuizReviewState( // Đổi thành QuizReviewState
                         id = "rev_v_001",
                         type = QuizType.VOCABULARY,
                         sentence = "They paid for his flights and hotel ________.",
@@ -86,7 +76,7 @@ class QuizReviewViewModel @Inject constructor(
                         progressCurrent = 1,
                         progressTotal = 3
                     ),
-                    QuizReviewData(
+                    QuizReviewState(
                         id = "rev_v_002",
                         type = QuizType.VOCABULARY,
                         sentence = "We need to ________ the success of the campaign.",
@@ -96,7 +86,7 @@ class QuizReviewViewModel @Inject constructor(
                         progressCurrent = 2,
                         progressTotal = 3
                     ),
-                    QuizReviewData(
+                    QuizReviewState(
                         id = "rev_v_003",
                         type = QuizType.VOCABULARY,
                         sentence = "She has been ________ in her pursuit of the truth.",
@@ -108,9 +98,8 @@ class QuizReviewViewModel @Inject constructor(
                     )
                 )
             } else {
-                // DATA LISTENING (Hiển thị 1 cột dọc)
                 reviewList = listOf(
-                    QuizReviewData(
+                    QuizReviewState(
                         id = "rev_l_001",
                         type = QuizType.LISTENING,
                         sentence = "What size of coffee did the customer order?",
@@ -120,7 +109,7 @@ class QuizReviewViewModel @Inject constructor(
                         progressCurrent = 1,
                         progressTotal = 2
                     ),
-                    QuizReviewData(
+                    QuizReviewState(
                         id = "rev_l_002",
                         type = QuizType.LISTENING,
                         sentence = "How much did the coffee cost?",
@@ -139,8 +128,7 @@ class QuizReviewViewModel @Inject constructor(
 
     private fun updateUiWithCurrentQuestion() {
         if (reviewList.isNotEmpty() && currentIndex < reviewList.size) {
-            // Lấy câu hỏi tại vị trí currentIndex và ném ra cho UI vẽ
-            _uiState.value = UiState.Success(reviewList[currentIndex])
+            _uiState.update { UiState.Success(reviewList[currentIndex]) }
         }
     }
 }

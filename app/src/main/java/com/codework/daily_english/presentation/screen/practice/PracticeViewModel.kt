@@ -6,46 +6,43 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codework.daily_english.presentation.components.BaseViewModel
 import com.codework.daily_english.presentation.components.UiState
 import com.codework.daily_english.presentation.model.PracticeCategory
-import com.codework.daily_english.presentation.navigation.Route
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class PracticeViewModel @Inject constructor() : BaseViewModel<PracticeData>() {
+class PracticeViewModel @Inject constructor() : BaseViewModel<PracticeState, PracticeEvent, PracticeEffect>() {
 
     init {
         loadPracticeContent()
     }
 
-    fun onEvent(event: PracticeEvent) {
+    override fun onEvent(event: PracticeEvent) {
         when (event) {
             is PracticeEvent.LoadData -> loadPracticeContent()
             is PracticeEvent.OnRetry -> loadPracticeContent()
-            is PracticeEvent.OnCategoryClick -> {
+            is PracticeEvent.OnCategoryClick -> sendEffect(PracticeEffect.NavigateToCategory(event.id))
 
-            }
+            // Bắn Effect cho các action mới
+            is PracticeEvent.OnFlashcardClick -> sendEffect(PracticeEffect.NavigateToFlashcard)
+            is PracticeEvent.OnAiCardClick -> sendEffect(PracticeEffect.NavigateToAiSpeaking(event.type))
+            is PracticeEvent.OnGameClick -> sendEffect(PracticeEffect.NavigateToGame(event.gameName))
         }
     }
 
     private fun loadPracticeContent() {
         viewModelScope.launch {
-            _uiState.value = UiState.Loading
+            _uiState.update { UiState.Loading }
             try {
                 delay(1000) // Giả lập load data
 
-                val mockData = PracticeData(
+                val mockData = PracticeState( // Đổi thành PracticeState
                     streak = 15,
                     totalPoints = 1250,
                     categories = listOf(
@@ -79,9 +76,9 @@ class PracticeViewModel @Inject constructor() : BaseViewModel<PracticeData>() {
                         )
                     )
                 )
-                _uiState.value = UiState.Success(mockData)
+                _uiState.update { UiState.Success(mockData) }
             } catch (e: Exception) {
-                _uiState.value = UiState.Error(e.message ?: "Unknown Error")
+                _uiState.update { UiState.Error(e.message ?: "Unknown Error") }
             }
         }
     }

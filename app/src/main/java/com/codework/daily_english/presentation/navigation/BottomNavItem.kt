@@ -7,8 +7,12 @@ import com.codework.daily_english.R
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
 import androidx.compose.material.icons.filled.Extension
+import androidx.compose.material.icons.filled.LibraryBooks
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Extension
+import androidx.compose.material.icons.outlined.LibraryBooks
+import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Person
 
 sealed class BottomNavItem (
@@ -26,7 +30,6 @@ sealed class BottomNavItem (
 
     object Courses: BottomNavItem(
         route = Route.CourseScreen,
-        // Dùng LibraryBooks gợi cảm giác giáo trình chuyên nghiệp
         icon = Icons.AutoMirrored.Outlined.LibraryBooks,
         selectedIcon = Icons.AutoMirrored.Filled.LibraryBooks,
         title = R.string.nav_course
@@ -34,15 +37,21 @@ sealed class BottomNavItem (
 
     object Practice: BottomNavItem(
         route = Route.PracticeScreen,
-        // Dùng Extension (mảnh ghép) đại diện cho thực hành/game
         icon = Icons.Outlined.Extension,
         selectedIcon = Icons.Filled.Extension,
         title = R.string.nav_practice,
     )
 
+
+    object Grammar: BottomNavItem(
+        route = Route.GrammarScreen,
+        icon = Icons.Outlined.LibraryBooks,
+        selectedIcon = Icons.Filled.LibraryBooks,
+        title = R.string.nav_grammar,
+    )
+
     object More: BottomNavItem(
         route = Route.MoreScreen,
-        // Dùng Person vì More thường chứa thông tin cá nhân/cài đặt
         icon = Icons.Outlined.Person,
         selectedIcon = Icons.Filled.Person,
         title = R.string.nav_more,

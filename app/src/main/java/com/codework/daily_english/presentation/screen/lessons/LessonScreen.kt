@@ -1,5 +1,4 @@
 package com.codework.daily_english.presentation.screen.lessons
-
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -33,30 +31,11 @@ import com.codework.daily_english.presentation.theme.MainGradient
 import com.codework.daily_english.presentation.theme.ReviewGradient
 import com.codework.daily_english.presentation.theme.SuccessGreen
 
-// --- COLORS ---
-
-// --- DATA ---
-enum class LessonStepType {
-    VOCABULARY,
-    LISTENING,
-    SENTENCE_BUILDER,
-    SPEAKING_AI,
-    QUIZ
-}
-
-enum class StepStatus { LOCKED, UNLOCKED, COMPLETED }
-
-data class LessonStep(
-    val id: String,
-    val title: String,
-    val subtitle: String,
-    val type: LessonStepType,
-    val status: StepStatus
-)
+// ĐÃ XÓA CÁC ĐỊNH NGHĨA ENUM VÀ DATA CLASS Ở ĐÂY VÌ ĐÃ CHUYỂN SANG CONTRACT
 
 @Composable
 fun LessonScreen(
-    state: UiState<LessonData>,
+    state: UiState<LessonState>, // SỬA LessonData -> LessonState
     onEvent: (LessonEvent) -> Unit,
     onBackClick: () -> Unit,
 ) {
@@ -96,7 +75,6 @@ fun LessonScreen(
             )
         },
         bottomBar = {
-            // Chỉ hiển thị khi load data thành công
             if (state is UiState.Success) {
                 Box(
                     modifier = Modifier
@@ -108,16 +86,17 @@ fun LessonScreen(
                         onClick = { onEvent(LessonEvent.OnStartPractice) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            // Giữ hiệu ứng đổ bóng cho nút ở màn hình lộ trình
                             .shadow(12.dp, CircleShape, spotColor = BluePrimary.copy(alpha = 0.4f)),
-                        // Truyền Brush đã tính toán (MainGradient hoặc ReviewGradient)
                         brush = buttonBackground
                     )
                 }
             }
         }
     ) { paddingValues ->
-        BaseScreen(state = state) { data ->
+        BaseScreen(
+            state = state,
+            onRetry = { onEvent(LessonEvent.OnRetry) } // Bổ sung onRetry cho BaseScreen
+        ) { data ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -141,7 +120,7 @@ fun LessonScreen(
                     item {
                         Text(
                             text = "Contents",
-                            fontSize = 18.sp, // <--- Thêm dòng này để chỉnh size theo ý muốn
+                            fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF1F2937),
                             modifier = Modifier.padding(horizontal = 24.dp)
@@ -149,7 +128,6 @@ fun LessonScreen(
                     }
 
                     item { Spacer(modifier = Modifier.height(12.dp)) }
-
 
                     itemsIndexed(data.steps) { index, step ->
                         LessonPathItemModern(

@@ -6,64 +6,72 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import com.codework.daily_english.R
-import com.codework.daily_english.presentation.theme.Space16
-import com.codework.daily_english.presentation.theme.Space24
-import com.codework.daily_english.presentation.theme.Space64
-import com.codework.daily_english.presentation.theme.Space8
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.codework.daily_english.presentation.theme.BluePrimary
+import com.codework.daily_english.presentation.theme.GrayText
+import com.codework.daily_english.presentation.theme.TextPrimary
 
 @Composable
 fun ErrorOverlay(
+    errorType: ErrorVisual,
     message: String,
-    onRetry: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    onRetry: (() -> Unit)?
 ) {
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
-            .padding(Space16),
+            .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Hiển thị Emoji hoặc Icon lớn tùy loại lỗi
+        Text(text = errorType.icon, fontSize = 80.sp)
 
-        Icon(
-            imageVector = Icons.Default.Warning,
-            contentDescription = null,
-            modifier = Modifier.size(Space64),
-            tint = Color.Red.copy(alpha = 0.6f)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = errorType.title,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = TextPrimary
         )
 
-        Spacer(modifier = Modifier.height(Space16))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             text = message,
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurface
+            style = MaterialTheme.typography.bodyMedium,
+            color = GrayText,
+            textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(Space24))
+        Spacer(modifier = Modifier.height(32.dp))
 
-
-        onRetry?.let {
+        if (onRetry != null) {
             Button(
-                onClick = it,
-                shape = RoundedCornerShape(Space8)
+                onClick = onRetry,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
             ) {
-                Text(text = stringResource(R.string.common_retry))
+                Icon(Icons.Default.Refresh, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Try Again")
             }
         }
     }

@@ -45,7 +45,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AiScreen(
-    state: UiState<AiData>,
+    state: UiState<AiState>, // SỬA: Đổi AiData thành AiState
     onEvent: (AiEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -89,27 +89,16 @@ fun AiScreen(
                     onMenuClick = { scope.launch { drawerState.open() } },
                     titleContent = {
                         Row(
-                            modifier = Modifier.fillMaxWidth().statusBarsPadding().padding(end = 16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .statusBarsPadding()
+                                .padding(end = 16.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = Color.Transparent, // Để Surface trong suốt
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(brush = MainGradient), // Tô màu Gradient vào đúng shape đã clip
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "A",
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White,
-                                        fontSize = 18.sp
-                                    )
+                            Surface(shape = CircleShape, color = Color.Transparent, modifier = Modifier.size(36.dp)) {
+                                Box(modifier = Modifier.fillMaxSize().background(brush = MainGradient), contentAlignment = Alignment.Center) {
+                                    Text("A", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 18.sp)
                                 }
                             }
                             Spacer(modifier = Modifier.width(10.dp))
@@ -118,7 +107,7 @@ fun AiScreen(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(Color(0xFF4CAF50)))
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Always active", fontSize = 13.sp, color = Color.Gray, style = MaterialTheme.typography.labelSmall)
+                                    Text("Always active", fontSize = 13.sp, color = Color.Gray)
                                 }
                             }
                         }
@@ -134,14 +123,16 @@ fun AiScreen(
                             .padding(bottom = 18.dp)
                     ) {
                         if (state.data.messages.isEmpty()) {
-                            AutoScrollingSuggestionSection(suggestions) { onEvent(AiEvent.OnSendMessage(it)) }
+                            AutoScrollingSuggestionSection(suggestions) { onEvent(AiEvent.OnSuggestionClick(it)) }
                         }
 
                         ModernInputBar(
                             value = inputText,
                             onValueChange = { inputText = it },
                             onSend = { onEvent(AiEvent.OnSendMessage(inputText)); inputText = "" },
-                            isEnabled = !state.data.isTyping
+                            isEnabled = !state.data.isTyping,
+                            onAttachClick = { onEvent(AiEvent.OnImageClick) },
+                            onMicClick = { onEvent(AiEvent.OnMicClick) }
                         )
                     }
                 }
@@ -159,19 +150,14 @@ fun AiScreen(
                             visible = data.messages.isEmpty(),
                             enter = fadeIn(),
                             exit = fadeOut(),
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(top = 50.dp)
+                            modifier = Modifier.align(Alignment.Center).padding(top = 50.dp)
                         ) {
                             EmptyChatPlaceholder()
                         }
 
                         LazyColumn(
                             state = listState,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .statusBarsPadding()
-                                .padding(top = 72.dp),
+                            modifier = Modifier.fillMaxSize().statusBarsPadding().padding(top = 72.dp),
                             contentPadding = PaddingValues(16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
@@ -190,39 +176,27 @@ fun AiScreen(
     }
 }
 
-// -----------------------------------------------------------
-// --- AUTO SCROLL SUGGESTIONS (Giữ nguyên Style cũ) ---
-// -----------------------------------------------------------
+// --- AUTO SCROLL SUGGESTIONS ---
 @Composable
-fun AutoScrollingSuggestionSection(
-    suggestions: List<String>,
-    onClick: (String) -> Unit
-) {
+fun AutoScrollingSuggestionSection(suggestions: List<String>, onClick: (String) -> Unit) {
     val loopList = if (suggestions.size < 10) suggestions + suggestions + suggestions else suggestions
     val mid = loopList.size / 2
     val firstRow = loopList.take(mid)
     val secondRow = loopList.drop(mid)
 
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         SuggestionRowWithAutoScroll(items = firstRow, reverseLayout = false, onClick = onClick)
         SuggestionRowWithAutoScroll(items = secondRow, reverseLayout = true, onClick = onClick)
     }
 }
 
 @Composable
-fun SuggestionRowWithAutoScroll(
-    items: List<String>,
-    reverseLayout: Boolean = false,
-    onClick: (String) -> Unit
-) {
+fun SuggestionRowWithAutoScroll(items: List<String>, reverseLayout: Boolean = false, onClick: (String) -> Unit) {
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = if (reverseLayout) 0 else Int.MAX_VALUE / 2)
 
     LaunchedEffect(Unit) {
         while (true) {
-            listState.scrollBy(if (reverseLayout) 1.5f else 1.5f)
+            listState.scrollBy(if (reverseLayout) -1.5f else 1.5f)
             delay(10)
         }
     }
@@ -240,12 +214,10 @@ fun SuggestionRowWithAutoScroll(
                 onClick = { onClick(item) },
                 shape = CircleShape,
                 color = Color.White,
-                // GIỮ NGUYÊN VIỀN CŨ CỦA BẠN
-                border = BorderStroke(1.dp, MainGradient)
+                border = BorderStroke(1.dp, BluePrimary.copy(alpha = 0.5f))
             ) {
                 Text(
                     text = item,
-                    // GIỮ NGUYÊN PADDING VÀ STYLE CŨ CỦA BẠN
                     modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
                     fontWeight = FontWeight.Medium,
                     style = TextStyle(brush = MainGradient, fontSize = 13.sp),
@@ -256,44 +228,34 @@ fun SuggestionRowWithAutoScroll(
     }
 }
 
-// -----------------------------------------------------------
-// --- MODERN INPUT BAR (Có Dấu Cộng & Mic) ---
-// -----------------------------------------------------------
+// --- MODERN INPUT BAR ---
 @Composable
 fun ModernInputBar(
     value: String,
     onValueChange: (String) -> Unit,
     onSend: () -> Unit,
-    isEnabled: Boolean
+    isEnabled: Boolean,
+    onAttachClick: () -> Unit,
+    onMicClick: () -> Unit
 ) {
     val inputBackgroundColor = Color(0xFFF2F4F7)
+    val isTyping = value.isNotBlank()
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.Bottom
     ) {
-        // 1. NÚT CỘNG
+        // Nút đính kèm ảnh
         Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(inputBackgroundColor)
-                .clickable { /* Handle Attachment */ },
+            modifier = Modifier.size(48.dp).clip(CircleShape).background(inputBackgroundColor).clickable { onAttachClick() },
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add",
-                tint = Color.Gray,
-                modifier = Modifier.size(24.dp)
-            )
+            Icon(Icons.Default.Add, "Add", tint = Color.Gray, modifier = Modifier.size(24.dp))
         }
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        // 2. Ô NHẬP LIỆU (ĐÃ SỬA LỖI NHẢY KÍCH THƯỚC)
+        // Khung nhập liệu
         Surface(
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(24.dp),
@@ -303,32 +265,14 @@ fun ModernInputBar(
             BasicTextField(
                 value = value,
                 onValueChange = onValueChange,
-                textStyle = TextStyle(
-                    fontSize = 16.sp,
-                    color = Color(0xFF263238),
-                    lineHeight = 24.sp
-                ),
+                textStyle = TextStyle(fontSize = 16.sp, color = Color(0xFF263238), lineHeight = 24.sp),
                 maxLines = 5,
                 decorationBox = { innerTextField ->
-                    // SỬA: Thay vì dùng Padding dọc, ta dùng Box có minHeight = 48dp
-                    // và căn giữa nội dung (Alignment.CenterStart).
-                    // Cách này đảm bảo khung luôn cao ít nhất 48dp và text luôn ở giữa
-                    // mà không bị padding đẩy giãn ra.
                     Box(
                         contentAlignment = Alignment.CenterStart,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 48.dp) // Chiều cao tối thiểu cố định
-                            .padding(horizontal = 16.dp, vertical = 4.dp) // Padding dọc nhỏ để an toàn cho multiline
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(horizontal = 16.dp, vertical = 4.dp)
                     ) {
-                        if (value.isEmpty()) {
-                            Text(
-                                text = "Message Anicca...",
-                                color = Color.Gray,
-                                fontSize = 16.sp,
-                                lineHeight = 24.sp
-                            )
-                        }
+                        if (value.isEmpty()) { Text("Message Anicca...", color = Color.Gray, fontSize = 16.sp) }
                         innerTextField()
                     }
                 }
@@ -337,19 +281,13 @@ fun ModernInputBar(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        // 3. NÚT GỬI / MIC
-        val isTyping = value.isNotBlank()
+        // Nút Send / Mic
         Box(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(
-                    brush = if (isTyping) MainGradient else Brush.linearGradient(listOf(Color(0xFF212121), Color(0xFF212121))),
-                )
-                .clickable(
-                    enabled = isEnabled,
-                    onClick = { if (isTyping) onSend() }
-                ),
+                .background(brush = if (isTyping) MainGradient else Brush.linearGradient(listOf(Color(0xFF212121), Color(0xFF212121))))
+                .clickable(enabled = isEnabled, onClick = { if (isTyping) onSend() else onMicClick() }),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -362,10 +300,7 @@ fun ModernInputBar(
     }
 }
 
-// -----------------------------------------------------------
-// --- CÁC COMPONENT KHÁC GIỮ NGUYÊN ---
-// -----------------------------------------------------------
-
+// --- CÁC COMPONENT PHỤ GIỮ NGUYÊN ---
 @Composable
 fun EmptyChatPlaceholder() {
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.padding(32.dp)) {

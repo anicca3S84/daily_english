@@ -38,7 +38,7 @@ import com.codework.daily_english.presentation.theme.TextPrimary
 
 @Composable
 fun GrammarScreen(
-    state: UiState<GrammarData>,
+    state: UiState<GrammarState>, // SỬA: GrammarData -> GrammarState
     onEvent: (GrammarEvent) -> Unit,
     onBackClick: () -> Unit
 ) {

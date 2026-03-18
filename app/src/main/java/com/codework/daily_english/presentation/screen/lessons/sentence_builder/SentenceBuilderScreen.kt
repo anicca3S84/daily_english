@@ -38,7 +38,7 @@ import com.codework.daily_english.presentation.theme.*
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SentenceBuilderScreen(
-    state: UiState<SentenceBuilderData>,
+    state: UiState<SentenceBuilderState>, // SỬA: Data -> State
     onEvent: (SentenceBuilderEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -115,8 +115,21 @@ fun SentenceBuilderScreen(
                             .padding(horizontal = standardPadding)
                             .padding(bottom = 32.dp)
                     ) {
+                        // Xác định xem đây có phải câu hỏi cuối cùng không
+                        val isLastQuestion = data.progressCurrent == data.progressTotal
+
+                        // Logic Text Button:
+                        // - Chưa trả lời hoặc Sai: "Check Answer"
+                        // - Đúng và CHƯA PHẢI câu cuối: "Continue"
+                        // - Đúng và LÀ câu cuối: "Finish"
+                        val buttonText = if (data.isCorrect == true) {
+                            if (isLastQuestion) "Finish" else "Continue"
+                        } else {
+                            "Check Answer"
+                        }
+
                         PrimaryButton(
-                            text = if (data.isCorrect == true) "Continue" else "Check Answer",
+                            text = buttonText,
                             enabled = data.selectedWords.isNotEmpty(),
                             onClick = {
                                 if (data.isCorrect == true)
@@ -497,7 +510,7 @@ fun TheoryContent(title: String, content: String, example: String, onGotIt: () -
 @Preview(showBackground = true, name = "Start State")
 @Composable
 fun PreviewSentenceBuilder() {
-    val mockData = SentenceBuilderData(
+    val mockData = SentenceBuilderState(
         currentQuestion = SentenceBuilderQuestion(vietnamese = "Tôi muốn một tách trà.", correctSentence = listOf("I", "'d", "like", "a", "cup", "of", "tea")),
         availableWords = listOf(WordChip("1", "I"), WordChip("2", "'d"), WordChip("3", "like"), WordChip("4", "a"), WordChip("5", "cup"), WordChip("6", "of"), WordChip("7", "tea")),
         progressTotal = 3, progressCurrent = 1
@@ -508,7 +521,7 @@ fun PreviewSentenceBuilder() {
 @Preview(showBackground = true, name = "Correct State")
 @Composable
 fun PreviewSentenceBuilderCorrect() {
-    val mockData = SentenceBuilderData(
+    val mockData = SentenceBuilderState(
         currentQuestion = SentenceBuilderQuestion(vietnamese = "Tôi muốn một tách trà.", correctSentence = listOf("I", "'d", "like", "a", "cup", "of", "tea")),
         selectedWords = listOf(WordChip("1", "I"), WordChip("2", "'d"), WordChip("3", "like"), WordChip("4", "a"), WordChip("5", "cup"), WordChip("6", "of"), WordChip("7", "tea")),
         isCorrect = true, progressTotal = 3, progressCurrent = 1

@@ -35,11 +35,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.codework.daily_english.presentation.screen.lessons.LessonData
+import com.codework.daily_english.presentation.screen.lessons.LessonState
 
 @Composable
 fun LessonCard(
-    item: LessonData,
+    item: LessonState,
     onClick: () -> Unit
 ) {
     Card(

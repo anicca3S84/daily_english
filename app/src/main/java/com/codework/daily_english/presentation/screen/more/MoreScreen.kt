@@ -1,4 +1,6 @@
 package com.codework.daily_english.presentation.screen.more
+
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.codework.daily_english.presentation.components.BaseScreen
@@ -26,11 +29,13 @@ import com.codework.daily_english.presentation.components.UiState
 
 @Composable
 fun MoreScreen(
-    state: UiState<MoreData>,
+    state: UiState<MoreState>, // SỬA: Đổi MoreData thành MoreState
     onEvent: (MoreEvent) -> Unit
 ) {
-
-    BaseScreen(state = state) { data ->
+    BaseScreen(
+        state = state,
+        onRetry = { onEvent(MoreEvent.OnRetry) } // Bổ sung onRetry
+    ) { data ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -45,7 +50,6 @@ fun MoreScreen(
             }
             item {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    // Group: Account
                     SettingsGroupTitle("Account Settings")
                     ProfileMenuItem(
                         icon = Icons.Outlined.Person,
@@ -60,7 +64,7 @@ fun MoreScreen(
                     ProfileMenuItem(
                         icon = Icons.Outlined.Language,
                         title = "App Language",
-                        value = "English", // Hiển thị giá trị hiện tại
+                        value = "English",
                         onClick = { onEvent(MoreEvent.OnMenuClick("Language")) }
                     )
 
@@ -80,7 +84,6 @@ fun MoreScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Button Logout
                     Button(
                         onClick = { onEvent(MoreEvent.OnLogout) },
                         modifier = Modifier.fillMaxWidth().height(50.dp),
@@ -98,7 +101,7 @@ fun MoreScreen(
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.Gray,
                         modifier = Modifier.fillMaxWidth(),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
                 }
             }
@@ -109,7 +112,7 @@ fun MoreScreen(
 // --- SUB COMPONENTS ---
 
 @Composable
-fun ProfileHeaderSection(data: MoreData, onEditClick: () -> Unit) {
+fun ProfileHeaderSection(data: MoreState, onEditClick: () -> Unit) { // SỬA: Đổi MoreData thành MoreState
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -118,7 +121,6 @@ fun ProfileHeaderSection(data: MoreData, onEditClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box {
-            // Avatar
             AsyncImage(
                 model = data.avatarUrl,
                 contentDescription = null,
@@ -127,7 +129,6 @@ fun ProfileHeaderSection(data: MoreData, onEditClick: () -> Unit) {
                     .clip(CircleShape),
                 contentScale = ContentScale.Crop
             )
-            // Edit Icon Overlay
             Surface(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -135,7 +136,7 @@ fun ProfileHeaderSection(data: MoreData, onEditClick: () -> Unit) {
                     .clickable { onEditClick() },
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primary,
-                border = androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.surface)
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.surface)
             ) {
                 Icon(
                     imageVector = Icons.Default.Edit,
@@ -154,7 +155,7 @@ fun ProfileHeaderSection(data: MoreData, onEditClick: () -> Unit) {
 }
 
 @Composable
-fun StatsRow(data: MoreData) {
+fun StatsRow(data: MoreState) { // SỬA: Đổi MoreData thành MoreState
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -234,7 +235,6 @@ fun ProfileMenuItem(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon
             Surface(
                 shape = RoundedCornerShape(8.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
@@ -250,7 +250,6 @@ fun ProfileMenuItem(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Text
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge,
@@ -258,7 +257,6 @@ fun ProfileMenuItem(
                 fontWeight = FontWeight.Medium
             )
 
-            // Value (Optional)
             if (value != null) {
                 Text(
                     text = value,
@@ -269,7 +267,6 @@ fun ProfileMenuItem(
                 Spacer(modifier = Modifier.width(8.dp))
             }
 
-            // Arrow
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
@@ -277,6 +274,5 @@ fun ProfileMenuItem(
             )
         }
     }
-    // Divider mỏng
     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 }

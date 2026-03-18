@@ -20,6 +20,7 @@ fun AppBottomNavigation(navController: NavHostController) {
         BottomNavItem.Home,
         BottomNavItem.Courses,
         BottomNavItem.Practice,
+        BottomNavItem.Grammar,
         BottomNavItem.More
     )
 

@@ -13,7 +13,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -21,21 +20,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.codework.daily_english.presentation.components.BaseScreen
 import com.codework.daily_english.presentation.components.CurvedHeaderWrapper
 import com.codework.daily_english.presentation.components.HeaderStatItem
 import com.codework.daily_english.presentation.components.UiState
-import com.codework.daily_english.presentation.theme.MainGradient
 
 @Composable
 fun PracticeScreen(
-    state: UiState<PracticeData>,
+    state: UiState<PracticeState>, // SỬA: Đổi PracticeData thành PracticeState
     onEvent: (PracticeEvent) -> Unit
 ) {
-
-    BaseScreen(state = state) { data ->
+    BaseScreen(
+        state = state,
+        onRetry = { onEvent(PracticeEvent.OnRetry) } // Bổ sung onRetry
+    ) { data ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -46,7 +44,7 @@ fun PracticeScreen(
             // 1. Header & Stats
             item {
                 CurvedHeaderWrapper(
-                    headerHeight = 230.dp, // Màn Practice ngắn hơn chút
+                    headerHeight = 230.dp,
                     gradientHeight = 190.dp,
                     content = {
                         Row(
@@ -78,28 +76,28 @@ fun PracticeScreen(
                             value = "${data.totalPoints}",
                             label = "Total XP",
                             icon = Icons.Default.EmojiEvents,
-                            iconColor = Color(0xFFFFC107) // Màu vàng
+                            iconColor = Color(0xFFFFC107)
                         )
                         Divider(modifier = Modifier.height(40.dp).width(1.dp), color = Color.LightGray)
                         HeaderStatItem(
                             value = "${data.streak}",
                             label = "Day Streak",
                             icon = Icons.Default.LocalFireDepartment,
-                            iconColor = Color(0xFFFF5722) // Màu cam lửa
+                            iconColor = Color(0xFFFF5722)
                         )
                     }
                 )
             }
 
-            // 2. REVIEW ZONE (Spaced Repetition) - Quan trọng nhất
+            // 2. REVIEW ZONE (Spaced Repetition)
             item {
                 Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                     SectionTitle(title = "Smart Review 🧠", subtitle = "Based on your forgetting curve")
                     Spacer(modifier = Modifier.height(12.dp))
                     SpacedRepetitionCard(
-                        topicName = "Family & Friends", // Lấy dynamic từ bài học cũ
+                        topicName = "Family & Friends",
                         dueWords = 15,
-                        onClick = { /* Navigate to Flashcard Flow */ }
+                        onClick = { onEvent(PracticeEvent.OnFlashcardClick) } // Đã nối sự kiện
                     )
                 }
             }
@@ -119,7 +117,8 @@ fun PracticeScreen(
                                 title = "Free Talk",
                                 subtitle = "Chat about anything",
                                 color = Brush.linearGradient(listOf(Color(0xFF4A00E0), Color(0xFF8E2DE2))),
-                                icon = Icons.Default.Mic
+                                icon = Icons.Default.Mic,
+                                onClick = { onEvent(PracticeEvent.OnAiCardClick("Free Talk")) } // Nối Event
                             )
                         }
                         item {
@@ -127,7 +126,8 @@ fun PracticeScreen(
                                 title = "Roleplay: Family",
                                 subtitle = "Practice recent topic",
                                 color = Brush.linearGradient(listOf(Color(0xFFFD297B), Color(0xFFFF655B))),
-                                icon = Icons.Default.RecordVoiceOver
+                                icon = Icons.Default.RecordVoiceOver,
+                                onClick = { onEvent(PracticeEvent.OnAiCardClick("Roleplay")) } // Nối Event
                             )
                         }
                         item {
@@ -135,7 +135,8 @@ fun PracticeScreen(
                                 title = "Interview Prep",
                                 subtitle = "Professional mode",
                                 color = Brush.linearGradient(listOf(Color(0xFF00C6FF), Color(0xFF0072FF))),
-                                icon = Icons.Default.Work
+                                icon = Icons.Default.Work,
+                                onClick = { onEvent(PracticeEvent.OnAiCardClick("Interview")) } // Nối Event
                             )
                         }
                     }
@@ -147,8 +148,6 @@ fun PracticeScreen(
                 PaddingSectionTitle(title = "Game Arena 🎮", subtitle = "Fun way to master skills")
             }
 
-            // Grid Games (Dùng chunked để chia cột)
-            // Mock data game (Bạn có thể đưa vào ViewModel)
             val games = listOf(
                 GameItem("Word Match", "Vocabulary", Icons.Default.Extension, Color(0xFFFF9800)),
                 GameItem("Speed Quiz", "Grammar", Icons.Default.Timer, Color(0xFF4CAF50)),
@@ -168,14 +167,13 @@ fun PracticeScreen(
                         GameCardPro(
                             game = game,
                             modifier = Modifier.weight(1f),
-                            onClick = { /* Navigate to Game with Topic Selection */ }
+                            onClick = { onEvent(PracticeEvent.OnGameClick(game.name)) } // Nối Event
                         )
                     }
                     if (pair.count() < 2) Spacer(modifier = Modifier.weight(1f))
                 }
             }
 
-            // Padding bottom
             item { Spacer(modifier = Modifier.height(32.dp)) }
         }
     }
@@ -213,7 +211,6 @@ fun SpacedRepetitionCard(topicName: String, dueWords: Int, onClick: () -> Unit) 
             modifier = Modifier.padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Circular Progress giả lập
             Box(contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(
                     progress = { 0.7f },
@@ -239,9 +236,11 @@ fun SpacedRepetitionCard(topicName: String, dueWords: Int, onClick: () -> Unit) 
     }
 }
 
+// Sửa lại signature của AICard để nhận onClick
 @Composable
-fun AICard(title: String, subtitle: String, color: Brush, icon: ImageVector) {
+fun AICard(title: String, subtitle: String, color: Brush, icon: ImageVector, onClick: () -> Unit) {
     Card(
+        onClick = onClick,
         modifier = Modifier.width(160.dp).height(180.dp),
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -249,7 +248,6 @@ fun AICard(title: String, subtitle: String, color: Brush, icon: ImageVector) {
         Box(
             modifier = Modifier.fillMaxSize().background(color)
         ) {
-            // Decorative Circles
             Box(modifier = Modifier.offset(x = 80.dp, y = (-20).dp).size(100.dp).background(Color.White.copy(0.1f), CircleShape))
 
             Column(
@@ -279,7 +277,6 @@ fun GameCardPro(game: GameItem, modifier: Modifier, onClick: () -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Vệt màu trang trí bên phải
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
