@@ -13,7 +13,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
-import com.codework.daily_english.presentation.model.CourseItem
+import com.codework.daily_english.presentation.screen.home.model.CourseItem
 
 @Composable
 fun CourseCard(

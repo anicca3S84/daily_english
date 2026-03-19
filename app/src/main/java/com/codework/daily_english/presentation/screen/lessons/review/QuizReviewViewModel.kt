@@ -3,10 +3,13 @@ package com.codework.daily_english.presentation.screen.lessons.review
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.codework.daily_english.presentation.components.BaseViewModel
-import com.codework.daily_english.presentation.components.UiState
-import com.codework.daily_english.presentation.model.QuizType
-import com.codework.daily_english.presentation.navigation.Route
+import com.codework.daily_english.core.base.BaseViewModel
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.lessons.review.model.QuizType
+import com.codework.daily_english.core.navigation.Route
+import com.codework.daily_english.presentation.screen.lessons.review.mvi.QuizReviewEffect
+import com.codework.daily_english.presentation.screen.lessons.review.mvi.QuizReviewEvent
+import com.codework.daily_english.presentation.screen.lessons.review.mvi.QuizReviewState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
@@ -30,7 +33,7 @@ class QuizReviewViewModel @Inject constructor(
     }
 
     override fun onEvent(event: QuizReviewEvent) {
-        val currentState = (_uiState.value as? UiState.Success)?.data ?: return
+        val currentState = (_uiState.value as? BaseState.Success)?.data ?: return
 
         when (event) {
             is QuizReviewEvent.OnGoBack -> sendEffect(QuizReviewEffect.NavigateBack)
@@ -43,7 +46,7 @@ class QuizReviewViewModel @Inject constructor(
                     mutableList[currentIndex] = updatedState
                     reviewList = mutableList
 
-                    _uiState.update { UiState.Success(updatedState) }
+                    _uiState.update { BaseState.Success(updatedState) }
                 }
             }
 
@@ -61,7 +64,7 @@ class QuizReviewViewModel @Inject constructor(
 
     private fun loadQuizData(type: QuizType) {
         viewModelScope.launch {
-            _uiState.update { UiState.Loading }
+            _uiState.update { BaseState.Loading }
             delay(400) // Giả lập mạng
 
             if (type == QuizType.VOCABULARY) {
@@ -128,7 +131,7 @@ class QuizReviewViewModel @Inject constructor(
 
     private fun updateUiWithCurrentQuestion() {
         if (reviewList.isNotEmpty() && currentIndex < reviewList.size) {
-            _uiState.update { UiState.Success(reviewList[currentIndex]) }
+            _uiState.update { BaseState.Success(reviewList[currentIndex]) }
         }
     }
 }

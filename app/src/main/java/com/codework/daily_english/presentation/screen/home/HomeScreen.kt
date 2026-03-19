@@ -9,43 +9,38 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material3.*
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.codework.daily_english.presentation.components.BaseScreen
 import com.codework.daily_english.presentation.components.CourseCard
 import com.codework.daily_english.presentation.components.LessonCard
 import com.codework.daily_english.presentation.components.QuickActionSection
 import com.codework.daily_english.presentation.components.SeeAllHeader
 import com.codework.daily_english.presentation.components.WeeklyProgressCard
-import com.codework.daily_english.presentation.model.CourseItem
+import com.codework.daily_english.presentation.screen.home.model.CourseItem
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.TrackChanges
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.codework.daily_english.R
-import com.codework.daily_english.presentation.components.UiState
-import com.codework.daily_english.presentation.model.QuickActionItem
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.home.model.QuickActionItem
+import com.codework.daily_english.presentation.screen.home.mvi.HomeEvent
+import com.codework.daily_english.presentation.screen.home.mvi.HomeState
 
 @Composable
 fun HomeScreen(
-    state: UiState<HomeState>,
+    state: BaseState<HomeState>,
     onEvent: (HomeEvent) -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }

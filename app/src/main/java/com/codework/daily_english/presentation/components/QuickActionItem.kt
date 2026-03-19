@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource // Import cái này để dùng R.drawable
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.codework.daily_english.presentation.model.QuickActionItem // Import Data Class của bạn
+import com.codework.daily_english.presentation.screen.home.model.QuickActionItem // Import Data Class của bạn
 
 // 1. Đây là Composable hiển thị từng item (Đã đổi tên thành QuickActionCard)
 @Composable

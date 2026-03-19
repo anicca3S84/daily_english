@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.Card
@@ -35,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.codework.daily_english.presentation.screen.lessons.LessonState
+import com.codework.daily_english.presentation.screen.lessons.lesson.mvi.LessonState
 
 @Composable
 fun LessonCard(

@@ -10,9 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.codework.daily_english.presentation.navigation.AppBottomNavigation
-import com.codework.daily_english.presentation.navigation.NavGraph
-import com.codework.daily_english.presentation.navigation.Route
+import com.codework.daily_english.core.navigation.AppBottomNavigation
+import com.codework.daily_english.core.navigation.NavGraph
+import com.codework.daily_english.core.navigation.Route
 
 @Composable
 fun MainScreen() {

@@ -1,8 +1,13 @@
 package com.codework.daily_english.presentation.screen.lessons.speaking
 
 import androidx.lifecycle.viewModelScope
-import com.codework.daily_english.presentation.components.BaseViewModel
-import com.codework.daily_english.presentation.components.UiState
+import com.codework.daily_english.core.base.BaseViewModel
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.lessons.speaking.model.ChatMessage
+import com.codework.daily_english.presentation.screen.lessons.speaking.model.RecordState
+import com.codework.daily_english.presentation.screen.lessons.speaking.mvi.SpeakingEffect
+import com.codework.daily_english.presentation.screen.lessons.speaking.mvi.SpeakingEvent
+import com.codework.daily_english.presentation.screen.lessons.speaking.mvi.SpeakingState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
@@ -21,7 +26,7 @@ class SpeakingViewModel @Inject constructor() :
     }
 
     override fun onEvent(event: SpeakingEvent) {
-        val currentState = (_uiState.value as? UiState.Success)?.data ?: return
+        val currentState = (_uiState.value as? BaseState.Success)?.data ?: return
 
         when (event) {
             is SpeakingEvent.OnGoBack -> sendEffect(SpeakingEffect.NavigateBack)
@@ -32,10 +37,10 @@ class SpeakingViewModel @Inject constructor() :
             is SpeakingEvent.OnUserSpeechDone -> handleUserSpeechDone(currentState, event.text)
             is SpeakingEvent.OnAiSpeechDone -> handleAiSpeechDone(currentState)
             is SpeakingEvent.OnToggleHintSheet -> {
-                _uiState.update { UiState.Success(currentState.copy(isHintSheetOpen = !currentState.isHintSheetOpen)) }
+                _uiState.update { BaseState.Success(currentState.copy(isHintSheetOpen = !currentState.isHintSheetOpen)) }
             }
             is SpeakingEvent.OnUseHint -> {
-                _uiState.update { UiState.Success(currentState.copy(isHintSheetOpen = false)) }
+                _uiState.update { BaseState.Success(currentState.copy(isHintSheetOpen = false)) }
                 onEvent(SpeakingEvent.OnUserSpeechDone(event.text))
             }
             is SpeakingEvent.OnPlayAudio -> {
@@ -48,12 +53,12 @@ class SpeakingViewModel @Inject constructor() :
     }
 
     private fun loadInitialData() {
-        _uiState.update { UiState.Success(SpeakingState(recordState = RecordState.READY_TO_START)) }
+        _uiState.update { BaseState.Success(SpeakingState(recordState = RecordState.READY_TO_START)) }
     }
 
     private fun startRoleplay(currentState: SpeakingState) {
         viewModelScope.launch {
-            _uiState.update { UiState.Success(currentState.copy(recordState = RecordState.PROCESSING)) }
+            _uiState.update { BaseState.Success(currentState.copy(recordState = RecordState.PROCESSING)) }
             delay(800)
 
             val aiGreeting = ChatMessage(
@@ -62,7 +67,7 @@ class SpeakingViewModel @Inject constructor() :
                 translatedText = "Xin chào! Chào mừng bạn đến với Star Coffee. Bạn muốn dùng gì hôm nay?"
             )
 
-            _uiState.update { UiState.Success(currentState.copy(
+            _uiState.update { BaseState.Success(currentState.copy(
                 messages = listOf(aiGreeting),
                 recordState = RecordState.AI_SPEAKING,
                 suggestedHints = listOf("I'd like a medium cappuccino, please.", "Can I get a hot coffee?")
@@ -80,14 +85,14 @@ class SpeakingViewModel @Inject constructor() :
             isManuallyPaused -> RecordState.PAUSED
             else -> RecordState.RECORDING
         }
-        _uiState.update { UiState.Success(currentState.copy(recordState = nextState)) }
+        _uiState.update { BaseState.Success(currentState.copy(recordState = nextState)) }
     }
 
     private fun handleUserSpeechDone(currentState: SpeakingState, text: String) {
         turnCount++
         viewModelScope.launch {
             val userMsg = ChatMessage(text = text, isFromUser = true)
-            _uiState.update { UiState.Success(currentState.copy(
+            _uiState.update { BaseState.Success(currentState.copy(
                 messages = currentState.messages + userMsg,
                 recordState = RecordState.PROCESSING
             )) }
@@ -101,7 +106,7 @@ class SpeakingViewModel @Inject constructor() :
             }
 
             val isLast = turnCount > 1
-            _uiState.update { UiState.Success(currentState.copy(
+            _uiState.update { BaseState.Success(currentState.copy(
                 messages = currentState.messages + userMsg + aiResponse,
                 recordState = RecordState.AI_SPEAKING,
                 suggestedHints = if (isLast) emptyList() else listOf("Hot, please.", "Iced.")
@@ -111,7 +116,7 @@ class SpeakingViewModel @Inject constructor() :
             delay(2500)
 
             if (isLast) {
-                _uiState.update { UiState.Success((_uiState.value as UiState.Success).data.copy(recordState = RecordState.COMPLETED)) }
+                _uiState.update { BaseState.Success((_uiState.value as BaseState.Success).data.copy(recordState = RecordState.COMPLETED)) }
             }
             onEvent(SpeakingEvent.OnAiSpeechDone)
         }
@@ -124,7 +129,7 @@ class SpeakingViewModel @Inject constructor() :
             onEvent(SpeakingEvent.OnUserSpeechDone(if(turnCount == 0) "I'd like a cappuccino." else "Hot, please."))
         } else if (currentState.recordState == RecordState.PAUSED) {
             isManuallyPaused = false
-            _uiState.update { UiState.Success(currentState.copy(recordState = RecordState.RECORDING)) }
+            _uiState.update { BaseState.Success(currentState.copy(recordState = RecordState.RECORDING)) }
         }
     }
 
@@ -132,6 +137,6 @@ class SpeakingViewModel @Inject constructor() :
         val updatedMessages = currentState.messages.map {
             if (it.id == messageId && it.translatedText != null) it.copy(isTranslated = !it.isTranslated) else it
         }
-        _uiState.update { UiState.Success(currentState.copy(messages = updatedMessages)) }
+        _uiState.update { BaseState.Success(currentState.copy(messages = updatedMessages)) }
     }
 }

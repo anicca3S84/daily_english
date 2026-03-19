@@ -1,10 +1,13 @@
 package com.codework.daily_english.presentation.screen.grammar
 
 import androidx.lifecycle.viewModelScope
-import com.codework.daily_english.presentation.components.BaseViewModel
-import com.codework.daily_english.presentation.components.UiState
-import com.codework.daily_english.presentation.model.GrammarTip
-import com.codework.daily_english.presentation.model.GrammarTopic
+import com.codework.daily_english.core.base.BaseViewModel
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.grammar.model.GrammarTip
+import com.codework.daily_english.presentation.screen.grammar.model.GrammarTopic
+import com.codework.daily_english.presentation.screen.grammar.mvi.GrammarEffect
+import com.codework.daily_english.presentation.screen.grammar.mvi.GrammarEvent
+import com.codework.daily_english.presentation.screen.grammar.mvi.GrammarState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
@@ -33,7 +36,7 @@ class GrammarViewModel @Inject constructor() :
 
     private fun loadGrammarData() {
         viewModelScope.launch {
-            _uiState.update { UiState.Loading }
+            _uiState.update { BaseState.Loading }
             delay(500)
 
             allTopicsSource = listOf(
@@ -53,17 +56,23 @@ class GrammarViewModel @Inject constructor() :
             )
 
             _uiState.update {
-                UiState.Success(GrammarState(selectedLevel = "All", grammarTopics = allTopicsSource, dailyTip = tip))
+                BaseState.Success(
+                    GrammarState(
+                        selectedLevel = "All",
+                        grammarTopics = allTopicsSource,
+                        dailyTip = tip
+                    )
+                )
             }
         }
     }
 
     private fun filterTopics(level: String) {
-        val currentState = (_uiState.value as? UiState.Success)?.data ?: return
+        val currentState = (_uiState.value as? BaseState.Success)?.data ?: return
         val filteredList = if (level == "All") allTopicsSource else allTopicsSource.filter { it.level == level }
 
         _uiState.update {
-            UiState.Success(currentState.copy(selectedLevel = level, grammarTopics = filteredList))
+            BaseState.Success(currentState.copy(selectedLevel = level, grammarTopics = filteredList))
         }
     }
 }

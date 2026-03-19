@@ -1,7 +1,7 @@
 package com.codework.daily_english.presentation.components
 import androidx.compose.material3.Card
 import androidx.compose.ui.Modifier
-import com.codework.daily_english.presentation.model.DailyStudyTime
+import com.codework.daily_english.presentation.screen.home.model.DailyStudyTime
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape

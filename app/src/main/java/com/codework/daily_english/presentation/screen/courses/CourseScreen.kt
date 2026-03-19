@@ -42,8 +42,10 @@ import coil.compose.AsyncImage
 import com.codework.daily_english.presentation.components.BaseScreen
 import com.codework.daily_english.presentation.components.CurvedHeaderWrapper // Import Base
 import com.codework.daily_english.presentation.components.HeaderStatItem    // Import Base
-import com.codework.daily_english.presentation.components.UiState
-import com.codework.daily_english.presentation.model.TopicItem
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.courses.model.TopicItem
+import com.codework.daily_english.presentation.screen.courses.mvi.CourseEvent
+import com.codework.daily_english.presentation.screen.courses.mvi.CourseState
 import com.codework.daily_english.presentation.theme.AppBackground
 import com.codework.daily_english.presentation.theme.BluePrimary
 import com.codework.daily_english.presentation.theme.IndigoPurple
@@ -51,7 +53,7 @@ import com.codework.daily_english.presentation.theme.MainGradient
 
 @Composable
 fun CourseScreen(
-    state: UiState<CourseState>,
+    state: BaseState<CourseState>,
     onEvent: (CourseEvent) -> Unit,
 ) {
     BaseScreen(state = state) { data ->

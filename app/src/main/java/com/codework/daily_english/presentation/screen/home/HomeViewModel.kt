@@ -1,10 +1,13 @@
 package com.codework.daily_english.presentation.screen.home
 
 import androidx.lifecycle.viewModelScope
-import com.codework.daily_english.presentation.components.BaseViewModel
-import com.codework.daily_english.presentation.components.UiState
-import com.codework.daily_english.presentation.model.DailyStudyTime
-import com.codework.daily_english.presentation.screen.lessons.LessonState
+import com.codework.daily_english.core.base.BaseViewModel
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.home.model.DailyStudyTime
+import com.codework.daily_english.presentation.screen.home.mvi.HomeEffect
+import com.codework.daily_english.presentation.screen.home.mvi.HomeEvent
+import com.codework.daily_english.presentation.screen.home.mvi.HomeState
+import com.codework.daily_english.presentation.screen.lessons.lesson.mvi.LessonState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
@@ -35,7 +38,7 @@ class HomeViewModel @Inject constructor() : BaseViewModel<HomeState, HomeEvent, 
 
     private fun loadHomeData() {
         viewModelScope.launch {
-            _uiState.update { UiState.Loading }
+            _uiState.update { BaseState.Loading }
 
             // Giả lập delay mạng
             delay(2000)
@@ -44,7 +47,15 @@ class HomeViewModel @Inject constructor() : BaseViewModel<HomeState, HomeEvent, 
                 // Mock data
                 val mockLessons = listOf(
                     LessonState("1", "Tourist trip", imageUrl = "https://images.unsplash.com/photo-1504609773096-104ff2c73ba4",level = "A1-B1",totalProgress = 0.6f, steps = mutableListOf(), description = "" ),
-                    LessonState("2", "Business Meeting", imageUrl ="https://images.unsplash.com/photo-1517048676732-d65bc937f952", level = "A1-B1", totalProgress = 0.6f, steps = mutableListOf(), description = ""  ),
+                    LessonState(
+                        "2",
+                        "Business Meeting",
+                        imageUrl = "https://images.unsplash.com/photo-1517048676732-d65bc937f952",
+                        level = "A1-B1",
+                        totalProgress = 0.6f,
+                        steps = mutableListOf(),
+                        description = ""
+                    ),
                     LessonState("3", "Airport Check-in", imageUrl ="https://images.unsplash.com/photo-1436491865332-7a61a109cc05", level = "A1-B1", totalProgress = 0.8f, steps = mutableListOf(), description = "")
                 )
 
@@ -68,22 +79,22 @@ class HomeViewModel @Inject constructor() : BaseViewModel<HomeState, HomeEvent, 
                     weeklyStats = weeklyStats
                 )
 
-                _uiState.update { UiState.Success(data) }
+                _uiState.update { BaseState.Success(data) }
 
             } catch (e: Exception) {
-                _uiState.update { UiState.Error(e.message ?: "Đã có lỗi xảy ra") }
+                _uiState.update { BaseState.Error(e.message ?: "Đã có lỗi xảy ra") }
             }
         }
     }
 
     private fun toggleDailyQuest() {
         val currentState = _uiState.value
-        if (currentState is UiState.Success) {
+        if (currentState is BaseState.Success) {
             val currentData = currentState.data
             val newData = currentData.copy(
                 isDailyQuestFinished = !currentData.isDailyQuestFinished
             )
-            _uiState.update { UiState.Success(newData) }
+            _uiState.update { BaseState.Success(newData) }
         }
     }
 }

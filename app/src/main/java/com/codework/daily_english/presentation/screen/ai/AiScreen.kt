@@ -33,9 +33,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codework.daily_english.presentation.components.AppTopBar
 import com.codework.daily_english.presentation.components.BaseScreen
-import com.codework.daily_english.presentation.components.UiState
-import com.codework.daily_english.presentation.model.ChatMessage
-import com.codework.daily_english.presentation.model.ChatSession
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.ai.model.ChatMessage
+import com.codework.daily_english.presentation.screen.ai.model.ChatSession
+import com.codework.daily_english.presentation.screen.ai.mvi.AiEvent
+import com.codework.daily_english.presentation.screen.ai.mvi.AiState
 import com.codework.daily_english.presentation.theme.AppBackground
 import com.codework.daily_english.presentation.theme.BluePrimary
 import com.codework.daily_english.presentation.theme.MainGradient
@@ -45,7 +47,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AiScreen(
-    state: UiState<AiState>, // SỬA: Đổi AiData thành AiState
+    state: BaseState<AiState>, // SỬA: Đổi AiData thành AiState
     onEvent: (AiEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -60,7 +62,7 @@ fun AiScreen(
         "Daily conversation 👋", "Vocabulary quiz 🧠", "Roleplay interview 👔"
     )
 
-    if (state is UiState.Success) {
+    if (state is BaseState.Success) {
         val data = state.data
         LaunchedEffect(data.messages.size, data.isTyping) {
             if (data.messages.isNotEmpty()) {
@@ -72,7 +74,7 @@ fun AiScreen(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            if (state is UiState.Success) {
+            if (state is BaseState.Success) {
                 HistoryDrawerContent(
                     sessions = state.data.historySessions,
                     onNewChatClick = { onEvent(AiEvent.OnNewChat); scope.launch { drawerState.close() } },
@@ -115,7 +117,7 @@ fun AiScreen(
                 )
             },
             bottomBar = {
-                if (state is UiState.Success) {
+                if (state is BaseState.Success) {
                     Column(
                         modifier = Modifier
                             .background(AppBackground)

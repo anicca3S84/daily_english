@@ -1,8 +1,13 @@
 package com.codework.daily_english.presentation.screen.lessons.sentence_builder
 
 import androidx.lifecycle.viewModelScope
-import com.codework.daily_english.presentation.components.BaseViewModel
-import com.codework.daily_english.presentation.components.UiState
+import com.codework.daily_english.core.base.BaseViewModel
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.lessons.sentence_builder.model.SentenceBuilderQuestion
+import com.codework.daily_english.presentation.screen.lessons.sentence_builder.model.WordChip
+import com.codework.daily_english.presentation.screen.lessons.sentence_builder.mvi.SentenceBuilderEffect
+import com.codework.daily_english.presentation.screen.lessons.sentence_builder.mvi.SentenceBuilderEvent
+import com.codework.daily_english.presentation.screen.lessons.sentence_builder.mvi.SentenceBuilderState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
@@ -18,20 +23,20 @@ class SentenceBuilderViewModel @Inject constructor() :
     }
 
     override fun onEvent(event: SentenceBuilderEvent) {
-        val currentState = (_uiState.value as? UiState.Success)?.data ?: return
+        val currentState = (_uiState.value as? BaseState.Success)?.data ?: return
 
         when (event) {
             SentenceBuilderEvent.OnGoBack -> sendEffect(SentenceBuilderEffect.NavigateBack)
 
             SentenceBuilderEvent.OnToggleTheory -> {
-                _uiState.update { UiState.Success(currentState.copy(isTheoryVisible = !currentState.isTheoryVisible)) }
+                _uiState.update { BaseState.Success(currentState.copy(isTheoryVisible = !currentState.isTheoryVisible)) }
             }
 
             is SentenceBuilderEvent.OnSelectWord -> {
                 val newSelected = currentState.selectedWords + event.wordChip
                 val newAvailable = currentState.availableWords - event.wordChip
                 _uiState.update {
-                    UiState.Success(currentState.copy(selectedWords = newSelected, availableWords = newAvailable, isCorrect = null))
+                    BaseState.Success(currentState.copy(selectedWords = newSelected, availableWords = newAvailable, isCorrect = null))
                 }
             }
 
@@ -39,7 +44,7 @@ class SentenceBuilderViewModel @Inject constructor() :
                 val newSelected = currentState.selectedWords - event.wordChip
                 val newAvailable = currentState.availableWords + event.wordChip
                 _uiState.update {
-                    UiState.Success(currentState.copy(selectedWords = newSelected, availableWords = newAvailable, isCorrect = null))
+                    BaseState.Success(currentState.copy(selectedWords = newSelected, availableWords = newAvailable, isCorrect = null))
                 }
             }
 
@@ -47,7 +52,7 @@ class SentenceBuilderViewModel @Inject constructor() :
                 val currentQ = currentState.currentQuestion ?: return
                 val userSentence = currentState.selectedWords.map { it.text }
                 val isCorrect = userSentence == currentQ.correctSentence
-                _uiState.update { UiState.Success(currentState.copy(isCorrect = isCorrect)) }
+                _uiState.update { BaseState.Success(currentState.copy(isCorrect = isCorrect)) }
             }
 
             SentenceBuilderEvent.OnNextQuestion -> {
@@ -65,7 +70,7 @@ class SentenceBuilderViewModel @Inject constructor() :
 
     private fun loadData() {
         viewModelScope.launch {
-            _uiState.update { UiState.Loading }
+            _uiState.update { BaseState.Loading }
             delay(500)
             val questions = listOf(
                 SentenceBuilderQuestion(
@@ -87,7 +92,7 @@ class SentenceBuilderViewModel @Inject constructor() :
         val wordChips = currentQ.correctSentence.map { WordChip(text = it) }.shuffled()
 
         _uiState.update {
-            UiState.Success(
+            BaseState.Success(
                 SentenceBuilderState(
                     questions = questions,
                     currentIndex = index,

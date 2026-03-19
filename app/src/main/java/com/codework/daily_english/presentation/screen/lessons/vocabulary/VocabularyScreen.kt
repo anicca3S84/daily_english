@@ -6,7 +6,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -33,7 +32,6 @@ import kotlinx.coroutines.delay
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.ui.graphics.SolidColor
 
 // Đảm bảo import đúng đường dẫn của project bạn
 import com.codework.daily_english.presentation.components.AudioRegion
@@ -42,7 +40,9 @@ import com.codework.daily_english.presentation.components.PrimaryButton
 import com.codework.daily_english.presentation.components.VocabularyCompleteDialog
 import com.codework.daily_english.presentation.components.ProgressTopBar
 import com.codework.daily_english.presentation.components.QuizOption
-import com.codework.daily_english.presentation.components.UiState
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.lessons.vocabulary.mvi.VocabularyEvent
+import com.codework.daily_english.presentation.screen.lessons.vocabulary.mvi.VocabularyState
 import com.codework.daily_english.presentation.theme.AppBackground
 import com.codework.daily_english.presentation.theme.BluePrimary
 import com.codework.daily_english.presentation.theme.GrayText
@@ -51,7 +51,7 @@ import com.codework.daily_english.presentation.theme.TextPrimary
 
 @Composable
 fun VocabularyScreen(
-    state: UiState<VocabularyState>, // SỬA: Đổi từ VocabularyData -> VocabularyState
+    state: BaseState<VocabularyState>, // SỬA: Đổi từ VocabularyData -> VocabularyState
     onEvent: (VocabularyEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -64,8 +64,8 @@ fun VocabularyScreen(
         onEvent(VocabularyEvent.OnGoBack)
     }
 
-    val progressCurrent = (state as? UiState.Success)?.data?.progressCurrent ?: 0
-    val progressTotal = (state as? UiState.Success)?.data?.progressTotal ?: 10
+    val progressCurrent = (state as? BaseState.Success)?.data?.progressCurrent ?: 0
+    val progressTotal = (state as? BaseState.Success)?.data?.progressTotal ?: 10
 
     Scaffold(
         containerColor = AppBackground,
@@ -78,7 +78,7 @@ fun VocabularyScreen(
             )
         },
         bottomBar = {
-            if (state is UiState.Success) {
+            if (state is BaseState.Success) {
                 val data = state.data
                 val isSelected = data.selectedOptionIndex != null
                 val textBtn = if (data.progressCurrent >= data.progressTotal) "Finish" else "Next"

@@ -26,8 +26,10 @@ import com.codework.daily_english.presentation.components.PrimaryButton
 import com.codework.daily_english.presentation.components.ProgressTopBar
 import com.codework.daily_english.presentation.components.QuizOption
 import com.codework.daily_english.presentation.components.QuizVocabularyCompleteDialog
-import com.codework.daily_english.presentation.components.UiState
-import com.codework.daily_english.presentation.model.QuizType
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.lessons.review.model.QuizType
+import com.codework.daily_english.presentation.screen.lessons.review.mvi.QuizReviewEvent
+import com.codework.daily_english.presentation.screen.lessons.review.mvi.QuizReviewState
 import com.codework.daily_english.presentation.theme.AppBackground
 import com.codework.daily_english.presentation.theme.BluePrimary
 import com.codework.daily_english.presentation.theme.HintBackGround
@@ -36,7 +38,7 @@ import com.codework.daily_english.presentation.theme.TextPrimary
 
 @Composable
 fun QuizReviewScreen(
-    state: UiState<QuizReviewState>, // SỬA: Đổi QuizReviewData thành QuizReviewState
+    state: BaseState<QuizReviewState>, // SỬA: Đổi QuizReviewData thành QuizReviewState
     onEvent: (QuizReviewEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -46,8 +48,8 @@ fun QuizReviewScreen(
 
     BackHandler { onEvent(QuizReviewEvent.OnGoBack) }
 
-    val progressCurrent = (state as? UiState.Success)?.data?.progressCurrent ?: 0
-    val progressTotal = (state as? UiState.Success)?.data?.progressTotal ?: 10
+    val progressCurrent = (state as? BaseState.Success)?.data?.progressCurrent ?: 0
+    val progressTotal = (state as? BaseState.Success)?.data?.progressTotal ?: 10
 
     Scaffold(
         containerColor = AppBackground,
@@ -60,7 +62,7 @@ fun QuizReviewScreen(
             )
         },
         bottomBar = {
-            if (state is UiState.Success) {
+            if (state is BaseState.Success) {
                 val data = state.data
                 val isSelected = data.selectedOptionIndex != null
                 val textBtn = if (data.progressCurrent >= data.progressTotal) "Finish" else "Next"

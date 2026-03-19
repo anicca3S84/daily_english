@@ -25,11 +25,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.codework.daily_english.presentation.components.BaseScreen
-import com.codework.daily_english.presentation.components.UiState
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.more.mvi.MoreEvent
+import com.codework.daily_english.presentation.screen.more.mvi.MoreState
 
 @Composable
 fun MoreScreen(
-    state: UiState<MoreState>, // SỬA: Đổi MoreData thành MoreState
+    state: BaseState<MoreState>, // SỬA: Đổi MoreData thành MoreState
     onEvent: (MoreEvent) -> Unit
 ) {
     BaseScreen(

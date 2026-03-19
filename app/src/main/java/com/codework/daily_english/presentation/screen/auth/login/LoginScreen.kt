@@ -18,11 +18,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codework.daily_english.presentation.components.BaseScreen
-import com.codework.daily_english.presentation.components.UiState
+import com.codework.daily_english.core.base.BaseState
 
 @Composable
 fun LoginScreen(
-    state: UiState<LoginState>, // SỬA: LoginData -> LoginState
+    state: BaseState<LoginState>, // SỬA: LoginData -> LoginState
     onEvent: (LoginEvent) -> Unit
 ) {
     val textMain = Color(0xFF1E293B)
@@ -190,7 +190,7 @@ fun SocialLoginButton(
 @Composable
 fun PreviewLoginScreen() {
     LoginScreen(
-        state = UiState.Success(LoginState()),
+        state = BaseState.Success(LoginState()),
         onEvent = {}
     )
 }

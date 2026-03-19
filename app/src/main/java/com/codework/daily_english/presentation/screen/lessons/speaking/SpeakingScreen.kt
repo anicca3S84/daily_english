@@ -31,12 +31,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.codework.daily_english.core.base.BaseState
 import com.codework.daily_english.presentation.components.*
+import com.codework.daily_english.presentation.screen.lessons.speaking.model.ChatMessage
+import com.codework.daily_english.presentation.screen.lessons.speaking.model.RecordState
+import com.codework.daily_english.presentation.screen.lessons.speaking.mvi.SpeakingEvent
+import com.codework.daily_english.presentation.screen.lessons.speaking.mvi.SpeakingState
 import com.codework.daily_english.presentation.theme.*
 
 @Composable
 fun SpeakingScreen(
-    state: UiState<SpeakingState>, // SỬA: SpeakingData -> SpeakingState
+    state: BaseState<SpeakingState>, // SỬA: SpeakingData -> SpeakingState
     onEvent: (SpeakingEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -45,7 +50,7 @@ fun SpeakingScreen(
     Scaffold(
         containerColor = Color.White,
         topBar = {
-            if (state is UiState.Success) {
+            if (state is BaseState.Success) {
                 if (state.data.recordState == RecordState.READY_TO_START) {
                     AppTopBar(onBackClick = onBackClick, titleContent = { Text("Roleplay Challenge", fontSize = 18.sp, fontWeight = FontWeight.Bold) })
                 } else {
@@ -56,7 +61,7 @@ fun SpeakingScreen(
             }
         },
         bottomBar = {
-            if (state is UiState.Success) {
+            if (state is BaseState.Success) {
                 val data = state.data
                 if (data.recordState == RecordState.COMPLETED) {
                     Box(modifier = Modifier.fillMaxWidth().background(Color.White).padding(24.dp)) {
@@ -449,5 +454,5 @@ fun PreviewLiveCallWithHint() {
         isHintSheetOpen = true,
         suggestedHints = listOf("I'd like a medium cappuccino.", "Can I get a hot coffee, please?")
     )
-    SpeakingScreen(state = UiState.Success(mockData), onEvent = {}, onBackClick = {})
+    SpeakingScreen(state = BaseState.Success(mockData), onEvent = {}, onBackClick = {})
 }

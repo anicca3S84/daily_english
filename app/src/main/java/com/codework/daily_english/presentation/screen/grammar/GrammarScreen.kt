@@ -27,9 +27,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codework.daily_english.presentation.components.AppTopBar
 import com.codework.daily_english.presentation.components.BaseScreen
-import com.codework.daily_english.presentation.components.UiState
-import com.codework.daily_english.presentation.model.GrammarTip
-import com.codework.daily_english.presentation.model.GrammarTopic
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.grammar.model.GrammarTip
+import com.codework.daily_english.presentation.screen.grammar.model.GrammarTopic
+import com.codework.daily_english.presentation.screen.grammar.mvi.GrammarEvent
+import com.codework.daily_english.presentation.screen.grammar.mvi.GrammarState
 import com.codework.daily_english.presentation.theme.AppBackground
 import com.codework.daily_english.presentation.theme.BluePrimary
 import com.codework.daily_english.presentation.theme.GrayText
@@ -38,7 +40,7 @@ import com.codework.daily_english.presentation.theme.TextPrimary
 
 @Composable
 fun GrammarScreen(
-    state: UiState<GrammarState>, // SỬA: GrammarData -> GrammarState
+    state: BaseState<GrammarState>, // SỬA: GrammarData -> GrammarState
     onEvent: (GrammarEvent) -> Unit,
     onBackClick: () -> Unit
 ) {

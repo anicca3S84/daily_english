@@ -5,7 +5,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -25,8 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -40,14 +37,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codework.daily_english.presentation.components.AppTopBar
 import com.codework.daily_english.presentation.components.BaseScreen
-import com.codework.daily_english.presentation.components.UiState
+import com.codework.daily_english.presentation.screen.translate.mvi.TranslateEvent
+import com.codework.daily_english.presentation.screen.translate.mvi.TranslateState
 import com.codework.daily_english.presentation.theme.AppBackground
 import com.codework.daily_english.presentation.theme.BluePrimary
 import com.codework.daily_english.presentation.theme.MainGradient
 
 @Composable
 fun TranslateScreen(
-    state: UiState<TranslateState>, // SỬA: Đổi TranslateData thành TranslateState
+    state: TranslateState, // ĐÃ SỬA: Bỏ BaseState, dùng trực tiếp State của màn hình
     onEvent: (TranslateEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -78,7 +76,14 @@ fun TranslateScreen(
                 .padding(paddingValues)
                 .background(AppBackground)
         ) {
-            BaseScreen(state = state) { data ->
+            // ĐÃ SỬA: BaseScreen giờ dùng theo chuẩn mới
+            // Giả sử TranslateState của bạn có biến `error` (String?), nếu không có thì bạn tạm truyền null
+            BaseScreen(
+                isLoading = false, // Màn này không xoay cả màn hình, chỉ xoay cái card (isTranslating)
+                error = null, // Tạm để null, nếu State bạn có biến error thì đổi thành state.error
+                isDataEmpty = false // Màn hình dịch luôn luôn hiện UI Form
+            ) {
+                // BỎ khối { data -> ... } đi, truy cập thẳng vào state
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -89,15 +94,15 @@ fun TranslateScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     LanguageSwitchBar(
-                        sourceLang = data.sourceLang,
-                        targetLang = data.targetLang,
+                        sourceLang = state.sourceLang,
+                        targetLang = state.targetLang,
                         onSwap = { onEvent(TranslateEvent.OnSwapLanguage) }
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
 
                     InputCard(
-                        text = data.sourceText,
+                        text = state.sourceText,
                         hint = "Type to translate...",
                         onValueChange = { onEvent(TranslateEvent.OnTextChange(it)) },
                         onClear = { onEvent(TranslateEvent.OnClearText) },
@@ -105,21 +110,21 @@ fun TranslateScreen(
                             keyboardController?.hide()
                             onEvent(TranslateEvent.OnTranslateClick)
                         },
-                        onImageClick = { onEvent(TranslateEvent.OnImageClick) }, // NỐI EVENT
-                        onCameraClick = { onEvent(TranslateEvent.OnCameraClick) }, // NỐI EVENT
-                        onMicClick = { onEvent(TranslateEvent.OnMicClick) } // NỐI EVENT
+                        onImageClick = { onEvent(TranslateEvent.OnImageClick) },
+                        onCameraClick = { onEvent(TranslateEvent.OnCameraClick) },
+                        onMicClick = { onEvent(TranslateEvent.OnMicClick) }
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     AnimatedVisibility(
-                        visible = data.targetText.isNotEmpty() || data.isTranslating,
+                        visible = state.targetText.isNotEmpty() || state.isTranslating,
                         enter = fadeIn() + slideInVertically { it / 2 }
                     ) {
                         Column {
                             ResultCard(
-                                text = data.targetText,
-                                isLoading = data.isTranslating
+                                text = state.targetText,
+                                isLoading = state.isTranslating
                             )
                             Spacer(modifier = Modifier.height(24.dp))
                         }

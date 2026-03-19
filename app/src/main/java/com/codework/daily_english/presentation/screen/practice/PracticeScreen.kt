@@ -1,7 +1,6 @@
 package com.codework.daily_english.presentation.screen.practice
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -23,11 +22,13 @@ import androidx.compose.ui.unit.dp
 import com.codework.daily_english.presentation.components.BaseScreen
 import com.codework.daily_english.presentation.components.CurvedHeaderWrapper
 import com.codework.daily_english.presentation.components.HeaderStatItem
-import com.codework.daily_english.presentation.components.UiState
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.practice.mvi.PracticeEvent
+import com.codework.daily_english.presentation.screen.practice.mvi.PracticeState
 
 @Composable
 fun PracticeScreen(
-    state: UiState<PracticeState>, // SỬA: Đổi PracticeData thành PracticeState
+    state: BaseState<PracticeState>, // SỬA: Đổi PracticeData thành PracticeState
     onEvent: (PracticeEvent) -> Unit
 ) {
     BaseScreen(

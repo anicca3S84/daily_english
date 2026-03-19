@@ -1,8 +1,11 @@
 package com.codework.daily_english.presentation.screen.more
 
 import androidx.lifecycle.viewModelScope
-import com.codework.daily_english.presentation.components.BaseViewModel
-import com.codework.daily_english.presentation.components.UiState
+import com.codework.daily_english.core.base.BaseViewModel
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.more.mvi.MoreEffect
+import com.codework.daily_english.presentation.screen.more.mvi.MoreEvent
+import com.codework.daily_english.presentation.screen.more.mvi.MoreState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
@@ -27,7 +30,7 @@ class MoreViewModel @Inject constructor() : BaseViewModel<MoreState, MoreEvent, 
 
     private fun loadProfile() {
         viewModelScope.launch {
-            _uiState.update { UiState.Loading }
+            _uiState.update { BaseState.Loading }
             delay(1000) // Giả lập mạng
 
             val mockData = MoreState(
@@ -40,7 +43,7 @@ class MoreViewModel @Inject constructor() : BaseViewModel<MoreState, MoreEvent, 
                 appVersion = "1.0.0"
             )
 
-            _uiState.update { UiState.Success(mockData) }
+            _uiState.update { BaseState.Success(mockData) }
         }
     }
 }

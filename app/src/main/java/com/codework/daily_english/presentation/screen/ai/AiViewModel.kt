@@ -1,10 +1,13 @@
 package com.codework.daily_english.presentation.screen.ai
 
 import androidx.lifecycle.viewModelScope
-import com.codework.daily_english.presentation.components.BaseViewModel
-import com.codework.daily_english.presentation.components.UiState
-import com.codework.daily_english.presentation.model.ChatMessage
-import com.codework.daily_english.presentation.model.ChatSession
+import com.codework.daily_english.core.base.BaseViewModel
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.ai.model.ChatMessage
+import com.codework.daily_english.presentation.screen.ai.model.ChatSession
+import com.codework.daily_english.presentation.screen.ai.mvi.AiEffect
+import com.codework.daily_english.presentation.screen.ai.mvi.AiEvent
+import com.codework.daily_english.presentation.screen.ai.mvi.AiState
 import com.google.ai.client.generativeai.GenerativeModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +32,7 @@ class AiViewModel @Inject constructor(
 
     init {
         _uiState.update {
-            UiState.Success(
+            BaseState.Success(
                 AiState(
                     messages = emptyList(),
                     historySessions = mockHistory,
@@ -40,7 +43,7 @@ class AiViewModel @Inject constructor(
     }
 
     override fun onEvent(event: AiEvent) {
-        val currentState = (_uiState.value as? UiState.Success)?.data ?: return
+        val currentState = (_uiState.value as? BaseState.Success)?.data ?: return
 
         when (event) {
             is AiEvent.OnSendMessage -> sendMessage(event.message)
@@ -49,7 +52,7 @@ class AiViewModel @Inject constructor(
             is AiEvent.OnNewChat -> {
                 chat = generativeModel.startChat()
                 _uiState.update {
-                    UiState.Success(
+                    BaseState.Success(
                         currentState.copy(
                             messages = emptyList(),
                             currentSessionId = UUID.randomUUID().toString()
@@ -67,10 +70,10 @@ class AiViewModel @Inject constructor(
 
     private fun sendMessage(text: String) {
         if (text.isBlank()) return
-        val currentState = (_uiState.value as? UiState.Success)?.data ?: return
+        val currentState = (_uiState.value as? BaseState.Success)?.data ?: return
 
         val newMessages = currentState.messages + ChatMessage(text = text, isUser = true)
-        _uiState.update { UiState.Success(currentState.copy(messages = newMessages, isTyping = true)) }
+        _uiState.update { BaseState.Success(currentState.copy(messages = newMessages, isTyping = true)) }
 
         viewModelScope.launch {
             try {
@@ -80,14 +83,14 @@ class AiViewModel @Inject constructor(
                 val aiReplyText = response.text ?: "Sorry, I didn't understand that."
                 val updatedMessages = newMessages + ChatMessage(text = aiReplyText, isUser = false)
 
-                _uiState.update { UiState.Success(currentState.copy(messages = updatedMessages, isTyping = false)) }
+                _uiState.update { BaseState.Success(currentState.copy(messages = updatedMessages, isTyping = false)) }
             } catch (e: Exception) {
                 e.printStackTrace()
                 // Báo lỗi cho người dùng bằng Effect Toast thay vì in lỗi chình ình vào khung chat
                 sendEffect(AiEffect.ShowToast("Cannot connect to AI. Please check your internet."))
 
                 // Khôi phục lại UI tắt chữ Typing
-                _uiState.update { UiState.Success(currentState.copy(isTyping = false)) }
+                _uiState.update { BaseState.Success(currentState.copy(isTyping = false)) }
             }
         }
     }

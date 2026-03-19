@@ -3,7 +3,6 @@ package com.codework.daily_english.presentation.screen.dictionary
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -12,35 +11,32 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codework.daily_english.presentation.components.AppTopBar
 import com.codework.daily_english.presentation.components.BaseScreen
 import com.codework.daily_english.presentation.components.PhoneticGroup
-import com.codework.daily_english.presentation.components.UiState
-import com.codework.daily_english.presentation.model.WordItem
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.dictionary.model.Word
+import com.codework.daily_english.presentation.screen.dictionary.mvi.DictionaryEvent
+import com.codework.daily_english.presentation.screen.dictionary.mvi.DictionaryState
 import com.codework.daily_english.presentation.theme.AppBackground
 import com.codework.daily_english.presentation.theme.BluePrimary
-import com.codework.daily_english.presentation.theme.MainGradient
 
 @Composable
 fun DictionaryScreen(
-    state: UiState<DictionaryState>, // SỬA: Đổi DictionaryData thành DictionaryState
+    state: BaseState<DictionaryState>, // SỬA: Đổi DictionaryData thành DictionaryState
     onEvent: (DictionaryEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -311,7 +307,7 @@ fun DictionarySearchBar(query: String, onQueryChange: (String) -> Unit, onClear:
 }
 @Composable
 fun WordResultCard(
-    word: WordItem,
+    word: Word,
     onPlayAudioUk: () -> Unit,
     onPlayAudioUs: () -> Unit,
     onToggleSave: () -> Unit

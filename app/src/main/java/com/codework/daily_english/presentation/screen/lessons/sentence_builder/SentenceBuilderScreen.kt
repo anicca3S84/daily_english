@@ -32,13 +32,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.codework.daily_english.core.base.BaseState
 import com.codework.daily_english.presentation.components.*
+import com.codework.daily_english.presentation.screen.lessons.sentence_builder.model.SentenceBuilderQuestion
+import com.codework.daily_english.presentation.screen.lessons.sentence_builder.model.WordChip
+import com.codework.daily_english.presentation.screen.lessons.sentence_builder.mvi.SentenceBuilderEvent
+import com.codework.daily_english.presentation.screen.lessons.sentence_builder.mvi.SentenceBuilderState
 import com.codework.daily_english.presentation.theme.*
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SentenceBuilderScreen(
-    state: UiState<SentenceBuilderState>, // SỬA: Data -> State
+    state: BaseState<SentenceBuilderState>, // SỬA: Data -> State
     onEvent: (SentenceBuilderEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -48,7 +53,7 @@ fun SentenceBuilderScreen(
     // --- STANDARD PADDING ---
     val standardPadding = 20.dp
 
-    if (state is UiState.Success && state.data.isTheoryVisible) {
+    if (state is BaseState.Success && state.data.isTheoryVisible) {
         ModalBottomSheet(
             onDismissRequest = { onEvent(SentenceBuilderEvent.OnToggleTheory) },
             sheetState = bottomSheetState,
@@ -69,7 +74,7 @@ fun SentenceBuilderScreen(
     Scaffold(
         containerColor = AppBackground,
         topBar = {
-            if (state is UiState.Success) {
+            if (state is BaseState.Success) {
                 ProgressTopBar(
                     currentStep = state.data.progressCurrent,
                     totalSteps = state.data.progressTotal,
@@ -81,7 +86,7 @@ fun SentenceBuilderScreen(
             }
         },
         bottomBar = {
-            if (state is UiState.Success) {
+            if (state is BaseState.Success) {
                 val data = state.data
 
                 Column(
@@ -515,16 +520,19 @@ fun PreviewSentenceBuilder() {
         availableWords = listOf(WordChip("1", "I"), WordChip("2", "'d"), WordChip("3", "like"), WordChip("4", "a"), WordChip("5", "cup"), WordChip("6", "of"), WordChip("7", "tea")),
         progressTotal = 3, progressCurrent = 1
     )
-    SentenceBuilderScreen(state = UiState.Success(mockData), onEvent = {}, onBackClick = {})
+    SentenceBuilderScreen(state = BaseState.Success(mockData), onEvent = {}, onBackClick = {})
 }
 
 @Preview(showBackground = true, name = "Correct State")
 @Composable
 fun PreviewSentenceBuilderCorrect() {
     val mockData = SentenceBuilderState(
-        currentQuestion = SentenceBuilderQuestion(vietnamese = "Tôi muốn một tách trà.", correctSentence = listOf("I", "'d", "like", "a", "cup", "of", "tea")),
+        currentQuestion = SentenceBuilderQuestion(
+            vietnamese = "Tôi muốn một tách trà.",
+            correctSentence = listOf("I", "'d", "like", "a", "cup", "of", "tea")
+        ),
         selectedWords = listOf(WordChip("1", "I"), WordChip("2", "'d"), WordChip("3", "like"), WordChip("4", "a"), WordChip("5", "cup"), WordChip("6", "of"), WordChip("7", "tea")),
         isCorrect = true, progressTotal = 3, progressCurrent = 1
     )
-    SentenceBuilderScreen(state = UiState.Success(mockData), onEvent = {}, onBackClick = {})
+    SentenceBuilderScreen(state = BaseState.Success(mockData), onEvent = {}, onBackClick = {})
 }

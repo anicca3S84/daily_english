@@ -7,9 +7,12 @@ import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
-import com.codework.daily_english.presentation.components.BaseViewModel
-import com.codework.daily_english.presentation.components.UiState
-import com.codework.daily_english.presentation.model.PracticeCategory
+import com.codework.daily_english.core.base.BaseViewModel
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.practice.model.PracticeCategory
+import com.codework.daily_english.presentation.screen.practice.mvi.PracticeEffect
+import com.codework.daily_english.presentation.screen.practice.mvi.PracticeEvent
+import com.codework.daily_english.presentation.screen.practice.mvi.PracticeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
@@ -38,7 +41,7 @@ class PracticeViewModel @Inject constructor() : BaseViewModel<PracticeState, Pra
 
     private fun loadPracticeContent() {
         viewModelScope.launch {
-            _uiState.update { UiState.Loading }
+            _uiState.update { BaseState.Loading }
             try {
                 delay(1000) // Giả lập load data
 
@@ -76,9 +79,9 @@ class PracticeViewModel @Inject constructor() : BaseViewModel<PracticeState, Pra
                         )
                     )
                 )
-                _uiState.update { UiState.Success(mockData) }
+                _uiState.update { BaseState.Success(mockData) }
             } catch (e: Exception) {
-                _uiState.update { UiState.Error(e.message ?: "Unknown Error") }
+                _uiState.update { BaseState.Error(e.message ?: "Unknown Error") }
             }
         }
     }

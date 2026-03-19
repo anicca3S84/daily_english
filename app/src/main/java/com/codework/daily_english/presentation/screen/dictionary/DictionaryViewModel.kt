@@ -1,9 +1,11 @@
 package com.codework.daily_english.presentation.screen.dictionary
 
-import androidx.lifecycle.viewModelScope
-import com.codework.daily_english.presentation.components.BaseViewModel
-import com.codework.daily_english.presentation.components.UiState
-import com.codework.daily_english.presentation.model.WordItem
+import com.codework.daily_english.core.base.BaseViewModel
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.dictionary.model.Word
+import com.codework.daily_english.presentation.screen.dictionary.mvi.DictionaryEffect
+import com.codework.daily_english.presentation.screen.dictionary.mvi.DictionaryEvent
+import com.codework.daily_english.presentation.screen.dictionary.mvi.DictionaryState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
@@ -12,7 +14,7 @@ import javax.inject.Inject
 class DictionaryViewModel @Inject constructor() : BaseViewModel<DictionaryState, DictionaryEvent, DictionaryEffect>() {
 
     private val mockDictionary = listOf(
-        WordItem(
+        Word(
             word = "apple",
             phoneticUk = "/ˈæp.əl/",
             phoneticUs = "/ˈæp.əl/",
@@ -20,7 +22,7 @@ class DictionaryViewModel @Inject constructor() : BaseViewModel<DictionaryState,
             definition = "A round fruit with red or green skin and a white inside.",
             example = "She ate a fresh apple."
         ),
-        WordItem(
+        Word(
             word = "application",
             phoneticUk = "/ˌæp.lɪˈkeɪ.ʃən/",
             phoneticUs = "/ˌæp.ləˈkeɪ.ʃən/",
@@ -32,11 +34,11 @@ class DictionaryViewModel @Inject constructor() : BaseViewModel<DictionaryState,
 
     init {
         // Khởi tạo data ban đầu luôn là Success (vì Dashboard không cần call API load lâu)
-        _uiState.update { UiState.Success(DictionaryState()) }
+        _uiState.update { BaseState.Success(DictionaryState()) }
     }
 
     override fun onEvent(event: DictionaryEvent) {
-        val currentState = (_uiState.value as? UiState.Success)?.data ?: return
+        val currentState = (_uiState.value as? BaseState.Success)?.data ?: return
 
         when (event) {
             is DictionaryEvent.OnSearchQueryChange -> {
@@ -48,13 +50,13 @@ class DictionaryViewModel @Inject constructor() : BaseViewModel<DictionaryState,
                 }
 
                 _uiState.update {
-                    UiState.Success(currentState.copy(query = query, searchResults = results))
+                    BaseState.Success(currentState.copy(query = query, searchResults = results))
                 }
             }
 
             is DictionaryEvent.OnClearSearch -> {
                 _uiState.update {
-                    UiState.Success(currentState.copy(query = "", searchResults = emptyList()))
+                    BaseState.Success(currentState.copy(query = "", searchResults = emptyList()))
                 }
             }
 
@@ -68,7 +70,7 @@ class DictionaryViewModel @Inject constructor() : BaseViewModel<DictionaryState,
                 val updatedResults = currentState.searchResults.map {
                     if (it.word == event.word.word) it.copy(isSaved = !it.isSaved) else it
                 }
-                _uiState.update { UiState.Success(currentState.copy(searchResults = updatedResults)) }
+                _uiState.update { BaseState.Success(currentState.copy(searchResults = updatedResults)) }
 
                 val status = if (!event.word.isSaved) "Saved" else "Removed"
                 sendEffect(DictionaryEffect.ShowToast("$status ${event.word.word}"))

@@ -1,11 +1,13 @@
 package com.codework.daily_english.presentation.screen.courses
 
 import androidx.lifecycle.viewModelScope
-import com.codework.daily_english.presentation.components.BaseViewModel
-import com.codework.daily_english.presentation.components.UiState
-import com.codework.daily_english.presentation.model.TopicItem
+import com.codework.daily_english.core.base.BaseViewModel
+import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.screen.courses.model.TopicItem
+import com.codework.daily_english.presentation.screen.courses.mvi.CourseEffect
+import com.codework.daily_english.presentation.screen.courses.mvi.CourseEvent
+import com.codework.daily_english.presentation.screen.courses.mvi.CourseState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -34,7 +36,7 @@ class CourseViewModel @Inject constructor() :
     private fun loadCourseData(level: String) {
         viewModelScope.launch {
             // 1. Chuyển sang Loading
-            _uiState.update { UiState.Loading }
+            _uiState.update { BaseState.Loading }
 
 
             val topics = mockTopicsForLevel(level)
@@ -45,7 +47,7 @@ class CourseViewModel @Inject constructor() :
                 topics = topics
             )
 
-            _uiState.update { UiState.Success(data) }
+            _uiState.update { BaseState.Success(data) }
         }
     }
 

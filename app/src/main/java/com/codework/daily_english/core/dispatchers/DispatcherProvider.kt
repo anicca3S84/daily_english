@@ -9,5 +9,4 @@ class DispatcherProvider @Inject constructor() : Dispatcher {
     override val io: CoroutineDispatcher = Dispatchers.IO
     override val default: CoroutineDispatcher = Dispatchers.Default
     override val unconfined = Dispatchers.Unconfined
-
 }
