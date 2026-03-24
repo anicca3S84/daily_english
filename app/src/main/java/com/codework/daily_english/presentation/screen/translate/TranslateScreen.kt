@@ -21,6 +21,7 @@ import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,7 +37,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codework.daily_english.presentation.components.AppTopBar
-import com.codework.daily_english.presentation.components.BaseScreen
+import com.codework.daily_english.presentation.components.StateWrapper
+import com.codework.daily_english.presentation.screen.translate.model.TranslationUiModel
 import com.codework.daily_english.presentation.screen.translate.mvi.TranslateEvent
 import com.codework.daily_english.presentation.screen.translate.mvi.TranslateState
 import com.codework.daily_english.presentation.theme.AppBackground
@@ -45,20 +47,20 @@ import com.codework.daily_english.presentation.theme.MainGradient
 
 @Composable
 fun TranslateScreen(
-    state: TranslateState, // ĐÃ SỬA: Bỏ BaseState, dùng trực tiếp State của màn hình
+    state: TranslateState,
     onEvent: (TranslateEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val scrollState = rememberScrollState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         containerColor = AppBackground,
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppTopBar(
                 onBackClick = onBackClick,
-                onMenuClick = null,
                 titleContent = {
                     Text(
                         text = "Translate",
@@ -70,73 +72,75 @@ fun TranslateScreen(
             )
         }
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .background(AppBackground)
+                .verticalScroll(scrollState),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // ĐÃ SỬA: BaseScreen giờ dùng theo chuẩn mới
-            // Giả sử TranslateState của bạn có biến `error` (String?), nếu không có thì bạn tạm truyền null
-            BaseScreen(
-                isLoading = false, // Màn này không xoay cả màn hình, chỉ xoay cái card (isTranslating)
-                error = null, // Tạm để null, nếu State bạn có biến error thì đổi thành state.error
-                isDataEmpty = false // Màn hình dịch luôn luôn hiện UI Form
-            ) {
-                // BỎ khối { data -> ... } đi, truy cập thẳng vào state
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp)
-                        .verticalScroll(scrollState),
-                    horizontalAlignment = Alignment.CenterHorizontally
+            // --- PHẦN 1: TĨNH (Luôn hiển thị) ---
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                LanguageSwitchBar(
+                    sourceLang = state.sourceLang,
+                    targetLang = state.targetLang,
+                    onSwap = { onEvent(TranslateEvent.OnSwapLanguage) }
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                InputCard(
+                    text = state.sourceText,
+                    hint = "Type to translate...",
+                    onValueChange = { onEvent(TranslateEvent.OnTextChange(it)) },
+                    onClear = { onEvent(TranslateEvent.OnClearText) },
+                    onTranslate = {
+                        keyboardController?.hide()
+                        onEvent(TranslateEvent.OnTranslateClick)
+                    },
+                    onImageClick = { onEvent(TranslateEvent.OnImageClick) },
+                    onCameraClick = { onEvent(TranslateEvent.OnCameraClick) },
+                    onMicClick = { onEvent(TranslateEvent.OnMicClick) }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                AnimatedVisibility(
+                    visible = state.targetText.isNotEmpty() || state.isTranslating,
+                    enter = fadeIn() + slideInVertically { it / 2 }
                 ) {
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    LanguageSwitchBar(
-                        sourceLang = state.sourceLang,
-                        targetLang = state.targetLang,
-                        onSwap = { onEvent(TranslateEvent.OnSwapLanguage) }
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    InputCard(
-                        text = state.sourceText,
-                        hint = "Type to translate...",
-                        onValueChange = { onEvent(TranslateEvent.OnTextChange(it)) },
-                        onClear = { onEvent(TranslateEvent.OnClearText) },
-                        onTranslate = {
-                            keyboardController?.hide()
-                            onEvent(TranslateEvent.OnTranslateClick)
-                        },
-                        onImageClick = { onEvent(TranslateEvent.OnImageClick) },
-                        onCameraClick = { onEvent(TranslateEvent.OnCameraClick) },
-                        onMicClick = { onEvent(TranslateEvent.OnMicClick) }
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    AnimatedVisibility(
-                        visible = state.targetText.isNotEmpty() || state.isTranslating,
-                        enter = fadeIn() + slideInVertically { it / 2 }
-                    ) {
-                        Column {
-                            ResultCard(
-                                text = state.targetText,
-                                isLoading = state.isTranslating
-                            )
-                            Spacer(modifier = Modifier.height(24.dp))
-                        }
+                    Column {
+                        ResultCard(
+                            text = state.targetText,
+                            isTranslating = state.isTranslating
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
                     }
-
-                    HistorySection(
-                        onHistoryItemClick = { /* Handle click history item */ }
-                    )
-
-                    Spacer(modifier = Modifier.height(32.dp))
                 }
             }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .heightIn(min = 300.dp) // Đảm bảo đủ chỗ để hiện Shimmer/Error Overlay
+            ) {
+                StateWrapper(
+                    uiState = state.historyState,
+                    snackbarHostState = snackbarHostState,
+                    onRetry = { /* onEvent(TranslateEvent.OnRetryHistory) */ }
+                ) { historyList ->
+                    HistorySection(
+                        historyItems = historyList ?: emptyList(),
+                        onHistoryItemClick = { /* Handle click */ }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
@@ -362,7 +366,7 @@ fun InputCard(
 }
 
 @Composable
-fun ResultCard(text: String, isLoading: Boolean) {
+fun ResultCard(text: String, isTranslating: Boolean) {
     val clipboardManager = LocalClipboardManager.current
 
     Card(
@@ -385,7 +389,7 @@ fun ResultCard(text: String, isLoading: Boolean) {
                 verticalAlignment = Alignment.Top
             ) {
                 Box(modifier = Modifier.weight(1f)) {
-                    if (isLoading) {
+                    if (isTranslating) {
                         Column {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(30.dp),
@@ -433,9 +437,11 @@ fun ResultCard(text: String, isLoading: Boolean) {
 }
 
 @Composable
-fun HistorySection(onHistoryItemClick: () -> Unit) {
+fun HistorySection(
+    historyItems: List<TranslationUiModel>, // Dùng model thật thay vì dummy
+    onHistoryItemClick: (TranslationUiModel) -> Unit
+) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        // Tiêu đề
         Row(
             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -455,17 +461,21 @@ fun HistorySection(onHistoryItemClick: () -> Unit) {
             )
         }
 
-        // Dummy Data
-        val dummyHistory = listOf(
-            Pair("Hello world", "Chào thế giới"),
-            Pair("Good morning", "Chào buổi sáng"),
-            Pair("How are you?", "Bạn khỏe không?"),
-            Pair("Delicious food", "Thức ăn ngon")
-        )
-
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            dummyHistory.forEach { (source, target) ->
-                HistoryItem(source = source, target = target, onClick = onHistoryItemClick)
+        if (historyItems.isEmpty()) {
+            Text(
+                text = "No history yet",
+                modifier = Modifier.padding(vertical = 20.dp).align(Alignment.CenterHorizontally),
+                color = Color.Gray
+            )
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                historyItems.forEach { item ->
+                    HistoryItem(
+                        source = item.sourceText,
+                        target = item.targetText,
+                        onClick = { onHistoryItemClick(item) }
+                    )
+                }
             }
         }
     }

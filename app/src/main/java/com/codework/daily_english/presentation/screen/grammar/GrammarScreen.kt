@@ -26,8 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codework.daily_english.presentation.components.AppTopBar
-import com.codework.daily_english.presentation.components.BaseScreen
-import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.components.StateWrapper
 import com.codework.daily_english.presentation.screen.grammar.model.GrammarTip
 import com.codework.daily_english.presentation.screen.grammar.model.GrammarTopic
 import com.codework.daily_english.presentation.screen.grammar.mvi.GrammarEvent
@@ -40,7 +39,7 @@ import com.codework.daily_english.presentation.theme.TextPrimary
 
 @Composable
 fun GrammarScreen(
-    state: BaseState<GrammarState>, // SỬA: GrammarData -> GrammarState
+    state: GrammarState, // SỬA: GrammarData -> GrammarState
     onEvent: (GrammarEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -68,7 +67,7 @@ fun GrammarScreen(
                 .padding(paddingValues)
                 .background(AppBackground)
         ) {
-            BaseScreen(state = state) { data ->
+
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -78,35 +77,34 @@ fun GrammarScreen(
                     item { Spacer(modifier = Modifier.height(8.dp)) }
 
                     // 1. DAILY TIP CARD
-                    data.dailyTip?.let { tip ->
-                        item {
-                            GrammarTipCard(tip)
-                        }
-                    }
+//                    data.dailyTip?.let { tip ->
+//                        item {
+//                            GrammarTipCard(tip)
+//                        }
+//                    }
 
                     // 2. FILTER TABS
-                    item {
-                        FilterTabs(
-                            selectedLevel = data.selectedLevel,
-                            onLevelSelected = { onEvent(GrammarEvent.OnLevelFilterSelected(it)) }
-                        )
-                    }
+//                    item {
+//                        FilterTabs(
+//                            selectedLevel = data.selectedLevel,
+//                            onLevelSelected = { onEvent(GrammarEvent.OnLevelFilterSelected(it)) }
+//                        )
+//                    }
 
                     // 3. TOPIC LIST
                     // Vì data.grammarTopics đã được định nghĩa đúng kiểu List<GrammarTopic> trong GrammarData
                     // nên items() sẽ hoạt động đúng.
-                    items(data.grammarTopics) { topic ->
-                        GrammarTopicItem(
-                            topic = topic,
-                            onClick = { onEvent(GrammarEvent.OnTopicClick(topic.id)) }
-                        )
-                    }
+//                    items(data.grammarTopics) { topic ->
+//                        GrammarTopicItem(
+//                            topic = topic,
+//                            onClick = { onEvent(GrammarEvent.OnTopicClick(topic.id)) }
+//                        )
+//                    }
 
                     item { Spacer(modifier = Modifier.height(24.dp)) }
                 }
             }
         }
-    }
 }
 
 // --- COMPONENTS ---

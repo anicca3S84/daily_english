@@ -23,14 +23,14 @@ abstract class BaseViewModel<S, E, F>(
     val state: StateFlow<S> = _state.asStateFlow()
 
     // 2. EFFECT: Channel xử lý các sự kiện 1 lần (Toast, Navigation)
-    private val _effectChannel = Channel<F>()
+    private val _effectChannel = Channel<BaseEffect>()
     val effectFlow = _effectChannel.receiveAsFlow()
 
     // 3. EVENT: Hàm bắt buộc các ViewModel con phải implement để hứng sự kiện từ UI
     abstract fun onEvent(event: E)
 
     // Hàm tiện ích để ViewModel con bắn Effect dễ dàng hơn
-    protected fun sendEffect(effect: F) {
+    protected fun sendEffect(effect: BaseEffect) {
         viewModelScope.launch {
             _effectChannel.send(effect)
         }

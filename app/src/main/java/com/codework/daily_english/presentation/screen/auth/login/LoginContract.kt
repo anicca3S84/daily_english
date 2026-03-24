@@ -1,5 +1,7 @@
 package com.codework.daily_english.presentation.screen.auth.login
 
+import com.codework.daily_english.core.base.BaseEffect
+
 // 1. STATE (Đổi LoginData thành LoginState)
 data class LoginState(
     val isLoading: Boolean = false,
@@ -17,7 +19,7 @@ sealed interface LoginEvent {
 }
 
 // 3. EFFECT
-sealed interface LoginEffect {
+sealed interface LoginEffect: BaseEffect {
     data object NavigateToHome : LoginEffect
     data object NavigateToEmailLogin : LoginEffect
     data class ShowError(val message: String) : LoginEffect

@@ -3,8 +3,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -13,7 +11,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -21,10 +18,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.codework.daily_english.presentation.components.AppTopBar
-import com.codework.daily_english.presentation.components.BaseScreen
-import com.codework.daily_english.presentation.components.PrimaryButton
-import com.codework.daily_english.core.base.BaseState
 import com.codework.daily_english.presentation.screen.lessons.lesson.model.LessonStep
 import com.codework.daily_english.presentation.screen.lessons.lesson.model.LessonStepType
 import com.codework.daily_english.presentation.screen.lessons.lesson.model.StepStatus
@@ -33,121 +26,122 @@ import com.codework.daily_english.presentation.screen.lessons.lesson.mvi.LessonS
 import com.codework.daily_english.presentation.theme.BluePrimary
 import com.codework.daily_english.presentation.theme.GrayText
 import com.codework.daily_english.presentation.theme.MainGradient
-import com.codework.daily_english.presentation.theme.ReviewGradient
 import com.codework.daily_english.presentation.theme.SuccessGreen
 
 // ĐÃ XÓA CÁC ĐỊNH NGHĨA ENUM VÀ DATA CLASS Ở ĐÂY VÌ ĐÃ CHUYỂN SANG CONTRACT
 
 @Composable
 fun LessonScreen(
-    state: BaseState<LessonState>, // SỬA LessonData -> LessonState
+    state: LessonState, // SỬA LessonData -> LessonState
     onEvent: (LessonEvent) -> Unit,
     onBackClick: () -> Unit,
 ) {
-    val lessonData = (state as? BaseState.Success)?.data
-    val steps = lessonData?.steps ?: emptyList()
+//    val lessonData = (state as? BaseState.Success)?.data
+//    val steps = lessonData?.steps ?: emptyList()
 
-    val completedCount = steps.count { it.status == StepStatus.COMPLETED }
-    val totalCount = steps.size
+//    val completedCount = steps.count { it.status == StepStatus.COMPLETED }
+//    val totalCount = steps.size
 
     val bottomButtonText = when {
-        completedCount == 0 -> "Start lesson"
-        completedCount == totalCount -> "Review lesson"
+//        completedCount == 0 -> "Start lesson"
+//        completedCount == totalCount -> "Review lesson"
         else -> "Continue learning"
     }
 
-    val buttonBackground = if (completedCount == totalCount && totalCount > 0) {
-        ReviewGradient
-    } else {
+    val buttonBackground =
+//        if (completedCount == totalCount && totalCount > 0) {
+//        ReviewGradient
+//    } else {
         MainGradient
     }
 
-    Scaffold(
-        containerColor = Color(0xFFF9FAFB),
-        contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = {
-            AppTopBar(
-                onBackClick = onBackClick,
-                titleContent = {
-                    Text(
-                        text = "Unit 1",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1F2937)
-                    )
-                },
-                onMenuClick = null,
-            )
-        },
-        bottomBar = {
-            if (state is BaseState.Success) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, end = 16.dp, bottom = 32.dp, top = 8.dp)
-                ) {
-                    PrimaryButton(
-                        text = bottomButtonText,
-                        onClick = { onEvent(LessonEvent.OnStartPractice) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .shadow(12.dp, CircleShape, spotColor = BluePrimary.copy(alpha = 0.4f)),
-                        brush = buttonBackground
-                    )
-                }
-            }
-        }
-    ) { paddingValues ->
-        BaseScreen(
-            state = state,
-            onRetry = { onEvent(LessonEvent.OnRetry) } // Bổ sung onRetry cho BaseScreen
-        ) { data ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                LessonHeaderCoverSection(
-                    imageUrl = data.imageUrl,
-                    title = data.title,
-                    description = data.description,
-                    completedSteps = data.steps.count { it.status == StepStatus.COMPLETED },
-                    totalSteps = data.steps.size
-                )
-
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .background(Color(0xFFF9FAFB))
-                ) {
-                    item { Spacer(modifier = Modifier.height(16.dp)) }
-
-                    item {
-                        Text(
-                            text = "Contents",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1F2937),
-                            modifier = Modifier.padding(horizontal = 24.dp)
-                        )
-                    }
-
-                    item { Spacer(modifier = Modifier.height(12.dp)) }
-
-                    itemsIndexed(data.steps) { index, step ->
-                        LessonPathItemModern(
-                            step = step,
-                            isLast = index == data.steps.lastIndex,
-                            onClick = { onEvent(LessonEvent.OnStepClick(step.id)) }
-                        )
-                    }
-
-                    item { Spacer(modifier = Modifier.height(120.dp)) }
-                }
-            }
-        }
-    }
-}
+//    Scaffold(
+//        containerColor = Color(0xFFF9FAFB),
+//        contentWindowInsets = WindowInsets.safeDrawing,
+//        topBar = {
+//            AppTopBar(
+//                onBackClick = onBackClick,
+//                titleContent = {
+//                    Text(
+//                        text = "Unit 1",
+//                        style = MaterialTheme.typography.titleMedium,
+//                        fontWeight = FontWeight.Bold,
+//                        color = Color(0xFF1F2937)
+//                    )
+//                },
+//                onMenuClick = null,
+//            )
+//        },
+//        bottomBar = {
+//            if (state is BaseState.Success) {
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(start = 16.dp, end = 16.dp, bottom = 32.dp, top = 8.dp)
+//                ) {
+//                    PrimaryButton(
+//                        text = bottomButtonText,
+//                        onClick = { onEvent(LessonEvent.OnStartPractice) },
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .shadow(12.dp, CircleShape, spotColor = BluePrimary.copy(alpha = 0.4f)),
+//                        brush = buttonBackground
+//                    )
+//                }
+//            }
+//        }
+//    ) { paddingValues ->
+//        BaseScreen(
+//            isLoading = false,
+//            error = null,
+//            isDataEmpty = true
+//        ) {
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .padding(paddingValues)
+//            ) {
+////                LessonHeaderCoverSection(
+////                    imageUrl = data.imageUrl,
+////                    title = data.title,
+////                    description = data.description,
+////                    completedSteps = data.steps.count { it.status == StepStatus.COMPLETED },
+////                    totalSteps = data.steps.size
+////                )
+//
+//                LazyColumn(
+//                    modifier = Modifier
+//                        .weight(1f)
+//                        .background(Color(0xFFF9FAFB))
+//                ) {
+//                    item { Spacer(modifier = Modifier.height(16.dp)) }
+//
+//                    item {
+//                        Text(
+//                            text = "Contents",
+//                            fontSize = 18.sp,
+//                            fontWeight = FontWeight.Bold,
+//                            color = Color(0xFF1F2937),
+//                            modifier = Modifier.padding(horizontal = 24.dp)
+//                        )
+//                    }
+//
+//                    item { Spacer(modifier = Modifier.height(12.dp)) }
+//
+////                    itemsIndexed(data.steps) { index, step ->
+////                        LessonPathItemModern(
+////                            step = step,
+////                            isLast = index == data.steps.lastIndex,
+////                            onClick = { onEvent(LessonEvent.OnStepClick(step.id)) }
+////                        )
+////                    }
+//
+//                    item { Spacer(modifier = Modifier.height(120.dp)) }
+//                }
+//            }
+//        }
+//    }
+//}
 
 @Composable
 fun LessonHeaderCoverSection(

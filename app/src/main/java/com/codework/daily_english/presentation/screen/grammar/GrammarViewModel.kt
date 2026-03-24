@@ -2,7 +2,6 @@ package com.codework.daily_english.presentation.screen.grammar
 
 import androidx.lifecycle.viewModelScope
 import com.codework.daily_english.core.base.BaseViewModel
-import com.codework.daily_english.core.base.BaseState
 import com.codework.daily_english.presentation.screen.grammar.model.GrammarTip
 import com.codework.daily_english.presentation.screen.grammar.model.GrammarTopic
 import com.codework.daily_english.presentation.screen.grammar.mvi.GrammarEffect
@@ -10,13 +9,14 @@ import com.codework.daily_english.presentation.screen.grammar.mvi.GrammarEvent
 import com.codework.daily_english.presentation.screen.grammar.mvi.GrammarState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class GrammarViewModel @Inject constructor() :
-    BaseViewModel<GrammarState, GrammarEvent, GrammarEffect>() {
+    BaseViewModel<GrammarState, GrammarEvent, GrammarEffect>(
+        initialState = GrammarState()
+    ) {
 
     private var allTopicsSource = listOf<GrammarTopic>()
 
@@ -36,7 +36,7 @@ class GrammarViewModel @Inject constructor() :
 
     private fun loadGrammarData() {
         viewModelScope.launch {
-            _uiState.update { BaseState.Loading }
+//            _state.update { BaseState.Loading }
             delay(500)
 
             allTopicsSource = listOf(
@@ -55,24 +55,24 @@ class GrammarViewModel @Inject constructor() :
                 content = "We use 'at' for precise times (at 3pm), 'on' for days (on Monday), and 'in' for months/years (in 2024)."
             )
 
-            _uiState.update {
-                BaseState.Success(
-                    GrammarState(
-                        selectedLevel = "All",
-                        grammarTopics = allTopicsSource,
-                        dailyTip = tip
-                    )
-                )
-            }
+//            _uiState.update {
+//                BaseState.Success(
+//                    GrammarState(
+//                        selectedLevel = "All",
+//                        grammarTopics = allTopicsSource,
+//                        dailyTip = tip
+//                    )
+//                )
+//            }
         }
     }
 
     private fun filterTopics(level: String) {
-        val currentState = (_uiState.value as? BaseState.Success)?.data ?: return
+//        val currentState = (_uiState.value as? BaseState.Success)?.data ?: return
         val filteredList = if (level == "All") allTopicsSource else allTopicsSource.filter { it.level == level }
 
-        _uiState.update {
-            BaseState.Success(currentState.copy(selectedLevel = level, grammarTopics = filteredList))
-        }
+//        _uiState.update {
+//            BaseState.Success(currentState.copy(selectedLevel = level, grammarTopics = filteredList))
+//        }
     }
 }

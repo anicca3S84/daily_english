@@ -1,6 +1,8 @@
 package com.codework.daily_english.presentation.screen.grammar.mvi
 
-sealed interface GrammarEffect {
+import com.codework.daily_english.core.base.BaseEffect
+
+sealed interface GrammarEffect: BaseEffect {
     data object NavigateBack : GrammarEffect
     data class NavigateToTopic(val id: String) : GrammarEffect
     data object OpenSearch : GrammarEffect

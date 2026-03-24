@@ -2,7 +2,6 @@ package com.codework.daily_english.presentation.screen.home
 
 import androidx.lifecycle.viewModelScope
 import com.codework.daily_english.core.base.BaseViewModel
-import com.codework.daily_english.core.base.BaseState
 import com.codework.daily_english.presentation.screen.home.model.DailyStudyTime
 import com.codework.daily_english.presentation.screen.home.mvi.HomeEffect
 import com.codework.daily_english.presentation.screen.home.mvi.HomeEvent
@@ -15,7 +14,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor() : BaseViewModel<HomeState, HomeEvent, HomeEffect>() {
+class HomeViewModel @Inject constructor() : BaseViewModel<HomeState, HomeEvent, HomeEffect>(
+    initialState = HomeState()
+) {
 
     init {
         loadHomeData()
@@ -38,7 +39,7 @@ class HomeViewModel @Inject constructor() : BaseViewModel<HomeState, HomeEvent, 
 
     private fun loadHomeData() {
         viewModelScope.launch {
-            _uiState.update { BaseState.Loading }
+//            _state.update { BaseState.Loading }
 
             // Giả lập delay mạng
             delay(2000)
@@ -79,22 +80,22 @@ class HomeViewModel @Inject constructor() : BaseViewModel<HomeState, HomeEvent, 
                     weeklyStats = weeklyStats
                 )
 
-                _uiState.update { BaseState.Success(data) }
+//                _state.update { BaseState.Success(data) }
 
             } catch (e: Exception) {
-                _uiState.update { BaseState.Error(e.message ?: "Đã có lỗi xảy ra") }
+//                _state.update { BaseState.Error(e.message ?: "Đã có lỗi xảy ra") }
             }
         }
     }
 
     private fun toggleDailyQuest() {
-        val currentState = _uiState.value
-        if (currentState is BaseState.Success) {
-            val currentData = currentState.data
-            val newData = currentData.copy(
-                isDailyQuestFinished = !currentData.isDailyQuestFinished
-            )
-            _uiState.update { BaseState.Success(newData) }
-        }
+//        val currentState = _state.value
+//        if (currentState is BaseState.Success) {
+//            val currentData = currentState.data
+//            val newData = currentData.copy(
+//                isDailyQuestFinished = !currentData.isDailyQuestFinished
+//            )
+//            _state.update { BaseState.Success(newData) }
+//        }
     }
 }

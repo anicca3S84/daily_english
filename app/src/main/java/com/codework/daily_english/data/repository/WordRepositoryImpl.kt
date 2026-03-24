@@ -1,4 +1,4 @@
-package com.codework.pm25.data.repository
+package com.codework.daily_english.data.repository
 
 class WordRepositoryImpl {
 }

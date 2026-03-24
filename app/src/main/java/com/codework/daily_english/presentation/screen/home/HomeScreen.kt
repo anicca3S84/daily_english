@@ -18,12 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.codework.daily_english.presentation.components.BaseScreen
+import com.codework.daily_english.presentation.components.StateWrapper
 import com.codework.daily_english.presentation.components.CourseCard
-import com.codework.daily_english.presentation.components.LessonCard
 import com.codework.daily_english.presentation.components.QuickActionSection
 import com.codework.daily_english.presentation.components.SeeAllHeader
-import com.codework.daily_english.presentation.components.WeeklyProgressCard
 import com.codework.daily_english.presentation.screen.home.model.CourseItem
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,14 +31,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.codework.daily_english.R
-import com.codework.daily_english.core.base.BaseState
 import com.codework.daily_english.presentation.screen.home.model.QuickActionItem
 import com.codework.daily_english.presentation.screen.home.mvi.HomeEvent
 import com.codework.daily_english.presentation.screen.home.mvi.HomeState
 
 @Composable
 fun HomeScreen(
-    state: BaseState<HomeState>,
+    state: HomeState,
     onEvent: (HomeEvent) -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -54,17 +51,11 @@ fun HomeScreen(
                 .fillMaxSize()
         ) {
             // --- SỬ DỤNG BASESCREEN TẠI ĐÂY ---
-            BaseScreen(
-                state = state,
-                snackbarHostState = snackbarHostState,
-                onRetry = { onEvent(HomeEvent.OnRetry) }
-            ) { data ->
                 // Chỉ vẽ nội dung khi có Data (Success)
                 HomeContent(
-                    data = data,
+//                    data = data,
                     onEvent = onEvent
                 )
-            }
         }
     }
 }
@@ -73,7 +64,7 @@ fun HomeScreen(
 
 @Composable
 fun HomeContent(
-    data: HomeState,
+//    data: HomeState,
     onEvent: (HomeEvent) -> Unit
 ) {
 
@@ -85,7 +76,7 @@ fun HomeContent(
         // 1. Header (Thêm padding ngang thủ công vì LazyColumn đã bỏ padding ngang)
         item {
             Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                HomeHeader(name = data.userName, streak = data.streakDay)
+//                HomeHeader(name = data.userName, streak = data.streakDay)
             }
         }
 
@@ -102,12 +93,12 @@ fun HomeContent(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(data.continueLearningList) { lesson ->
-                            LessonCard(
-                                item = lesson,
-                                onClick = { onEvent(HomeEvent.OnContinueLesson) }
-                            )
-                        }
+//                        items(data.continueLearningList) { lesson ->
+//                            LessonCard(
+//                                item = lesson,
+//                                onClick = { onEvent(HomeEvent.OnContinueLesson) }
+//                            )
+//                        }
                     }
                 }
             }
@@ -219,7 +210,7 @@ fun HomeContent(
                         .padding(horizontal = 16.dp)
                         .padding(bottom = 8.dp) // Thêm chút khoảng cách dưới biểu đồ
                 ) {
-                    WeeklyProgressCard(weeklyStats = data.weeklyStats)
+//                    WeeklyProgressCard(weeklyStats = data.weeklyStats)
                 }
             }
         }

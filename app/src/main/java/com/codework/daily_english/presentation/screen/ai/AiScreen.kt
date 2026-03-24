@@ -1,8 +1,5 @@
 package com.codework.daily_english.presentation.screen.ai
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,8 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codework.daily_english.presentation.components.AppTopBar
-import com.codework.daily_english.presentation.components.BaseScreen
-import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.components.StateWrapper
 import com.codework.daily_english.presentation.screen.ai.model.ChatMessage
 import com.codework.daily_english.presentation.screen.ai.model.ChatSession
 import com.codework.daily_english.presentation.screen.ai.mvi.AiEvent
@@ -47,7 +43,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AiScreen(
-    state: BaseState<AiState>, // SỬA: Đổi AiData thành AiState
+    state: AiState, // SỬA: Đổi AiData thành AiState
     onEvent: (AiEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -62,25 +58,25 @@ fun AiScreen(
         "Daily conversation 👋", "Vocabulary quiz 🧠", "Roleplay interview 👔"
     )
 
-    if (state is BaseState.Success) {
-        val data = state.data
-        LaunchedEffect(data.messages.size, data.isTyping) {
-            if (data.messages.isNotEmpty()) {
-                listState.animateScrollToItem(data.messages.size)
-            }
-        }
-    }
+//    if (state is BaseState.Success) {
+//        val data = state.data
+//        LaunchedEffect(data.messages.size, data.isTyping) {
+//            if (data.messages.isNotEmpty()) {
+//                listState.animateScrollToItem(data.messages.size)
+//            }
+//        }
+//    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            if (state is BaseState.Success) {
-                HistoryDrawerContent(
-                    sessions = state.data.historySessions,
-                    onNewChatClick = { onEvent(AiEvent.OnNewChat); scope.launch { drawerState.close() } },
-                    onSessionClick = { id -> onEvent(AiEvent.OnLoadSession(id)); scope.launch { drawerState.close() } }
-                )
-            }
+//            if (state is BaseState.Success) {
+//                HistoryDrawerContent(
+//                    sessions = state.data.historySessions,
+//                    onNewChatClick = { onEvent(AiEvent.OnNewChat); scope.launch { drawerState.close() } },
+//                    onSessionClick = { id -> onEvent(AiEvent.OnLoadSession(id)); scope.launch { drawerState.close() } }
+//                )
+//            }
         }
     ) {
         Scaffold(
@@ -117,27 +113,27 @@ fun AiScreen(
                 )
             },
             bottomBar = {
-                if (state is BaseState.Success) {
-                    Column(
-                        modifier = Modifier
-                            .background(AppBackground)
-                            .navigationBarsPadding()
-                            .padding(bottom = 18.dp)
-                    ) {
-                        if (state.data.messages.isEmpty()) {
-                            AutoScrollingSuggestionSection(suggestions) { onEvent(AiEvent.OnSuggestionClick(it)) }
-                        }
-
-                        ModernInputBar(
-                            value = inputText,
-                            onValueChange = { inputText = it },
-                            onSend = { onEvent(AiEvent.OnSendMessage(inputText)); inputText = "" },
-                            isEnabled = !state.data.isTyping,
-                            onAttachClick = { onEvent(AiEvent.OnImageClick) },
-                            onMicClick = { onEvent(AiEvent.OnMicClick) }
-                        )
-                    }
-                }
+//                if (state is BaseState.Success) {
+//                    Column(
+//                        modifier = Modifier
+//                            .background(AppBackground)
+//                            .navigationBarsPadding()
+//                            .padding(bottom = 18.dp)
+//                    ) {
+//                        if (state.data.messages.isEmpty()) {
+//                            AutoScrollingSuggestionSection(suggestions) { onEvent(AiEvent.OnSuggestionClick(it)) }
+//                        }
+//
+//                        ModernInputBar(
+//                            value = inputText,
+//                            onValueChange = { inputText = it },
+//                            onSend = { onEvent(AiEvent.OnSendMessage(inputText)); inputText = "" },
+//                            isEnabled = !state.data.isTyping,
+//                            onAttachClick = { onEvent(AiEvent.OnImageClick) },
+//                            onMicClick = { onEvent(AiEvent.OnMicClick) }
+//                        )
+//                    }
+//                }
             }
         ) { innerPadding ->
             Box(
@@ -146,36 +142,35 @@ fun AiScreen(
                     .background(AppBackground)
                     .padding(bottom = innerPadding.calculateBottomPadding())
             ) {
-                BaseScreen(state = state) { data ->
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        AnimatedVisibility(
-                            visible = data.messages.isEmpty(),
-                            enter = fadeIn(),
-                            exit = fadeOut(),
-                            modifier = Modifier.align(Alignment.Center).padding(top = 50.dp)
-                        ) {
-                            EmptyChatPlaceholder()
-                        }
 
-                        LazyColumn(
-                            state = listState,
-                            modifier = Modifier.fillMaxSize().statusBarsPadding().padding(top = 72.dp),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            items(data.messages) { msg ->
-                                EnhancedMessageBubble(message = msg)
-                            }
-                            if (data.isTyping) {
-                                item { ModernTypingIndicator() }
-                            }
-                            item { Spacer(modifier = Modifier.height(10.dp)) }
-                        }
+                    Box(modifier = Modifier.fillMaxSize()) {
+//                        AnimatedVisibility(
+//                            visible = data.messages.isEmpty(),
+//                            enter = fadeIn(),
+//                            exit = fadeOut(),
+//                            modifier = Modifier.align(Alignment.Center).padding(top = 50.dp)
+//                        ) {
+//                            EmptyChatPlaceholder()
+//                        }
+
+//                        LazyColumn(
+//                            state = listState,
+//                            modifier = Modifier.fillMaxSize().statusBarsPadding().padding(top = 72.dp),
+//                            contentPadding = PaddingValues(16.dp),
+//                            verticalArrangement = Arrangement.spacedBy(16.dp)
+//                        ) {
+//                            items(data.messages) { msg ->
+//                                EnhancedMessageBubble(message = msg)
+//                            }
+//                            if (data.isTyping) {
+//                                item { ModernTypingIndicator() }
+//                            }
+//                            item { Spacer(modifier = Modifier.height(10.dp)) }
+//                        }
                     }
                 }
             }
         }
-    }
 }
 
 // --- AUTO SCROLL SUGGESTIONS ---

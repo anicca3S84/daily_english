@@ -1,6 +1,8 @@
 package com.codework.daily_english.presentation.screen.lessons.speaking.mvi
 
-sealed interface SpeakingEffect {
+import com.codework.daily_english.core.base.BaseEffect
+
+sealed interface SpeakingEffect: BaseEffect {
     data object NavigateBack : SpeakingEffect
     data object NavigateToFinish : SpeakingEffect
     data class PlayTtsAudio(val text: String) : SpeakingEffect // Hiệu ứng đọc văn bản

@@ -1,8 +1,6 @@
 package com.codework.daily_english.presentation.screen.lessons.vocabulary
-
 import androidx.lifecycle.viewModelScope
 import com.codework.daily_english.core.base.BaseViewModel
-import com.codework.daily_english.core.base.BaseState
 import com.codework.daily_english.presentation.screen.lessons.vocabulary.mvi.VocabularyEffect
 import com.codework.daily_english.presentation.screen.lessons.vocabulary.mvi.VocabularyEvent
 import com.codework.daily_english.presentation.screen.lessons.vocabulary.mvi.VocabularyState
@@ -12,7 +10,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class VocabularyViewModel @Inject constructor() : BaseViewModel<VocabularyState, VocabularyEvent, VocabularyEffect>() {
+class VocabularyViewModel @Inject constructor() : BaseViewModel<VocabularyState, VocabularyEvent, VocabularyEffect>(
+    initialState = VocabularyState()
+) {
 
     private var vocabularyList = listOf<VocabularyState>() // Dùng VocabularyState
     private var currentIndex = 0
@@ -49,7 +49,7 @@ class VocabularyViewModel @Inject constructor() : BaseViewModel<VocabularyState,
                     vocabularyList = vocabularyList.toMutableList().apply {
                         set(currentIndex, updatedWord)
                     }
-                    _uiState.value = BaseState.Success(updatedWord)
+//                    _state.value = BaseState.Success(updatedWord)
                 }
             }
 
@@ -63,7 +63,7 @@ class VocabularyViewModel @Inject constructor() : BaseViewModel<VocabularyState,
                     vocabularyList = vocabularyList.toMutableList().apply {
                         set(currentIndex, updatedWord)
                     }
-                    _uiState.value = BaseState.Success(updatedWord)
+//                    _uiState.value = BaseState.Success(updatedWord)
                 }
             }
 
@@ -73,7 +73,7 @@ class VocabularyViewModel @Inject constructor() : BaseViewModel<VocabularyState,
 
     private fun loadVocabularyList() {
         viewModelScope.launch {
-            _uiState.value = BaseState.Loading
+//            _uiState.value = BaseState.Loading
             delay(500)
 
             vocabularyList = listOf(
@@ -135,8 +135,8 @@ class VocabularyViewModel @Inject constructor() : BaseViewModel<VocabularyState,
     }
 
     private fun updateUiWithCurrentWord() {
-        vocabularyList.getOrNull(currentIndex)?.let {
-            _uiState.value = BaseState.Success(it)
-        }
+//        vocabularyList.getOrNull(currentIndex)?.let {
+//            _uiState.value = BaseState.Success(it)
+//        }
     }
 }

@@ -17,12 +17,10 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codework.daily_english.presentation.components.BaseScreen
-import com.codework.daily_english.core.base.BaseState
 
 @Composable
 fun LoginScreen(
-    state: BaseState<LoginState>, // SỬA: LoginData -> LoginState
+    state: LoginState, // SỬA: LoginData -> LoginState
     onEvent: (LoginEvent) -> Unit
 ) {
     val textMain = Color(0xFF1E293B)
@@ -32,7 +30,7 @@ fun LoginScreen(
         containerColor = Color.White
     ) { paddingValues ->
         // BỌC TẤT CẢ VÀO BASESCREEN ĐỂ QUẢN LÝ LOADING/ERROR TỰ ĐỘNG
-        BaseScreen(state = state) { data ->
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -78,28 +76,28 @@ fun LoginScreen(
 
                 // --- PHẦN 2: CÁC NÚT ĐĂNG NHẬP 1 CHẠM ---
 
-                SocialLoginButton(
-                    text = "Continue with Google",
-                    iconText = "G",
-                    bgColor = Color.White,
-                    textColor = textMain,
-                    borderColor = Color(0xFFE2E8F0),
-                    // SỬ DỤNG BIẾN 'data' ĐƯỢC BASESCREEN TRẢ VỀ
-                    isLoading = data.isLoading && data.loadingProvider == "Google",
-                    onClick = { onEvent(LoginEvent.OnContinueWithGoogle) }
-                )
+//                SocialLoginButton(
+//                    text = "Continue with Google",
+//                    iconText = "G",
+//                    bgColor = Color.White,
+//                    textColor = textMain,
+//                    borderColor = Color(0xFFE2E8F0),
+//                    // SỬ DỤNG BIẾN 'data' ĐƯỢC BASESCREEN TRẢ VỀ
+//                    isLoading = data.isLoading && data.loadingProvider == "Google",
+//                    onClick = { onEvent(LoginEvent.OnContinueWithGoogle) }
+//                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                SocialLoginButton(
-                    text = "Continue with Apple",
-                    iconText = "",
-                    bgColor = Color.Black,
-                    textColor = Color.White,
-                    borderColor = Color.Black,
-                    isLoading = data.isLoading && data.loadingProvider == "Apple",
-                    onClick = { onEvent(LoginEvent.OnContinueWithApple) }
-                )
+//                SocialLoginButton(
+//                    text = "Continue with Apple",
+//                    iconText = "",
+//                    bgColor = Color.Black,
+//                    textColor = Color.White,
+//                    borderColor = Color.Black,
+//                    isLoading = data.isLoading && data.loadingProvider == "Apple",
+//                    onClick = { onEvent(LoginEvent.OnContinueWithApple) }
+//                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -139,7 +137,6 @@ fun LoginScreen(
                 )
             }
         }
-    }
 }
 
 @Composable
@@ -189,8 +186,8 @@ fun SocialLoginButton(
 @Preview(showBackground = true, name = "Welcome & Auth Screen")
 @Composable
 fun PreviewLoginScreen() {
-    LoginScreen(
-        state = BaseState.Success(LoginState()),
-        onEvent = {}
-    )
+//    LoginScreen(
+//        state = BaseState.Success(LoginState()),
+//        onEvent = {}
+//    )
 }

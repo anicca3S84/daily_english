@@ -10,15 +10,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -39,24 +35,21 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.codework.daily_english.presentation.components.BaseScreen
+import com.codework.daily_english.presentation.components.StateWrapper
 import com.codework.daily_english.presentation.components.CurvedHeaderWrapper // Import Base
-import com.codework.daily_english.presentation.components.HeaderStatItem    // Import Base
-import com.codework.daily_english.core.base.BaseState
 import com.codework.daily_english.presentation.screen.courses.model.TopicItem
 import com.codework.daily_english.presentation.screen.courses.mvi.CourseEvent
 import com.codework.daily_english.presentation.screen.courses.mvi.CourseState
 import com.codework.daily_english.presentation.theme.AppBackground
 import com.codework.daily_english.presentation.theme.BluePrimary
-import com.codework.daily_english.presentation.theme.IndigoPurple
 import com.codework.daily_english.presentation.theme.MainGradient
 
 @Composable
 fun CourseScreen(
-    state: BaseState<CourseState>,
+    state: CourseState,
     onEvent: (CourseEvent) -> Unit,
 ) {
-    BaseScreen(state = state) { data ->
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -72,9 +65,9 @@ fun CourseScreen(
             ) {
                 // 2. STICKY HEADER (Dùng Base Wrapper)
                 stickyHeader {
-                    val completedLessons = data.topics.count { it.progress >= 1.0f }
-                    val totalLessons = data.topics.size
-                    val progressPercentage = if (totalLessons > 0) (completedLessons.toFloat() / totalLessons * 100).toInt() else 0
+//                    val completedLessons = data.topics.count { it.progress >= 1.0f }
+//                    val totalLessons = data.topics.size
+//                    val progressPercentage = if (totalLessons > 0) (completedLessons.toFloat() / totalLessons * 100).toInt() else 0
 
                     CurvedHeaderWrapper(
                         headerHeight = 260.dp, // Cao hơn để chứa list Level
@@ -93,63 +86,62 @@ fun CourseScreen(
                                 contentPadding = PaddingValues(horizontal = 24.dp),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                items(data.availableLevels) { level ->
-                                    LevelIconCard(
-                                        levelName = level,
-                                        isSelected = level == data.selectedLevel,
-                                        onClick = { onEvent(CourseEvent.OnLevelSelected(level)) }
-                                    )
-                                }
+//                                items(data.availableLevels) { level ->
+//                                    LevelIconCard(
+//                                        levelName = level,
+//                                        isSelected = level == data.selectedLevel,
+//                                        onClick = { onEvent(CourseEvent.OnLevelSelected(level)) }
+//                                    )
+//                                }
                             }
                         },
                         bottomCardContent = {
                             // Card thống kê: Lessons Done + %
-                            HeaderStatItem(
-                                value = "$completedLessons/$totalLessons",
-                                label = "Lessons Done",
-                                icon = Icons.Default.CheckCircle,
-                                iconColor = BluePrimary
-                            )
-                            Divider(
-                                modifier = Modifier
-                                    .height(40.dp)
-                                    .width(1.dp),
-                                color = Color.LightGray.copy(alpha = 0.5f)
-                            )
-                            HeaderStatItem(
-                                value = "$progressPercentage%",
-                                label = "Completion",
-                                icon = Icons.Default.PieChart,
-                                iconColor = IndigoPurple
-                            )
+//                            HeaderStatItem(
+//                                value = "$completedLessons/$totalLessons",
+//                                label = "Lessons Done",
+//                                icon = Icons.Default.CheckCircle,
+//                                iconColor = BluePrimary
+//                            )
+//                            Divider(
+//                                modifier = Modifier
+//                                    .height(40.dp)
+//                                    .width(1.dp),
+//                                color = Color.LightGray.copy(alpha = 0.5f)
+//                            )
+//                            HeaderStatItem(
+//                                value = "$progressPercentage%",
+//                                label = "Completion",
+//                                icon = Icons.Default.PieChart,
+//                                iconColor = IndigoPurple
+//                            )
                         }
                     )
                 }
 
                 item { Spacer(modifier = Modifier.height(32.dp)) }
 
-                if (data.topics.isEmpty()) {
-                    item { EmptyCourseState() }
-                } else {
-                    // 3. DANH SÁCH BÀI HỌC (Giữ nguyên)
-                    itemsIndexed(data.topics) { index, topic ->
-                        val amplitude = 85.dp
-                        val xOffset = when (index % 2) { 0 -> -amplitude / 2; 1 -> amplitude / 2; else -> 0.dp }
-                        val nextIndex = index + 1
-                        val nextXOffset = if (nextIndex < data.topics.size) { when (nextIndex % 2) { 0 -> -amplitude / 2; 1 -> amplitude / 2; else -> 0.dp } } else xOffset
-
-                        GamifiedLessonItem(
-                            item = topic,
-                            xOffset = xOffset,
-                            nextXOffset = nextXOffset,
-                            isLast = index == data.topics.lastIndex,
-                            onClick = { if (!topic.isLocked) onEvent(CourseEvent.OnNavigateToLesson(topic.id)) }
-                        )
-                    }
-                }
+//                if (data.topics.isEmpty()) {
+//                    item { EmptyCourseState() }
+//                } else {
+//                    // 3. DANH SÁCH BÀI HỌC (Giữ nguyên)
+//                    itemsIndexed(data.topics) { index, topic ->
+//                        val amplitude = 85.dp
+//                        val xOffset = when (index % 2) { 0 -> -amplitude / 2; 1 -> amplitude / 2; else -> 0.dp }
+//                        val nextIndex = index + 1
+//                        val nextXOffset = if (nextIndex < data.topics.size) { when (nextIndex % 2) { 0 -> -amplitude / 2; 1 -> amplitude / 2; else -> 0.dp } } else xOffset
+//
+//                        GamifiedLessonItem(
+//                            item = topic,
+//                            xOffset = xOffset,
+//                            nextXOffset = nextXOffset,
+//                            isLast = index == data.topics.lastIndex,
+//                            onClick = { if (!topic.isLocked) onEvent(CourseEvent.OnNavigateToLesson(topic.id)) }
+//                        )
+//                    }
+//                }
             }
         }
-    }
 }
 
 // ... (Các Component con GridBackground, GamifiedLessonItem, LevelIconCard, LessonNode... giữ nguyên y hệt file cũ)

@@ -2,7 +2,6 @@ package com.codework.daily_english.presentation.screen.lessons.lesson
 
 import androidx.lifecycle.viewModelScope
 import com.codework.daily_english.core.base.BaseViewModel
-import com.codework.daily_english.core.base.BaseState
 import com.codework.daily_english.presentation.screen.lessons.lesson.model.LessonStep
 import com.codework.daily_english.presentation.screen.lessons.lesson.model.LessonStepType
 import com.codework.daily_english.presentation.screen.lessons.lesson.model.StepStatus
@@ -11,12 +10,13 @@ import com.codework.daily_english.presentation.screen.lessons.lesson.mvi.LessonE
 import com.codework.daily_english.presentation.screen.lessons.lesson.mvi.LessonState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LessonViewModel @Inject constructor() : BaseViewModel<LessonState, LessonEvent, LessonEffect>() {
+class LessonViewModel @Inject constructor() : BaseViewModel<LessonState, LessonEvent, LessonEffect>(
+    initialState = LessonState()
+) {
 
     init {
         loadLessonData()
@@ -37,24 +37,24 @@ class LessonViewModel @Inject constructor() : BaseViewModel<LessonState, LessonE
             is LessonEvent.OnRetry -> loadLessonData()
 
             is LessonEvent.OnStartPractice -> {
-                val currentData = (_uiState.value as? BaseState.Success)?.data
-                val nextStep = currentData?.steps?.firstOrNull { it.status != StepStatus.COMPLETED }
-
-                when (nextStep?.id) {
-                    "1" -> sendEffect(LessonEffect.NavigateToVocabulary)
-                    "2" -> sendEffect(LessonEffect.NavigateToListening)
-                    "3" -> sendEffect(LessonEffect.NavigateToSentenceBuilder)
-                    "4" -> sendEffect(LessonEffect.NavigateToSpeaking)
-                    "5" -> sendEffect(LessonEffect.NavigateToQuiz)
-                    else -> sendEffect(LessonEffect.ShowToast("You have completed all steps!"))
-                }
+//                val currentData = (_uiState.value as? BaseState.Success)?.data
+//                val nextStep = currentData?.steps?.firstOrNull { it.status != StepStatus.COMPLETED }
+//
+//                when (nextStep?.id) {
+//                    "1" -> sendEffect(LessonEffect.NavigateToVocabulary)
+//                    "2" -> sendEffect(LessonEffect.NavigateToListening)
+//                    "3" -> sendEffect(LessonEffect.NavigateToSentenceBuilder)
+//                    "4" -> sendEffect(LessonEffect.NavigateToSpeaking)
+//                    "5" -> sendEffect(LessonEffect.NavigateToQuiz)
+//                    else -> sendEffect(LessonEffect.ShowToast("You have completed all steps!"))
+//                }
             }
         }
     }
 
     private fun loadLessonData() {
         viewModelScope.launch {
-            _uiState.update { BaseState.Loading }
+//            _uiState.update { BaseState.Loading }
             delay(500)
 
             val mockSteps = listOf(
@@ -81,7 +81,7 @@ class LessonViewModel @Inject constructor() : BaseViewModel<LessonState, LessonE
                 level = "A1 - Beginner"
             )
 
-            _uiState.update { BaseState.Success(mockData) }
+//            _uiState.update { BaseState.Success(mockData) }
         }
     }
 }

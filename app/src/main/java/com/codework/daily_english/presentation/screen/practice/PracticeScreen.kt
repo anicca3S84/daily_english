@@ -19,22 +19,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.codework.daily_english.presentation.components.BaseScreen
+import com.codework.daily_english.presentation.components.StateWrapper
 import com.codework.daily_english.presentation.components.CurvedHeaderWrapper
-import com.codework.daily_english.presentation.components.HeaderStatItem
-import com.codework.daily_english.core.base.BaseState
 import com.codework.daily_english.presentation.screen.practice.mvi.PracticeEvent
 import com.codework.daily_english.presentation.screen.practice.mvi.PracticeState
 
 @Composable
 fun PracticeScreen(
-    state: BaseState<PracticeState>, // SỬA: Đổi PracticeData thành PracticeState
+    state: PracticeState, // SỬA: Đổi PracticeData thành PracticeState
     onEvent: (PracticeEvent) -> Unit
 ) {
-    BaseScreen(
-        state = state,
-        onRetry = { onEvent(PracticeEvent.OnRetry) } // Bổ sung onRetry
-    ) { data ->
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -73,19 +68,19 @@ fun PracticeScreen(
                         )
                     },
                     bottomCardContent = {
-                        HeaderStatItem(
-                            value = "${data.totalPoints}",
-                            label = "Total XP",
-                            icon = Icons.Default.EmojiEvents,
-                            iconColor = Color(0xFFFFC107)
-                        )
+//                        HeaderStatItem(
+//                            value = "${data.totalPoints}",
+//                            label = "Total XP",
+//                            icon = Icons.Default.EmojiEvents,
+//                            iconColor = Color(0xFFFFC107)
+//                        )
                         Divider(modifier = Modifier.height(40.dp).width(1.dp), color = Color.LightGray)
-                        HeaderStatItem(
-                            value = "${data.streak}",
-                            label = "Day Streak",
-                            icon = Icons.Default.LocalFireDepartment,
-                            iconColor = Color(0xFFFF5722)
-                        )
+//                        HeaderStatItem(
+//                            value = "${data.streak}",
+//                            label = "Day Streak",
+//                            icon = Icons.Default.LocalFireDepartment,
+//                            iconColor = Color(0xFFFF5722)
+//                        )
                     }
                 )
             }
@@ -177,7 +172,6 @@ fun PracticeScreen(
 
             item { Spacer(modifier = Modifier.height(32.dp)) }
         }
-    }
 }
 
 // --- DATA CLASS CHO UI (Local) ---

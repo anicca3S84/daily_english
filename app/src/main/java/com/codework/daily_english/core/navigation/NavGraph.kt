@@ -78,7 +78,7 @@ fun NavGraph(
                     is HomeEffect.NavigateToAi -> navController.navigate(Route.AIScreen)
                     is HomeEffect.NavigateToDictionary -> navController.navigate(Route.DictionaryScreen)
                     is HomeEffect.NavigateToGrammar -> navController.navigate(Route.GrammarScreen)
-                    is HomeEffect.NavigateToTranslate -> navController.navigate(Route.SpeakingScreen) // Hoặc TranslateScreen tùy bạn setup
+                    is HomeEffect.NavigateToTranslate -> navController.navigate(Route.TranslateScreen) // Hoặc TranslateScreen tùy bạn setup
                 }
             }
         ) { state, onEvent ->
@@ -178,7 +178,7 @@ fun NavGraph(
         composableScreen<Route.TranslateScreen, TranslateViewModel, TranslateState, TranslateEvent, TranslateEffect>(
             onNavigate = { effect ->
                 when(effect) {
-                    is TranslateEffect.ShowToast -> { /* TODO: Xử lý hiện Toast */ }
+                    TranslateEffect.NavigateToHistory -> TODO()
                 }
             }
         ) { state, onEvent ->

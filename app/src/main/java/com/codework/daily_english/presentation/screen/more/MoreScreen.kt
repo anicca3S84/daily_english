@@ -21,91 +21,101 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.codework.daily_english.presentation.components.BaseScreen
-import com.codework.daily_english.core.base.BaseState
+import com.codework.daily_english.presentation.components.StateWrapper
 import com.codework.daily_english.presentation.screen.more.mvi.MoreEvent
 import com.codework.daily_english.presentation.screen.more.mvi.MoreState
 
 @Composable
 fun MoreScreen(
-    state: BaseState<MoreState>, // SỬA: Đổi MoreData thành MoreState
+    state: MoreState,
     onEvent: (MoreEvent) -> Unit
 ) {
-    BaseScreen(
-        state = state,
-        onRetry = { onEvent(MoreEvent.OnRetry) } // Bổ sung onRetry
-    ) { data ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface),
-            contentPadding = PaddingValues(bottom = 24.dp)
-        ) {
-            item {
-                ProfileHeaderSection(data, onEditClick = { onEvent(MoreEvent.OnEditProfile) })
-            }
-            item {
-                StatsRow(data)
-            }
-            item {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    SettingsGroupTitle("Account Settings")
-                    ProfileMenuItem(
-                        icon = Icons.Outlined.Person,
-                        title = "Personal Information",
-                        onClick = { onEvent(MoreEvent.OnMenuClick("Personal")) }
-                    )
-                    ProfileMenuItem(
-                        icon = Icons.Outlined.Notifications,
-                        title = "Notifications",
-                        onClick = { onEvent(MoreEvent.OnMenuClick("Notifications")) }
-                    )
-                    ProfileMenuItem(
-                        icon = Icons.Outlined.Language,
-                        title = "App Language",
-                        value = "English",
-                        onClick = { onEvent(MoreEvent.OnMenuClick("Language")) }
-                    )
+    // ĐÃ BỎ StateWrapper ở đây
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface),
+        contentPadding = PaddingValues(bottom = 24.dp)
+    ) {
+        item {
+            ProfileHeaderSection(
+                data = state,
+                onEditClick = { onEvent(MoreEvent.OnEditProfile) }
+            )
+        }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+        item {
+            StatsRow(data = state)
+        }
 
-                    SettingsGroupTitle("Support & About")
-                    ProfileMenuItem(
-                        icon = Icons.Outlined.HelpOutline,
-                        title = "Help Center",
-                        onClick = { onEvent(MoreEvent.OnMenuClick("Help")) }
+        item {
+            Column(modifier = Modifier.padding(16.dp)) {
+                SettingsGroupTitle("Account Settings")
+                ProfileMenuItem(
+                    icon = Icons.Outlined.Person,
+                    title = "Personal Information",
+                    onClick = { onEvent(MoreEvent.OnMenuClick("Personal")) }
+                )
+                ProfileMenuItem(
+                    icon = Icons.Outlined.Notifications,
+                    title = "Notifications",
+                    onClick = { onEvent(MoreEvent.OnMenuClick("Notifications")) }
+                )
+                ProfileMenuItem(
+                    icon = Icons.Outlined.Language,
+                    title = "App Language",
+                    value = "English",
+                    onClick = { onEvent(MoreEvent.OnMenuClick("Language")) }
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                SettingsGroupTitle("Support & About")
+                ProfileMenuItem(
+                    icon = Icons.Outlined.HelpOutline,
+                    title = "Help Center",
+                    onClick = { onEvent(MoreEvent.OnMenuClick("Help")) }
+                )
+                ProfileMenuItem(
+                    icon = Icons.Outlined.PrivacyTip,
+                    title = "Privacy Policy",
+                    onClick = { onEvent(MoreEvent.OnMenuClick("Privacy")) }
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = { onEvent(MoreEvent.OnLogout) },
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Logout,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
                     )
-                    ProfileMenuItem(
-                        icon = Icons.Outlined.PrivacyTip,
-                        title = "Privacy Policy",
-                        onClick = { onEvent(MoreEvent.OnMenuClick("Privacy")) }
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Button(
-                        onClick = { onEvent(MoreEvent.OnLogout) },
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.Logout, null, tint = MaterialTheme.colorScheme.error)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Log Out", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Version ${data.appVersion}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.Gray,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center
+                        text = "Log Out",
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold
                     )
                 }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = "Version 1.0.0", // Bạn có thể thêm biến appVersion vào MoreState nếu muốn
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.Gray,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
             }
         }
     }

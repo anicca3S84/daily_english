@@ -1,17 +1,17 @@
 package com.codework.daily_english.presentation.screen.dictionary
 
 import com.codework.daily_english.core.base.BaseViewModel
-import com.codework.daily_english.core.base.BaseState
 import com.codework.daily_english.presentation.screen.dictionary.model.Word
 import com.codework.daily_english.presentation.screen.dictionary.mvi.DictionaryEffect
 import com.codework.daily_english.presentation.screen.dictionary.mvi.DictionaryEvent
 import com.codework.daily_english.presentation.screen.dictionary.mvi.DictionaryState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
-class DictionaryViewModel @Inject constructor() : BaseViewModel<DictionaryState, DictionaryEvent, DictionaryEffect>() {
+class DictionaryViewModel @Inject constructor() : BaseViewModel<DictionaryState, DictionaryEvent, DictionaryEffect>(
+    initialState = DictionaryState()
+) {
 
     private val mockDictionary = listOf(
         Word(
@@ -34,11 +34,13 @@ class DictionaryViewModel @Inject constructor() : BaseViewModel<DictionaryState,
 
     init {
         // Khởi tạo data ban đầu luôn là Success (vì Dashboard không cần call API load lâu)
-        _uiState.update { BaseState.Success(DictionaryState()) }
+//        _state.update {
+//
+//        }
     }
 
     override fun onEvent(event: DictionaryEvent) {
-        val currentState = (_uiState.value as? BaseState.Success)?.data ?: return
+//        val currentState = (_state.value as? BaseState.Success)?.data ?: return
 
         when (event) {
             is DictionaryEvent.OnSearchQueryChange -> {
@@ -49,15 +51,15 @@ class DictionaryViewModel @Inject constructor() : BaseViewModel<DictionaryState,
                     mockDictionary.filter { it.word.contains(query, ignoreCase = true) }
                 }
 
-                _uiState.update {
-                    BaseState.Success(currentState.copy(query = query, searchResults = results))
-                }
+//                _state.update {
+//                    BaseState.Success(currentState.copy(query = query, searchResults = results))
+//                }
             }
 
             is DictionaryEvent.OnClearSearch -> {
-                _uiState.update {
-                    BaseState.Success(currentState.copy(query = "", searchResults = emptyList()))
-                }
+//                _state.update {
+//                    BaseState.Success(currentState.copy(query = "", searchResults = emptyList()))
+//                }
             }
 
             is DictionaryEvent.OnPlayAudio -> {
@@ -67,10 +69,10 @@ class DictionaryViewModel @Inject constructor() : BaseViewModel<DictionaryState,
 
             is DictionaryEvent.OnToggleSaveWord -> {
                 // Logic đổi trạng thái isSaved (Giả lập)
-                val updatedResults = currentState.searchResults.map {
-                    if (it.word == event.word.word) it.copy(isSaved = !it.isSaved) else it
-                }
-                _uiState.update { BaseState.Success(currentState.copy(searchResults = updatedResults)) }
+//                val updatedResults = currentState.searchResults.map {
+////                    if (it.word == event.word.word) it.copy(isSaved = !it.isSaved) else it
+//                }
+//                _state.update { BaseState.Success(currentState.copy(searchResults = updatedResults)) }
 
                 val status = if (!event.word.isSaved) "Saved" else "Removed"
                 sendEffect(DictionaryEffect.ShowToast("$status ${event.word.word}"))

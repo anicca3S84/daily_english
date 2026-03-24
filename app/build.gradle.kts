@@ -108,4 +108,15 @@ dependencies {
     implementation(libs.play.services.auth)
     implementation(libs.generativeai)
     implementation(libs.coil.compose)
+    val room_version = "2.6.1"
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation ("androidx.room:room-ktx:$room_version") // Hỗ trợ Coroutines/Flow
+    kapt ("androidx.room:room-compiler:$room_version")
+
+    // --- 3. RETROFIT (Network) ---
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+    // --- 4. KHÁC ---
+    implementation("javax.inject:javax.inject:1")
 }

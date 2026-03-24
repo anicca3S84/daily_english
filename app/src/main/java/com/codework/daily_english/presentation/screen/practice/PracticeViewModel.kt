@@ -8,11 +8,11 @@ import androidx.compose.material.icons.filled.Translate
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import com.codework.daily_english.core.base.BaseViewModel
-import com.codework.daily_english.core.base.BaseState
 import com.codework.daily_english.presentation.screen.practice.model.PracticeCategory
 import com.codework.daily_english.presentation.screen.practice.mvi.PracticeEffect
 import com.codework.daily_english.presentation.screen.practice.mvi.PracticeEvent
 import com.codework.daily_english.presentation.screen.practice.mvi.PracticeState
+import com.codework.daily_english.presentation.screen.translate.mvi.TranslateState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
@@ -20,7 +20,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class PracticeViewModel @Inject constructor() : BaseViewModel<PracticeState, PracticeEvent, PracticeEffect>() {
+class PracticeViewModel @Inject constructor() : BaseViewModel<PracticeState, PracticeEvent, PracticeEffect>(
+    initialState = PracticeState()
+)
+{
 
     init {
         loadPracticeContent()
@@ -41,7 +44,9 @@ class PracticeViewModel @Inject constructor() : BaseViewModel<PracticeState, Pra
 
     private fun loadPracticeContent() {
         viewModelScope.launch {
-            _uiState.update { BaseState.Loading }
+//            _state.update {
+//
+//            }
             try {
                 delay(1000) // Giả lập load data
 
@@ -79,9 +84,13 @@ class PracticeViewModel @Inject constructor() : BaseViewModel<PracticeState, Pra
                         )
                     )
                 )
-                _uiState.update { BaseState.Success(mockData) }
+//                _state.update {
+
+//                }
             } catch (e: Exception) {
-                _uiState.update { BaseState.Error(e.message ?: "Unknown Error") }
+//                _state.update {
+//
+//                }
             }
         }
     }

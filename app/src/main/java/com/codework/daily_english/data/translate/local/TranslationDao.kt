@@ -14,4 +14,7 @@ interface TranslationDao {
 
     @Query("SELECT * FROM translations ORDER BY timestamp DESC")
     fun getAllHistory(): Flow<List<TranslationEntity>>
+
+    @Query("SELECT * FROM translations ORDER BY timestamp DESC LIMIT 10")
+    fun getRecentHistory(): Flow<List<TranslationEntity>>
 }

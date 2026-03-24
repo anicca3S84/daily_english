@@ -1,6 +1,7 @@
 package com.codework.daily_english.presentation.screen.translate
 
 import androidx.lifecycle.viewModelScope
+import com.codework.daily_english.core.base.BaseEffect
 import com.codework.daily_english.core.base.BaseViewModel
 import com.codework.daily_english.core.result.onError
 import com.codework.daily_english.core.result.onSuccess
@@ -11,6 +12,7 @@ import com.codework.daily_english.presentation.screen.translate.mapper.toUiModel
 import com.codework.daily_english.presentation.screen.translate.mvi.TranslateEffect
 import com.codework.daily_english.presentation.screen.translate.mvi.TranslateEvent
 import com.codework.daily_english.presentation.screen.translate.mvi.TranslateState
+import com.codework.daily_english.presentation.utils.UiText
 import com.codework.daily_english.presentation.utils.asUiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -25,7 +27,7 @@ import javax.inject.Inject
 class TranslateViewModel @Inject constructor(
     private val translateTextUseCase: TranslateTextUseCase,
     private val observeHistoryUseCase: ObserveTranslationHistoryUseCase,
-    private val saveHistoryUseCase: SaveTranslationHistoryUseCase // ✅ Dùng UseCase thay vì Repository
+    private val saveHistoryUseCase: SaveTranslationHistoryUseCase
 ) : BaseViewModel<TranslateState, TranslateEvent, TranslateEffect>(
     initialState = TranslateState()
 ) {
@@ -33,19 +35,35 @@ class TranslateViewModel @Inject constructor(
     private var translateJob: Job? = null
 
     init {
-        // Khởi chạy lắng nghe lịch sử ngay khi App mở màn hình này
         observeHistory()
     }
 
     private fun observeHistory() {
+        // 1. Set Loading cho cụm history
+        _state.update { it.copy(historyState = it.historyState.copy(isLoading = true)) }
+
         observeHistoryUseCase()
             .onEach { domainList ->
-                // Map Domain Model -> UI Model trước khi đẩy vào State
                 val uiList = domainList.toUiModels()
-                _state.update { it.copy(history = uiList) }
+                _state.update {
+                    it.copy(
+                        historyState = it.historyState.copy(
+                            data = uiList,
+                            isLoading = false,
+                            error = null
+                        )
+                    )
+                }
             }
             .catch {
-                _state.update { it.copy(error = "Không thể tải lịch sử dịch") }
+                _state.update {
+                    it.copy(
+                        historyState = it.historyState.copy(
+                            isLoading = false,
+                            error = UiText.DynamicString("Không thể tải lịch sử dịch")
+                        )
+                    )
+                }
             }
             .launchIn(viewModelScope)
     }
@@ -56,13 +74,20 @@ class TranslateViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         sourceText = event.text,
-                        error = null // Xóa lỗi cũ khi người dùng gõ lại
+                        // Xóa lỗi cũ trong historyState để BaseScreen ẩn thông báo lỗi
+                        historyState = it.historyState.copy(error = null)
                     )
                 }
             }
 
             is TranslateEvent.OnClearText -> {
-                _state.update { it.copy(sourceText = "", targetText = "", error = null) }
+                _state.update {
+                    it.copy(
+                        sourceText = "",
+                        targetText = "",
+                        historyState = it.historyState.copy(error = null)
+                    )
+                }
             }
 
             is TranslateEvent.OnSwapLanguage -> {
@@ -72,34 +97,32 @@ class TranslateViewModel @Inject constructor(
                         targetLang = it.sourceLang,
                         sourceText = it.targetText,
                         targetText = it.sourceText,
-                        error = null
+                        historyState = it.historyState.copy(error = null)
                     )
                 }
             }
 
             is TranslateEvent.OnTranslateClick -> {
-                // 1. Chống Double Click / Spam
                 if (_state.value.isTranslating) return
-
-                // 2. Hủy tác vụ cũ nếu đang chạy
                 translateJob?.cancel()
 
                 translateJob = viewModelScope.launch {
-                    // 3. Lấy Fresh State ngay trong Coroutine để tránh stale data
                     val currentState = _state.value
-
                     if (currentState.sourceText.isBlank()) return@launch
 
-                    _state.update { it.copy(isTranslating = true, error = null) }
+                    _state.update {
+                        it.copy(
+                            isTranslating = true,
+                            historyState = it.historyState.copy(error = null)
+                        )
+                    }
 
-                    // 4. Gọi UseCase thực hiện logic dịch
                     translateTextUseCase(
                         text = currentState.sourceText,
                         sourceLang = currentState.sourceLang,
                         targetLang = currentState.targetLang
                     )
                         .onSuccess { result ->
-                            // Cập nhật kết quả dịch lên UI
                             _state.update {
                                 it.copy(
                                     targetText = result.translatedText,
@@ -107,7 +130,7 @@ class TranslateViewModel @Inject constructor(
                                 )
                             }
 
-                            // 5. Lưu lịch sử (Fire-and-forget) trong scope của ViewModel
+                            // Lưu lịch sử
                             result.historyItem?.let { item ->
                                 launch {
                                     runCatching { saveHistoryUseCase(item) }
@@ -115,20 +138,20 @@ class TranslateViewModel @Inject constructor(
                             }
                         }
                         .onError { appError ->
-                            // Map lỗi kỹ thuật sang ngôn ngữ người dùng
                             _state.update {
                                 it.copy(
                                     isTranslating = false,
-                                    error = appError.asUiText()
+                                    // Đẩy lỗi vào historyState để BaseScreen hiển thị Snackbar/Overlay
+                                    historyState = it.historyState.copy(error = appError.asUiText())
                                 )
                             }
                         }
                 }
             }
 
-            is TranslateEvent.OnCameraClick -> sendEffect(TranslateEffect.ShowToast("Camera feature coming soon"))
-            is TranslateEvent.OnImageClick -> sendEffect(TranslateEffect.ShowToast("Gallery feature coming soon"))
-            is TranslateEvent.OnMicClick -> sendEffect(TranslateEffect.ShowToast("Voice input coming soon"))
+            is TranslateEvent.OnCameraClick -> sendEffect(BaseEffect.ShowToast("Coming soon"))
+            is TranslateEvent.OnImageClick -> sendEffect(BaseEffect.ShowToast("Coming soon"))
+            is TranslateEvent.OnMicClick -> sendEffect(BaseEffect.ShowToast("Coming soon"))
         }
     }
 }

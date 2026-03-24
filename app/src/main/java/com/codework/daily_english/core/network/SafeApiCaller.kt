@@ -2,8 +2,9 @@ package com.codework.daily_english.core.network
 
 import com.codework.daily_english.core.result.AppError
 import com.codework.daily_english.core.result.AppResult
+import com.codework.daily_english.data.remote.dto.BaseResponse
 import com.google.gson.JsonSyntaxException
-import retrofit2.HttpException // ✅ đúng lib
+import retrofit2.HttpException
 import java.io.IOException
 import java.net.SocketTimeoutException
 
@@ -37,4 +38,24 @@ fun Exception.toAppError(): AppResult.Error {
     }
 
     return AppResult.Error(error, message = this.message)
+}
+
+fun <T> AppResult<BaseResponse<T>>.unwrap(): AppResult<T> {
+    return when (this) {
+        is AppResult.Success -> {
+            val body = this.data
+            // Nếu API HTTP 200 OK và Logic Backend cũng báo thành công
+            if (body.isSuccess && body.data != null) {
+                AppResult.Success(body.data)
+            } else {
+                // Nếu HTTP 200 OK nhưng Backend báo lỗi logic (VD: text quá dài)
+                AppResult.Error(
+                    error = AppError.Validation(body.message ?: "Lỗi xác thực từ Server"),
+                    message = body.message ?: "Lỗi dữ liệu Server"
+                )
+            }
+        }
+        // Nếu đã bị lỗi mạng (HttpException, Mất mạng...) từ safeApiCall thì giữ nguyên
+        is AppResult.Error -> this
+    }
 }
