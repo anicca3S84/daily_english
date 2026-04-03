@@ -2,6 +2,7 @@ package com.codework.daily_english.domain.translate.usecase
 
 import com.codework.daily_english.core.result.AppError
 import com.codework.daily_english.core.result.AppResult
+import com.codework.daily_english.core.utils.Constants
 import com.codework.daily_english.domain.translate.model.TranslateResult
 import com.codework.daily_english.domain.translate.model.Translation
 import com.codework.daily_english.domain.translate.repository.TranslateRepository
@@ -14,15 +15,14 @@ class TranslateTextUseCase @Inject constructor(
         text: String,
         sourceLang: String,
         targetLang: String
-    ): AppResult<TranslateResult> { // ✅ Bỏ <...> vì TranslateResult đã cụ thể hóa kiểu dữ liệu rồi
+    ): AppResult<TranslateResult> {
 
         val cleanText = text.trim()
 
         if (cleanText.isBlank()) {
-            return AppResult.Error(AppError.Validation("EMPTY_TEXT"))
+            return AppResult.Error(AppError.Validation(Constants.EMPTY_TEXT))
         }
 
-        // Nếu ngôn ngữ giống nhau, vẫn trả về TranslateResult nhưng historyItem = null
         if (sourceLang == targetLang) {
             return AppResult.Success(
                 TranslateResult(translatedText = cleanText, historyItem = null)
@@ -46,7 +46,6 @@ class TranslateTextUseCase @Inject constructor(
                     )
                 )
             }
-            // Ép kiểu result về AppResult.Error để tương thích với kiểu trả về của hàm
             is AppResult.Error -> result
         }
     }

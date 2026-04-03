@@ -23,7 +23,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.codework.daily_english.presentation.components.StateWrapper
 import com.codework.daily_english.presentation.screen.more.mvi.MoreEvent
 import com.codework.daily_english.presentation.screen.more.mvi.MoreState
 

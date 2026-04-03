@@ -1,6 +1,6 @@
 package com.codework.daily_english.data.translate.local
 
-import com.codework.daily_english.data.translate.local.entity.TranslationEntity
+import com.codework.daily_english.data.translate.local.TranslationEntity
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.Flow
 

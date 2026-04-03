@@ -2,7 +2,7 @@ package com.codework.daily_english.core.network
 
 import com.codework.daily_english.core.result.AppError
 import com.codework.daily_english.core.result.AppResult
-import com.codework.daily_english.data.remote.dto.BaseResponse
+import com.codework.daily_english.data.remote.response.BaseResponse
 import com.google.gson.JsonSyntaxException
 import retrofit2.HttpException
 import java.io.IOException

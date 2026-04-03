@@ -45,4 +45,11 @@ sealed interface Route {
 
     @Serializable
     data object SpeakingScreen : Route
+
+    @Serializable
+    data class CourseDetailScreen(
+        val courseId: String,
+        val courseCode: String
+    ) : Route
+
 }

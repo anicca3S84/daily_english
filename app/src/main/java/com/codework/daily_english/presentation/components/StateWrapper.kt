@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
@@ -13,18 +12,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.zIndex
 import com.codework.daily_english.core.base.BaseUiState
-import com.codework.daily_english.presentation.theme.AppBackground
 import com.codework.daily_english.presentation.theme.BluePrimary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> StateWrapper(
     uiState: BaseUiState<T>,
-    modifier: Modifier = Modifier, // Modifier này cực quan trọng để định vị
+    modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState? = null,
     onRetry: (() -> Unit)? = null,
-    enablePullToRefresh: Boolean = false, // Mặc định tắt, chỉ bật ở màn chính
+    enablePullToRefresh: Boolean = false,
     loadingType: LoadingType = LoadingType.SHIMMER,
     shimmerContent: @Composable () -> Unit = {},
     content: @Composable (T?) -> Unit
@@ -33,21 +33,18 @@ fun <T> StateWrapper(
     val isDataEmpty = uiState.isEmpty
     val isLoading = uiState.isLoading
 
-    // Box ngoài cùng dùng modifier truyền vào (không ép fillMaxSize)
     Box(modifier = modifier) {
 
-        // Chỉ bọc PullToRefresh nếu cần thiết
         if (enablePullToRefresh) {
             PullToRefreshBox(
                 isRefreshing = uiState.isRefreshing,
                 onRefresh = { onRetry?.invoke() },
-                modifier = Modifier.fillMaxWidth(), // Chỉ chiếm ngang
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.TopCenter
             ) {
                 WrapperInnerContent(uiState, errorString, isDataEmpty, isLoading, loadingType, shimmerContent, snackbarHostState, onRetry, content)
             }
-        } else {
-            // Nếu không refresh thì render trực tiếp cho nhẹ
+        }else {
             WrapperInnerContent(uiState, errorString, isDataEmpty, isLoading, loadingType, shimmerContent, snackbarHostState, onRetry, content)
         }
     }
@@ -65,30 +62,29 @@ private fun <T> BoxScope.WrapperInnerContent(
     onRetry: (() -> Unit)?,
     content: @Composable (T?) -> Unit
 ) {
-    Box (
-        modifier = Modifier.matchParentSize()
-    ){
-        // 1. Content chính
-        content(uiState.data)
+    Box(modifier = Modifier.fillMaxSize()) {
 
-        // 2. Loading Overlay
+        // ❌ ĐỪNG render content khi loading lần đầu
+        if (!(isLoading && isDataEmpty)) {
+            content(uiState.data)
+        }
+
         if (isLoading && isDataEmpty) {
-            Box(modifier = Modifier.matchParentSize()) {
-                if (loadingType == LoadingType.SHIMMER) {
-                    shimmerContent()
-                } else {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center),
-                        color = BluePrimary
-                    )
-                }
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .zIndex(10f) // 👈 đảm bảo đè hết
+                    .background(Color.White)
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = BluePrimary
+                )
             }
         }
 
-        // 3. Error Overlay (ĐÃ FIX Ở ĐÂY)
         errorString?.let { message ->
             if (isDataEmpty) {
-                // Xác định errorType dựa trên nội dung message
                 val visualType = when {
                     message.contains("mạng", true) || message.contains("connection", true) -> ErrorVisual.NO_INTERNET
                     message.contains("không tìm thấy", true) || message.contains("not found", true) -> ErrorVisual.NOT_FOUND
@@ -96,7 +92,7 @@ private fun <T> BoxScope.WrapperInnerContent(
                 }
 
                 ErrorOverlay(
-                    errorType = visualType, // TRUYỀN THAM SỐ CÒN THIẾU
+                    errorType = visualType,
                     message = message,
                     onRetry = onRetry,
                 )

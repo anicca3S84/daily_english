@@ -8,7 +8,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-// ✅ SỬA DÒNG NÀY: Từ jakarta.inject sang javax.inject
 import javax.inject.Singleton
 
 @Module
@@ -16,7 +15,7 @@ import javax.inject.Singleton
 object DatabaseModule {
 
     @Provides
-    @Singleton // Giờ đây Hilt đã hiểu đây là Singleton của nó
+    @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room.databaseBuilder(
             context,
@@ -26,6 +25,6 @@ object DatabaseModule {
     }
 
     @Provides
-    @Singleton // Thêm Singleton ở đây nếu bạn muốn dùng chung 1 instance Dao
+    @Singleton
     fun provideTranslationDao(db: AppDatabase) = db.translationDao()
 }

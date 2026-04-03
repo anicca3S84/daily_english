@@ -1,52 +1,13 @@
 package com.codework.daily_english.presentation.utils
+
 import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.codework.daily_english.R
 import com.codework.daily_english.core.result.AppError
+import com.codework.daily_english.core.utils.Constants
 
-fun AppError.asUiText(): UiText {
-    return when (this) {
-        is AppError.Network -> {
-            UiText.DynamicString("Không có kết nối mạng")
-        }
-
-        is AppError.Timeout -> {
-            UiText.DynamicString("Kết nối quá hạn (Timeout)")
-        }
-
-        is AppError.Http -> {
-            // Hiển thị message từ server nếu có, không thì hiện mã lỗi
-            val msg = if (this is AppError.Http && !this.message.isNullOrBlank()) {
-                this.message
-            } else if (this is AppError.Http) {
-                "Lỗi hệ thống (${this.code})"
-            } else "Lỗi kết nối máy chủ"
-
-            UiText.DynamicString(msg)
-        }
-
-        is AppError.Validation -> {
-            val reasonText = when (this.reason) {
-                "EMPTY_TEXT" -> "Vui lòng nhập văn bản cần dịch"
-                else -> "Dữ liệu không hợp lệ"
-            }
-            UiText.DynamicString(reasonText)
-        }
-
-        is AppError.Parsing -> {
-            UiText.DynamicString("Lỗi xử lý dữ liệu")
-        }
-
-        // Nhánh else hoặc Unknown
-        else -> {
-            UiText.DynamicString("Đã xảy ra lỗi không xác định")
-        }
-    }
-}
-
-// Giữ nguyên class UiText bên dưới của bạn
 sealed class UiText {
     data class DynamicString(val value: String) : UiText()
 
@@ -68,5 +29,28 @@ sealed class UiText {
             is DynamicString -> value
             is StringResource -> context.getString(resId, *args)
         }
+    }
+}
+
+fun AppError.asUiText(): UiText {
+    return when (this) {
+        is AppError.Network -> UiText.StringResource(R.string.error_network)
+        is AppError.Timeout -> UiText.StringResource(R.string.error_timeout)
+        is AppError.Http -> {
+            if (!this.message.isNullOrBlank()) {
+                UiText.DynamicString(this.message)
+            } else {
+                UiText.StringResource(R.string.error_http_unknown, this.code)
+            }
+        }
+        is AppError.Validation -> {
+            val resId = when (this.reason) {
+                Constants.EMPTY_TEXT -> R.string.error_empty_text
+                else -> R.string.error_invalid_data
+            }
+            UiText.StringResource(resId)
+        }
+        is AppError.Parsing -> UiText.StringResource(R.string.error_parsing)
+        else -> UiText.StringResource(R.string.error_unknown)
     }
 }

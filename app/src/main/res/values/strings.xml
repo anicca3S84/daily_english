@@ -2,7 +2,8 @@
 <resources>
     <!--Common-->
     <string name="app_name">Daily English App</string>
-    <string name="common_retry">Retry</string>
+
+    <!--Loading-->
     <string name="common_loading">Loading…</string>
 
     <!--Nav-->
@@ -16,9 +17,8 @@
     <!--Title-->
     <string name="title_login">Login</string>
     <string name="title_register">Create Account</string>
-
-    <!--Subtitle-->
-    <string name="subtitle_login">Welcome back to Daily English</string>
+    <string name="title_translate">Translate</string>
+    <string name="title_history">Translation History</string>
 
     <!--Label-->
     <string name="label_full_name">Full Name</string>
@@ -30,6 +30,29 @@
     <string name="label_forgot_password">Forgot Password?</string>
     <string name="label_go_to_register">Don\'t have an account? Register now</string>
     <string name="label_go_to_login">Already have an account? Login</string>
+    <string name="label_translating">Translating...</string>
+    <string name="label_recent_history">Recent History</string>
+    <string name="label_no_history">No history yet</string>
+    <string name="label_progress">progress</string>
+    <string name="label_translate">Translate</string>
+    <string name="label_see_all">See All</string>
+    <string name="label_clear_all">Clear All</string>
+    <string name="label_retry">Retry</string>
+    <string name="label_lessons_done">Lessons Done</string>
+    <string name="label_completion">Completion</string>
+    <string name="word_learned">Words Learned</string>
+    <string name="label_exp">Exp</string>
+    <string name="label_lessons">Lessons</string>
+    <string name="label_continue_learning">Continue Learning</string>
+    <!--skill-->
+    <string name="label_listen">Listen</string>
+    <string name="label_vocab">Vocab</string>
+    <string name="label_gram">Gram</string>
+    <string name="label_speak">Speak</string>
+    <string name="label_back">Back</string>
+    <string name="label_overall_progress">Overall Progress: %1$d%%</string>
+    <string name="label_completed">Completed</string>
+
 
     <!--Error-->
     <string name="error_empty_field">Please do not leave this field empty</string>
@@ -38,5 +61,31 @@
     <string name="error_password_not_match">Password confirmation does not match</string>
     <string name="error_login_failed">Incorrect email or password</string>
     <string name="error_email_exists">This email is already registered</string>
-    <string name="error_no_internet">No internet connection</string>
+    <string name="error_network">No internet connection</string>
+    <string name="error_timeout">Connection timed out</string>
+    <string name="error_http_unknown">System error (%1$s)</string>
+    <string name="error_server">Server connection error</string>
+    <string name="error_empty_text">Please enter text to translate</string>
+    <string name="error_invalid_data">Invalid data</string>
+    <string name="error_parsing">Data processing error</string>
+    <string name="error_unknown">An unknown error occurred</string>
+    <string name="error_load_history">Error loading history</string>
+    <string name="error_could_not_load_history">Could not load translation history</string>
+
+    <!--Hint-->
+    <string name="hint_type_to_translate">Type to translate...</string>
+
+    <!--Notification-->
+    <string name="noti_coming_soon">Coming soon</string>
+    <string name="noti_course_looked">This course is locked!</string>
+    <string name="noti_lesson_looked">This lesson is locked!</string>
+
+    <!--Format-->
+    <string name="exp_format">%1$d Exp</string>
+    <string name="progress_format">Progress: %1$d%%</string>
+
+
+    <string name="msg_no_lesson_available">No lessons available</string>
+    <string name="msg_study_to_keep_streak">Study at least 5 mins a day to keep your\nstreak alive!</string>
+
 </resources>

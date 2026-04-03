@@ -68,6 +68,9 @@ android {
             pickFirsts += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
         }
     }
+    kotlinOptions {
+        freeCompilerArgs = listOf("-XXLanguage:+PropertyParamAnnotationDefaultTargetMode")
+    }
 }
 
 dependencies {

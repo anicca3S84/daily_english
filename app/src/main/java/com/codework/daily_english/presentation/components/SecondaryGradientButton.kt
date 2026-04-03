@@ -15,7 +15,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codework.daily_english.presentation.theme.BluePrimary
 import com.codework.daily_english.presentation.theme.MainGradient
 
 @Composable

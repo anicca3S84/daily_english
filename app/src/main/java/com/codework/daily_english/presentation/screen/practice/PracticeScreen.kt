@@ -19,7 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.codework.daily_english.presentation.components.StateWrapper
 import com.codework.daily_english.presentation.components.CurvedHeaderWrapper
 import com.codework.daily_english.presentation.screen.practice.mvi.PracticeEvent
 import com.codework.daily_english.presentation.screen.practice.mvi.PracticeState
@@ -40,8 +39,6 @@ fun PracticeScreen(
             // 1. Header & Stats
             item {
                 CurvedHeaderWrapper(
-                    headerHeight = 230.dp,
-                    gradientHeight = 190.dp,
                     content = {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,

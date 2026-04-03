@@ -3,6 +3,7 @@ package com.codework.daily_english.core.navigation
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -25,7 +26,7 @@ fun AppBottomNavigation(navController: NavHostController) {
     )
 
     NavigationBar(
-        containerColor = AppBackground,
+        containerColor = Color(0xFFFFFFFF),
         tonalElevation = NavigationBarDefaults.Elevation
     ) {
         items.forEach { item ->

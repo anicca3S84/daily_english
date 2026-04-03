@@ -8,7 +8,6 @@ import javax.inject.Inject
 class ObserveTranslationHistoryUseCase @Inject constructor(
     private val repository: TranslateRepository
 ) {
-    // Dùng Flow để lắng nghe liên tục mọi thay đổi từ Database
     operator fun invoke(): Flow<List<Translation>> {
         return repository.observeHistory()
     }

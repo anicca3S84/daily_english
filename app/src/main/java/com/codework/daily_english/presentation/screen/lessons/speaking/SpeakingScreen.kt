@@ -29,8 +29,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codework.daily_english.presentation.components.StateWrapper
-import com.codework.daily_english.presentation.components.*
 import com.codework.daily_english.presentation.screen.lessons.speaking.model.ChatMessage
 import com.codework.daily_english.presentation.screen.lessons.speaking.model.RecordState
 import com.codework.daily_english.presentation.screen.lessons.speaking.mvi.SpeakingEvent

@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 // Đảm bảo import đúng đường dẫn của project bạn
-import com.codework.daily_english.presentation.components.StateWrapper
 import com.codework.daily_english.presentation.components.VocabularyCompleteDialog
 import com.codework.daily_english.presentation.components.QuizOption
 import com.codework.daily_english.presentation.screen.lessons.vocabulary.mvi.VocabularyEvent

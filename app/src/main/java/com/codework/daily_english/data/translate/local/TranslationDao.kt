@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.codework.daily_english.data.translate.local.entity.TranslationEntity
+import com.codework.daily_english.data.translate.local.TranslationEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

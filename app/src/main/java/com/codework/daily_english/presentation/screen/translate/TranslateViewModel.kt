@@ -1,7 +1,8 @@
 package com.codework.daily_english.presentation.screen.translate
 
 import androidx.lifecycle.viewModelScope
-import com.codework.daily_english.core.base.BaseEffect
+import com.codework.daily_english.R
+import com.codework.daily_english.core.base.BaseEffect.*
 import com.codework.daily_english.core.base.BaseViewModel
 import com.codework.daily_english.core.result.onError
 import com.codework.daily_english.core.result.onSuccess
@@ -39,7 +40,6 @@ class TranslateViewModel @Inject constructor(
     }
 
     private fun observeHistory() {
-        // 1. Set Loading cho cụm history
         _state.update { it.copy(historyState = it.historyState.copy(isLoading = true)) }
 
         observeHistoryUseCase()
@@ -60,7 +60,7 @@ class TranslateViewModel @Inject constructor(
                     it.copy(
                         historyState = it.historyState.copy(
                             isLoading = false,
-                            error = UiText.DynamicString("Không thể tải lịch sử dịch")
+                            error = UiText.StringResource(R.string.error_could_not_load_history)
                         )
                     )
                 }
@@ -74,7 +74,6 @@ class TranslateViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         sourceText = event.text,
-                        // Xóa lỗi cũ trong historyState để BaseScreen ẩn thông báo lỗi
                         historyState = it.historyState.copy(error = null)
                     )
                 }
@@ -130,7 +129,6 @@ class TranslateViewModel @Inject constructor(
                                 )
                             }
 
-                            // Lưu lịch sử
                             result.historyItem?.let { item ->
                                 launch {
                                     runCatching { saveHistoryUseCase(item) }
@@ -141,7 +139,6 @@ class TranslateViewModel @Inject constructor(
                             _state.update {
                                 it.copy(
                                     isTranslating = false,
-                                    // Đẩy lỗi vào historyState để BaseScreen hiển thị Snackbar/Overlay
                                     historyState = it.historyState.copy(error = appError.asUiText())
                                 )
                             }
@@ -149,9 +146,10 @@ class TranslateViewModel @Inject constructor(
                 }
             }
 
-            is TranslateEvent.OnCameraClick -> sendEffect(BaseEffect.ShowToast("Coming soon"))
-            is TranslateEvent.OnImageClick -> sendEffect(BaseEffect.ShowToast("Coming soon"))
-            is TranslateEvent.OnMicClick -> sendEffect(BaseEffect.ShowToast("Coming soon"))
+            is TranslateEvent.OnCameraClick -> sendEffect(ShowToast(UiText.StringResource(R.string.noti_coming_soon)))
+            is TranslateEvent.OnImageClick -> sendEffect(ShowToast(UiText.StringResource(R.string.noti_coming_soon)))
+            is TranslateEvent.OnMicClick -> sendEffect(ShowToast(UiText.StringResource(R.string.noti_coming_soon)))
+            TranslateEvent.OnSeeAllClick -> sendEffect(TranslateEffect.NavigateToHistory)
         }
     }
 }

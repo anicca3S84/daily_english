@@ -4,7 +4,7 @@ import com.codework.daily_english.data.translate.local.TranslateLocalDataSource
 import com.codework.daily_english.data.translate.local.TranslateLocalDataSourceImpl
 import com.codework.daily_english.data.translate.remote.TranslateRemoteDataSource
 import com.codework.daily_english.data.translate.remote.TranslateRemoteDataSourceImpl
-import com.codework.daily_english.data.translate.repository.TranslateRepositoryImpl
+import com.codework.daily_english.data.translate.TranslateRepositoryImpl
 import com.codework.daily_english.domain.translate.repository.TranslateRepository
 import dagger.Binds
 import dagger.Module

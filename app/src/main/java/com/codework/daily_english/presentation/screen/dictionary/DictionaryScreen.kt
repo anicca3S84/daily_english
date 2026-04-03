@@ -24,7 +24,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codework.daily_english.presentation.components.AppTopBar
-import com.codework.daily_english.presentation.components.StateWrapper
 import com.codework.daily_english.presentation.components.PhoneticGroup
 import com.codework.daily_english.presentation.screen.dictionary.model.Word
 import com.codework.daily_english.presentation.screen.dictionary.mvi.DictionaryEvent

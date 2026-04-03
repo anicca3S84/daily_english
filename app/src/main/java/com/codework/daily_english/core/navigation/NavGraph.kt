@@ -11,6 +11,8 @@ import com.codework.daily_english.presentation.screen.ai.*
 import com.codework.daily_english.presentation.screen.ai.mvi.AiEffect
 import com.codework.daily_english.presentation.screen.ai.mvi.AiEvent
 import com.codework.daily_english.presentation.screen.ai.mvi.AiState
+import com.codework.daily_english.presentation.screen.course_details.CourseDetailViewModel
+import com.codework.daily_english.presentation.screen.course_details.CourseDetailsScreen
 import com.codework.daily_english.presentation.screen.courses.*
 import com.codework.daily_english.presentation.screen.courses.mvi.CourseEffect
 import com.codework.daily_english.presentation.screen.courses.mvi.CourseEvent
@@ -27,7 +29,6 @@ import com.codework.daily_english.presentation.screen.home.*
 import com.codework.daily_english.presentation.screen.home.mvi.HomeEffect
 import com.codework.daily_english.presentation.screen.home.mvi.HomeEvent
 import com.codework.daily_english.presentation.screen.home.mvi.HomeState
-import com.codework.daily_english.presentation.screen.lessons.*
 import com.codework.daily_english.presentation.screen.lessons.lesson.LessonScreen
 import com.codework.daily_english.presentation.screen.lessons.lesson.LessonViewModel
 import com.codework.daily_english.presentation.screen.lessons.lesson.mvi.LessonEffect
@@ -61,6 +62,9 @@ import com.codework.daily_english.presentation.screen.translate.*
 import com.codework.daily_english.presentation.screen.translate.mvi.TranslateEffect
 import com.codework.daily_english.presentation.screen.translate.mvi.TranslateEvent
 import com.codework.daily_english.presentation.screen.translate.mvi.TranslateState
+import com.codework.daily_english.presentation.screen.course_details.mvi.CourseDetailState
+import com.codework.daily_english.presentation.screen.course_details.mvi.CourseDetailEvent
+import com.codework.daily_english.presentation.screen.course_details.mvi.CourseDetailEffect
 
 @Composable
 fun NavGraph(
@@ -77,7 +81,7 @@ fun NavGraph(
                 when(effect) {
                     is HomeEffect.NavigateToAi -> navController.navigate(Route.AIScreen)
                     is HomeEffect.NavigateToDictionary -> navController.navigate(Route.DictionaryScreen)
-                    is HomeEffect.NavigateToGrammar -> navController.navigate(Route.GrammarScreen)
+                    is HomeEffect.NavigateToGrammar -> navController.navigate(Route.CourseDetailScreen)
                     is HomeEffect.NavigateToTranslate -> navController.navigate(Route.TranslateScreen) // Hoặc TranslateScreen tùy bạn setup
                 }
             }
@@ -88,7 +92,14 @@ fun NavGraph(
         composableScreen<Route.CourseScreen, CourseViewModel, CourseState, CourseEvent, CourseEffect>(
             onNavigate = { effect ->
                 when(effect) {
-                    is CourseEffect.NavigateToLesson -> navController.navigate(Route.LessonScreen)
+                    is CourseEffect.NavigateToCourseDetails -> {
+                        navController.navigate(
+                            Route.CourseDetailScreen(
+                                courseId = effect.courseId,
+                                courseCode = effect.courseCode
+                            )
+                        )
+                    }
                 }
             }
         ) { state, onEvent ->
@@ -266,6 +277,17 @@ fun NavGraph(
             }
         ) { state, onEvent ->
             SpeakingScreen(state = state, onEvent = onEvent, onBackClick = { navController.popBackStack() })
+        }
+
+        composableScreen<Route.CourseDetailScreen, CourseDetailViewModel, CourseDetailState, CourseDetailEvent, CourseDetailEffect>(
+            onNavigate = { effect ->
+                when(effect) {
+                    is CourseDetailEffect.NavigateToLearning -> {
+                    }
+                }
+            }
+        ) { state, onEvent ->
+            CourseDetailsScreen(state = state, onEvent = onEvent, onBackClick = { navController.popBackStack() })
         }
     }
 }

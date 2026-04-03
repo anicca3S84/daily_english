@@ -8,4 +8,5 @@ sealed interface TranslateEvent {
     data object OnCameraClick : TranslateEvent
     data object OnImageClick : TranslateEvent
     data object OnMicClick : TranslateEvent
+    data object OnSeeAllClick : TranslateEvent
 }

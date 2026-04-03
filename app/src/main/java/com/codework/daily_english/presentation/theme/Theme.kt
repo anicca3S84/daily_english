@@ -8,7 +8,10 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
@@ -23,6 +26,16 @@ private val LightColorScheme = lightColorScheme(
     onPrimary = Color.White,
     onBackground = Color(0xFF263238)
 )
+
+data class CourseTheme(
+    val headerColor: Brush,
+    val primaryColor: Color,
+    val themeColorHex: String,
+    val moduleTitleColor: Color,
+    val moduleHeaderBackgroundColor: Color,
+    val icon: ImageVector
+)
+
 
 @Composable
 fun DailyEnglishTheme(

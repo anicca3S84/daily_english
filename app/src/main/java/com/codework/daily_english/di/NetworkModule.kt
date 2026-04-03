@@ -1,5 +1,7 @@
 package com.codework.daily_english.di
 
+import com.codework.daily_english.data.course.remote.CourseApi
+import com.codework.daily_english.data.course_detail.remote.CourseDetailApi
 import com.codework.daily_english.data.translate.remote.TranslateApi
 import dagger.Module
 import dagger.Provides
@@ -26,5 +28,17 @@ object NetworkModule {
     @Singleton
     fun provideTranslateApi(retrofit: Retrofit): TranslateApi {
         return retrofit.create(TranslateApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCourseApi(retrofit: Retrofit): CourseApi {
+        return retrofit.create(CourseApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCourseDetailApi(retrofit: Retrofit): CourseDetailApi {
+        return retrofit.create(CourseDetailApi::class.java)
     }
 }

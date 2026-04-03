@@ -19,7 +19,6 @@ fun SeeAllHeader(
     content: @Composable () -> Unit
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        // Hàng Tiêu đề
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -52,7 +51,6 @@ fun SeeAllHeader(
             }
         }
 
-        // Nội dung bên dưới (LazyRow)
         content()
     }
 }
