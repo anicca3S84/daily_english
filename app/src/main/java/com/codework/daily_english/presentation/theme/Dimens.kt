@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.sp
 object Spaces {
     val Space0 = 0.dp
     val Space1 = 1.dp
+    val Space1_2 = 1.2.dp
     val Space1_5 = 1.5.dp
     val Space2 = 2.dp
     val Space3 = 3.dp

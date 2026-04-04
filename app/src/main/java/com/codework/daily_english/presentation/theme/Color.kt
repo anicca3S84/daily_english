@@ -9,6 +9,7 @@ object Colors {
     val TitleColor = Color(0xFF111827)
     val ExpBgColor = Color(0xFFFF9800)
     val CompleteExpColor = Color(0xFF4CAF50)
+    val LoginButtonColor = Color(0xFFDADCE0)
 }
 //val AppBackground = Color(0xFFF8FAFC)
 val AppBackground = Color(0xFFF8F9FA)

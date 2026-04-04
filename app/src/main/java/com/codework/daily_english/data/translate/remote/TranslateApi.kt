@@ -1,5 +1,6 @@
 package com.codework.daily_english.data.translate.remote
 import com.codework.daily_english.data.remote.response.BaseResponse
+import com.codework.daily_english.data.translate.remote.dto.TranslateDto
 import retrofit2.http.GET
 import retrofit2.http.Query
 

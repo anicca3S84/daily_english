@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <!-- Login Screen -->
+    <string name="login_sign_in_title">Sign in to continue</string>
+    <string name="login_description">Sign in to save your learning progress\nand sync across all your devices.</string>
+    <string name="login_google">Continue with Google</string>
+    <string name="login_apple">Continue with Apple</string>
+    <string name="login_email">Continue with Email</string>
+    <string name="login_no_account_full">Don\'t have an account? <xliff:g id="action">%1$s</xliff:g></string>
+    <string name="login_sign_up">Sign up</string>
+
     <!--Common-->
     <string name="app_name">Daily English App</string>
 
@@ -84,8 +94,10 @@
     <string name="exp_format">%1$d Exp</string>
     <string name="progress_format">Progress: %1$d%%</string>
 
-
+    <!--Message-->
     <string name="msg_no_lesson_available">No lessons available</string>
     <string name="msg_study_to_keep_streak">Study at least 5 mins a day to keep your\nstreak alive!</string>
+
+
 
 </resources>

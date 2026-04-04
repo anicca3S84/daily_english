@@ -1,11 +1,9 @@
 package com.codework.daily_english.presentation.screen.auth.login
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MenuBook
 import androidx.compose.material3.*
@@ -14,71 +12,72 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import com.codework.daily_english.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.codework.daily_english.R
 import com.codework.daily_english.presentation.theme.BluePrimary
+import com.codework.daily_english.presentation.screen.auth.login.components.SocialLoginButton
+import com.codework.daily_english.presentation.screen.auth.login.mvi.LoginEvent
+import com.codework.daily_english.presentation.screen.auth.login.mvi.LoginState
+import com.codework.daily_english.presentation.theme.IconSizeLarge
+import com.codework.daily_english.presentation.theme.Spaces
+import com.codework.daily_english.presentation.theme.TextSizes
 
 @Composable
 fun LoginScreen(
-    onCancelClick: () -> Unit = {},
-    onEmailLoginClick: () -> Unit = {},
-    onGoogleLoginClick: () -> Unit = {},
-    onAppleLoginClick: () -> Unit = {},
-    onSignUpClick: () -> Unit = {}
+    state: LoginState,
+    onEvent: (LoginEvent) -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = Spaces.Space24)
             .systemBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp),
+                .padding(top = Spaces.Space16),
             contentAlignment = Alignment.CenterStart
         ) {
             Text(
-                text = "Back",
-                fontSize = 16.sp,
+                text = stringResource(R.string.label_back),
+                fontSize = TextSizes.TextSizeMain,
                 color = Color.Black,
                 modifier = Modifier
-                    .clickable { onCancelClick() }
-                    .padding(vertical = 8.dp)
+                    .clickable { onEvent(LoginEvent.OnCancelClick) }
+                    .padding(vertical = Spaces.Space8)
             )
         }
 
-        Spacer(modifier = Modifier.height(80.dp))
+        Spacer(modifier = Modifier.height(Spaces.Space80))
 
         Text(
-            text = "Sign in to continue",
+            text = stringResource(R.string.login_sign_in_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = Color.Black
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(Spaces.Space20))
 
         Text(
-            text = "Sign in to save your learning progress\nand sync across all your devices.",
-            fontSize = 15.sp,
+            text = stringResource(R.string.login_description),
+            fontSize = TextSizes.TextSizeMain,
             color = Color.Gray,
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(50.dp))
-
+        Spacer(modifier = Modifier.height(Spaces.Space50))
 
         Box(
             modifier = Modifier
-                .size(100.dp)
+                .size(Spaces.Space100)
                 .clip(CircleShape)
                 .background(BluePrimary.copy(alpha = 0.2f)),
             contentAlignment = Alignment.Center
@@ -86,105 +85,54 @@ fun LoginScreen(
             Icon(
                 imageVector = Icons.Rounded.MenuBook,
                 contentDescription = "Logo",
-                modifier = Modifier.size(40.dp),
+                modifier = Modifier.size(IconSizeLarge),
                 tint = BluePrimary
             )
         }
 
-        Spacer(modifier = Modifier.height(50.dp))
-
+        Spacer(modifier = Modifier.height(Spaces.Space50))
 
         SocialLoginButton(
-            text = "Continue with Google",
+            text = stringResource(R.string.login_google),
             icon = R.drawable.ic_google,
-            onClick = onGoogleLoginClick
+            onClick = { onEvent(LoginEvent.OnGoogleLoginClick) }
         )
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(Spaces.Space14))
 
         SocialLoginButton(
-            text = "Continue with Apple",
+            text = stringResource(R.string.login_apple),
             icon = R.drawable.ic_group,
-            onClick = onAppleLoginClick
+            onClick = { onEvent(LoginEvent.OnAppleLoginClick) }
         )
 
-        Spacer(modifier = Modifier.height(14.dp))
-
+        Spacer(modifier = Modifier.height(Spaces.Space14))
 
         SocialLoginButton(
-            text = "Continue with Email",
+            text = stringResource(R.string.login_email),
             icon = R.drawable.ic_gmail,
-            onClick = onEmailLoginClick,
+            onClick = { onEvent(LoginEvent.OnEmailLoginClick) }
         )
 
-
-
-
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.weight(1f))
 
         Row(
-            modifier = Modifier.padding(bottom = 32.dp),
+            modifier = Modifier.padding(bottom = Spaces.Space32),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Don't have an account? ",
+                text = stringResource(R.string.login_no_account_full),
                 color = Color.Gray,
-                fontSize = 15.sp
+                fontSize = TextSizes.TextSizeMain
             )
             Text(
-                text = "Sign up",
-                color = Color(0xFF1877F2),
-                fontSize = 15.sp,
+                text = stringResource(R.string.login_sign_up),
+                color = BluePrimary,
+                fontSize = TextSizes.TextSizeMain,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
-                    .clickable { onSignUpClick() }
-                    .padding(4.dp)
-            )
-        }
-    }
-}
-
-/**
- * Component Nút đăng nhập có icon canh trái, chữ canh giữa tuyệt đối
- */
-@Composable
-fun SocialLoginButton(
-    text: String,
-    icon: Int? = null,
-    onClick: () -> Unit
-) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(percent = 50),
-        color = Color.White,
-        border = BorderStroke(1.2.dp, Color(0xFFDADCE0)),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp)
-    ) {
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            // Icon luôn cố định ở bên trái
-            if (icon != null) {
-                Icon(
-                    painter = painterResource(id = icon),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(start = 20.dp)
-                        .size(22.dp)
-                )
-            }
-
-            // Text luôn nằm giữa button
-            Text(
-                text = text,
-                color = Color.Black,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.align(Alignment.Center)
+                    .clickable { onEvent(LoginEvent.OnSignUpClick) }
+                    .padding(Spaces.Space4)
             )
         }
     }
@@ -194,6 +142,9 @@ fun SocialLoginButton(
 @Composable
 fun LoginScreenPreview() {
     MaterialTheme {
-        LoginScreen()
+        LoginScreen(
+            state = LoginState(),
+            onEvent = {}
+        )
     }
 }

@@ -1,49 +1,75 @@
 package com.codework.daily_english.presentation.screen.auth.login
 
+import androidx.lifecycle.viewModelScope
+import com.codework.daily_english.core.base.BaseEffect.ShowToast
 import com.codework.daily_english.core.base.BaseViewModel
+import com.codework.daily_english.core.result.onError
+import com.codework.daily_english.core.result.onSuccess
+import com.codework.daily_english.domain.auth.usecase.LoginWithGoogleUseCase
+import com.codework.daily_english.presentation.screen.auth.login.mvi.LoginEffect
+import com.codework.daily_english.presentation.screen.auth.login.mvi.LoginEvent
+import com.codework.daily_english.presentation.screen.auth.login.mvi.LoginState
+import com.codework.daily_english.presentation.utils.asUiText
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor() :
-    BaseViewModel<LoginState, LoginEvent, LoginEffect>(
-        initialState = LoginState()
-    ) {
-
-    init {
-//        _state.update { BaseState.Success(LoginState()) }
-    }
+class LoginViewModel @Inject constructor(
+    private val loginWithGoogleUseCase: LoginWithGoogleUseCase
+) : BaseViewModel<LoginState, LoginEvent, LoginEffect>(
+    initialState = LoginState()
+) {
 
     override fun onEvent(event: LoginEvent) {
-//        val currentState = (_uiState.value as? BaseState.Success)?.data ?: return
-
         when (event) {
-            is LoginEvent.OnContinueWithGoogle -> {}
-//                simulateSocialLogin(currentState, "Google")
-            is LoginEvent.OnContinueWithApple -> {}
-//                simulateSocialLogin(currentState, "Apple")
-            is LoginEvent.OnContinueWithEmail -> sendEffect(LoginEffect.NavigateToEmailLogin)
-            is LoginEvent.OnTermsClick -> { /* Xử lý mở Browser */ }
-            is LoginEvent.OnPrivacyClick -> { /* Xử lý mở Browser */ }
-            is LoginEvent.OnRetry -> {}
-//                _uiState.update { BaseState.Success(LoginState()) }
+            is LoginEvent.LoginWithGoogle -> {
+                performGoogleLogin(event.idToken)
+            }
+            is LoginEvent.OnEmailLoginClick -> {
+                sendEffect(LoginEffect.NavigateToEmailLogin)
+            }
+            is LoginEvent.OnAppleLoginClick -> {
+                // TODO: Xử lý Apple Login
+            }
+            is LoginEvent.OnCancelClick -> {
+                sendEffect(LoginEffect.NavigateBack)
+            }
+            is LoginEvent.OnSignUpClick -> {
+                sendEffect(LoginEffect.NavigateToSignUp)
+            }
+
+            LoginEvent.OnGoogleLoginClick -> TODO()
         }
     }
 
-    private fun simulateSocialLogin(currentState: LoginState, provider: String) {
-//        viewModelScope.launch {
-//            _uiState.update {
-//                BaseState.Success(currentState.copy(isLoading = true, loadingProvider = provider))
-//            }
-//
-//            delay(1500) // Giả lập gọi Firebase Auth hoặc API
-//
-//            _uiState.update {
-//                BaseState.Success(currentState.copy(isLoading = false, loadingProvider = null))
-//            }
-//
-//            // Đăng nhập thành công -> Chuyển sang màn hình chính
-//            sendEffect(LoginEffect.NavigateToHome)
-//        }
+    private fun performGoogleLogin(idToken: String) {
+        _state.update {
+            it.copy(
+                isLoading = true,
+                error = null
+            )
+        }
+
+        viewModelScope.launch {
+            loginWithGoogleUseCase(idToken)
+                .onSuccess { user ->
+                    _state.update { it.copy(isLoading = false) }
+
+                    sendEffect(LoginEffect.NavigateToHome)
+                }
+                .onError { appError ->
+                    val uiError = appError.asUiText()
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = uiError
+                        )
+                    }
+
+                    sendEffect(ShowToast(uiError))
+                }
+        }
     }
 }
