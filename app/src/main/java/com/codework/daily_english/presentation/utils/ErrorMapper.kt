@@ -5,7 +5,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.codework.daily_english.R
-import com.codework.daily_english.core.result.AppError
+import com.codework.daily_english.core.network.AppError
 import com.codework.daily_english.core.utils.Constants
 
 sealed class UiText {

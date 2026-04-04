@@ -1,8 +1,8 @@
 package com.codework.daily_english.data.auth.repository
 
 import com.codework.daily_english.core.dispatchers.Dispatcher
-import com.codework.daily_english.core.result.AppResult
-import com.codework.daily_english.core.result.map
+import com.codework.daily_english.core.network.AppResult
+import com.codework.daily_english.core.network.map
 import com.codework.daily_english.data.auth.mapper.toDomain
 import com.codework.daily_english.data.auth.local.datasource.AuthLocalDataSource
 import com.codework.daily_english.data.auth.remote.datasource.AuthRemoteDataSource

@@ -1,8 +1,8 @@
 package com.codework.daily_english.data.translate.repository
 
 import com.codework.daily_english.core.dispatchers.Dispatcher
-import com.codework.daily_english.core.result.AppResult
-import com.codework.daily_english.core.result.map
+import com.codework.daily_english.core.network.AppResult
+import com.codework.daily_english.core.network.map
 import com.codework.daily_english.data.translate.local.datasource.TranslateLocalDataSource
 import com.codework.daily_english.data.translate.mapper.toDomain
 import com.codework.daily_english.data.translate.mapper.toEntity

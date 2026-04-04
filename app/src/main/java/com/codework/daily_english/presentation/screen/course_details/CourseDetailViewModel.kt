@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.codework.daily_english.R
 import com.codework.daily_english.core.base.BaseEffect.ShowToast
 import com.codework.daily_english.core.base.BaseViewModel
-import com.codework.daily_english.core.result.onError
-import com.codework.daily_english.core.result.onSuccess
+import com.codework.daily_english.core.network.onError
+import com.codework.daily_english.core.network.onSuccess
 import com.codework.daily_english.domain.course_detail.usecase.GetCourseDetailUseCase
 import com.codework.daily_english.presentation.screen.course_details.mapper.toUiModels
 import com.codework.daily_english.presentation.screen.course_details.mvi.CourseDetailEffect
@@ -41,7 +41,7 @@ class CourseDetailViewModel @Inject constructor(
         when (event) {
             is CourseDetailEvent.OnLessonClick -> {
                 if (event.isLocked) {
-                    sendEffect(ShowToast(UiText.StringResource(R.string.noti_lesson_looked)))
+                    sendGlobalEffect(ShowToast(UiText.StringResource(R.string.noti_lesson_looked)))
                 } else {
                     sendEffect(CourseDetailEffect.NavigateToLearning(event.lessonId))
                 }

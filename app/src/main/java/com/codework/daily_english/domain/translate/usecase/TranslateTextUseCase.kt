@@ -1,7 +1,7 @@
 package com.codework.daily_english.domain.translate.usecase
 
-import com.codework.daily_english.core.result.AppError
-import com.codework.daily_english.core.result.AppResult
+import com.codework.daily_english.core.network.AppError
+import com.codework.daily_english.core.network.AppResult
 import com.codework.daily_english.core.utils.Constants
 import com.codework.daily_english.domain.translate.model.TranslateResult
 import com.codework.daily_english.domain.translate.model.Translation

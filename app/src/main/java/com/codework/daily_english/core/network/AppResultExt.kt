@@ -1,4 +1,4 @@
-package com.codework.daily_english.core.result
+package com.codework.daily_english.core.network
 
 inline fun <T> AppResult<T>.onSuccess(action: (T) -> Unit): AppResult<T> {
     if (this is AppResult.Success) action(data)

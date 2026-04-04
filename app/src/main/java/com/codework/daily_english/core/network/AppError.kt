@@ -1,4 +1,4 @@
-package com.codework.daily_english.core.result
+package com.codework.daily_english.core.network
 
 
 sealed interface AppError {

@@ -1,6 +1,6 @@
 package com.codework.daily_english.domain.translate.repository
 
-import com.codework.daily_english.core.result.AppResult
+import com.codework.daily_english.core.network.AppResult
 import com.codework.daily_english.domain.translate.model.Translation
 import kotlinx.coroutines.flow.Flow
 

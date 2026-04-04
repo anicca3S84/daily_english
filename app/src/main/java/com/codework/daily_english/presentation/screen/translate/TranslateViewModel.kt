@@ -4,8 +4,8 @@ import androidx.lifecycle.viewModelScope
 import com.codework.daily_english.R
 import com.codework.daily_english.core.base.BaseEffect.*
 import com.codework.daily_english.core.base.BaseViewModel
-import com.codework.daily_english.core.result.onError
-import com.codework.daily_english.core.result.onSuccess
+import com.codework.daily_english.core.network.onError
+import com.codework.daily_english.core.network.onSuccess
 import com.codework.daily_english.domain.translate.usecase.ObserveTranslationHistoryUseCase
 import com.codework.daily_english.domain.translate.usecase.SaveTranslationHistoryUseCase
 import com.codework.daily_english.domain.translate.usecase.TranslateTextUseCase
@@ -146,9 +146,9 @@ class TranslateViewModel @Inject constructor(
                 }
             }
 
-            is TranslateEvent.OnCameraClick -> sendEffect(ShowToast(UiText.StringResource(R.string.noti_coming_soon)))
-            is TranslateEvent.OnImageClick -> sendEffect(ShowToast(UiText.StringResource(R.string.noti_coming_soon)))
-            is TranslateEvent.OnMicClick -> sendEffect(ShowToast(UiText.StringResource(R.string.noti_coming_soon)))
+            is TranslateEvent.OnCameraClick -> sendGlobalEffect(ShowToast(UiText.StringResource(R.string.noti_coming_soon)))
+            is TranslateEvent.OnImageClick -> sendGlobalEffect(ShowToast(UiText.StringResource(R.string.noti_coming_soon)))
+            is TranslateEvent.OnMicClick -> sendGlobalEffect(ShowToast(UiText.StringResource(R.string.noti_coming_soon)))
             TranslateEvent.OnSeeAllClick -> sendEffect(TranslateEffect.NavigateToHistory)
         }
     }

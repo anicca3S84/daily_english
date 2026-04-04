@@ -34,9 +34,9 @@ fun <Effect> CollectEffect(
     }
 }
 
-inline fun <reified R : Route, reified VM : BaseViewModel<S, E, F>, S, E, F> NavGraphBuilder.composableScreen(
-    crossinline onNavigate: (BaseEffect) -> Unit,
-    // Sửa State<S> thành S ở đây 👇
+inline fun <reified R : Route, reified VM : BaseViewModel<S, E, F>, S, E, F>
+        NavGraphBuilder.composableScreen(
+    crossinline onNavigate: (F) -> Unit, // ✅ dùng F
     crossinline content: @Composable (state: S, onEvent: (E) -> Unit) -> Unit
 ) {
     composable<R> {
@@ -45,10 +45,9 @@ inline fun <reified R : Route, reified VM : BaseViewModel<S, E, F>, S, E, F> Nav
         val state by viewModel.state.collectAsStateWithLifecycle()
 
         CollectEffect(viewModel.effectFlow) { effect ->
-            onNavigate(effect)
+            onNavigate(effect) // ✅ type-safe
         }
 
-        // Truyền state (kiểu S) vào content
         content(state, viewModel::onEvent)
     }
 }

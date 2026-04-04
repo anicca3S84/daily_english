@@ -1,6 +1,6 @@
 package com.codework.daily_english.domain.auth.usecase
 
-import com.codework.daily_english.core.result.AppResult
+import com.codework.daily_english.core.network.AppResult
 import com.codework.daily_english.domain.auth.model.User
 import com.codework.daily_english.domain.auth.repository.AuthRepository
 import javax.inject.Inject

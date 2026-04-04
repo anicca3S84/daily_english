@@ -1,6 +1,6 @@
 package com.codework.daily_english.data.course.remote.datasource
 
-import com.codework.daily_english.core.result.AppResult
+import com.codework.daily_english.core.network.AppResult
 import com.codework.daily_english.data.course.remote.CourseApi
 import com.codework.daily_english.data.course.remote.dto.CourseDashboardDto
 import com.codework.daily_english.data.course.remote.dto.CourseDto
@@ -14,6 +14,7 @@ class CourseRemoteDataSourceImpl @Inject constructor(
 ) : CourseRemoteDataSource {
 
     override suspend fun getCourseDashboardData(): AppResult<CourseDashboardDto> {
+        //real return
 //        return safeApiCall { api.getCourseDashboardData() }.unwrap()
 
         delay(2000)

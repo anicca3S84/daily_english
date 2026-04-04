@@ -21,14 +21,24 @@ abstract class BaseViewModel<S, E, F>(
     protected val _state = MutableStateFlow(initialState)
     val state: StateFlow<S> = _state.asStateFlow()
 
-    private val _effectChannel = Channel<BaseEffect>()
+    private val _effectChannel = Channel<F>()
     val effectFlow = _effectChannel.receiveAsFlow()
+
+    private val _globalEffectChannel = Channel<BaseEffect>()
+    val globalEffectFlow = _globalEffectChannel.receiveAsFlow()
+
 
     abstract fun onEvent(event: E)
 
-    protected fun sendEffect(effect: BaseEffect) {
+    protected fun sendEffect(effect: F) {
         viewModelScope.launch {
             _effectChannel.send(effect)
+        }
+    }
+
+    protected fun sendGlobalEffect(effect: BaseEffect) {
+        viewModelScope.launch {
+            _globalEffectChannel.send(effect)
         }
     }
 }

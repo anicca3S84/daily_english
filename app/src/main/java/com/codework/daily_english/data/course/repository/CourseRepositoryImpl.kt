@@ -1,8 +1,8 @@
 package com.codework.daily_english.data.course.repository
 
 import com.codework.daily_english.core.dispatchers.Dispatcher
-import com.codework.daily_english.core.result.AppResult
-import com.codework.daily_english.core.result.map
+import com.codework.daily_english.core.network.AppResult
+import com.codework.daily_english.core.network.map
 import com.codework.daily_english.data.course.mapper.toDomain
 import com.codework.daily_english.data.course.remote.datasource.CourseRemoteDataSource
 import com.codework.daily_english.domain.course.model.CourseDashboardData

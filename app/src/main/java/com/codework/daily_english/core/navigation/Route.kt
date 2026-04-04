@@ -4,6 +4,10 @@ import com.codework.daily_english.presentation.screen.lessons.review.model.QuizT
 import kotlinx.serialization.Serializable
 
 sealed interface Route {
+
+    @Serializable
+    data object  LoginScreen: Route
+
     @Serializable
     data object HomeScreen : Route
 

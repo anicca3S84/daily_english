@@ -3,8 +3,8 @@ package com.codework.daily_english.presentation.screen.auth.login
 import androidx.lifecycle.viewModelScope
 import com.codework.daily_english.core.base.BaseEffect.ShowToast
 import com.codework.daily_english.core.base.BaseViewModel
-import com.codework.daily_english.core.result.onError
-import com.codework.daily_english.core.result.onSuccess
+import com.codework.daily_english.core.network.onError
+import com.codework.daily_english.core.network.onSuccess
 import com.codework.daily_english.domain.auth.usecase.LoginWithGoogleUseCase
 import com.codework.daily_english.presentation.screen.auth.login.mvi.LoginEffect
 import com.codework.daily_english.presentation.screen.auth.login.mvi.LoginEvent
@@ -68,7 +68,7 @@ class LoginViewModel @Inject constructor(
                         )
                     }
 
-                    sendEffect(ShowToast(uiError))
+                    sendGlobalEffect(ShowToast(uiError))
                 }
         }
     }
