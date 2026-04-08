@@ -4,7 +4,9 @@ import com.codework.daily_english.data.auth.remote.dto.AuthDto
 import com.codework.daily_english.data.auth.remote.dto.GoogleLoginDto
 import com.codework.daily_english.data.remote.response.BaseResponse
 import retrofit2.http.Body
+import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.Call
 
 interface AuthApi {
     @POST("auth/google")
@@ -21,4 +23,7 @@ interface AuthApi {
     suspend fun loginWithEmail(
         @Body request: GoogleLoginDto
     ): BaseResponse<AuthDto>
+
+    @POST("auth/refresh")
+    fun refreshToken(@Header("Authorization") refreshToken: String): Call<AuthDto>
 }

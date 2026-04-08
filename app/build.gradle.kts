@@ -10,10 +10,23 @@ plugins {
     kotlin("plugin.serialization") version "2.1.0"
 }
 
+/**
+ * Load local.properties safely
+ */
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
+
 if (localPropertiesFile.exists()) {
-    localProperties.load(FileInputStream(localPropertiesFile))
+    FileInputStream(localPropertiesFile).use {
+        localProperties.load(it)
+    }
+}
+
+/**
+ * Helper function to get property
+ */
+fun getLocalProperty(key: String): String {
+    return localProperties.getProperty(key) ?: ""
 }
 
 android {
@@ -26,12 +39,19 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        manifestPlaceholders["MAPS_API_KEY"] = localProperties.getProperty("MAPS_API_KEY") ?: ""
+
         buildConfigField(
             "String",
             "GEMINI_API_KEY",
-            "\"${localProperties.getProperty("GEMINI_API_KEY") ?: ""}\"" // Added safety check
+            "\"${getLocalProperty("GEMINI_API_KEY")}\""
+        )
+
+        buildConfigField(
+            "String",
+            "WEB_CLIENT_ID",
+            "\"${getLocalProperty("WEB_CLIENT_ID")}\""
         )
     }
 
@@ -68,58 +88,81 @@ android {
             pickFirsts += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
         }
     }
+
     kotlinOptions {
-        freeCompilerArgs = listOf("-XXLanguage:+PropertyParamAnnotationDefaultTargetMode")
+        freeCompilerArgs = listOf(
+            "-XXLanguage:+PropertyParamAnnotationDefaultTargetMode"
+        )
     }
 }
 
 dependencies {
+    // Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+
+    // Compose
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Navigation
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
+
+    // Hilt
     implementation(libs.hilt.android)
-    implementation(libs.play.services.location)
+    implementation(libs.androidx.hilt.navigation.compose)
     kapt(libs.hilt.android.compiler)
-    implementation(libs.kotlinx.coroutines.android)
+
+    // Google Services
+    implementation(libs.play.services.auth)      // Google Sign-In
+    implementation(libs.play.services.location)
+    implementation(libs.play.services.maps)
+    implementation(libs.maps.compose)
+
+    // Networking
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor)
+
+    // Database
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    //noinspection KaptUsageInsteadOfKsp
     kapt(libs.androidx.room.compiler)
+
+    // Image
     implementation(libs.coil.compose)
+
+    // Lifecycle
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+
+    // Coroutines
+    implementation(libs.kotlinx.coroutines.android)
+
+    // AI (Gemini)
+    implementation(libs.generativeai)
+
+    // Utils
+    implementation(libs.javax.inject)
+    implementation(libs.androidx.material.icons.extended)
+
+    // Test
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
-    implementation(libs.androidx.material.icons.extended)
-    implementation(libs.maps.compose)
-    implementation(libs.play.services.maps)
-    implementation(libs.play.services.auth)
-    implementation(libs.generativeai)
-    implementation(libs.coil.compose)
-    val room_version = "2.6.1"
-    implementation("androidx.room:room-runtime:$room_version")
-    implementation ("androidx.room:room-ktx:$room_version") // Hỗ trợ Coroutines/Flow
-    kapt ("androidx.room:room-compiler:$room_version")
 
-    // --- 3. RETROFIT (Network) ---
-    implementation("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
 
-    // --- 4. KHÁC ---
-    implementation("javax.inject:javax.inject:1")
+    // Credential
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid.v110)
+
 }

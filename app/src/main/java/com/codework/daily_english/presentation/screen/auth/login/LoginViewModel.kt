@@ -19,28 +19,33 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val loginWithGoogleUseCase: LoginWithGoogleUseCase
 ) : BaseViewModel<LoginState, LoginEvent, LoginEffect>(
-    initialState = LoginState()
+    initialState = LoginState(data = Unit)
 ) {
 
     override fun onEvent(event: LoginEvent) {
         when (event) {
+
             is LoginEvent.LoginWithGoogle -> {
                 performGoogleLogin(event.idToken)
             }
+
+            LoginEvent.OnGoogleLoginClick -> {
+            }
+
             is LoginEvent.OnEmailLoginClick -> {
                 sendEffect(LoginEffect.NavigateToEmailLogin)
             }
+
             is LoginEvent.OnAppleLoginClick -> {
-                // TODO: Xử lý Apple Login
             }
+
             is LoginEvent.OnCancelClick -> {
                 sendEffect(LoginEffect.NavigateBack)
             }
+
             is LoginEvent.OnSignUpClick -> {
                 sendEffect(LoginEffect.NavigateToSignUp)
             }
-
-            LoginEvent.OnGoogleLoginClick -> TODO()
         }
     }
 
@@ -54,13 +59,13 @@ class LoginViewModel @Inject constructor(
 
         viewModelScope.launch {
             loginWithGoogleUseCase(idToken)
-                .onSuccess { user ->
+                .onSuccess {
                     _state.update { it.copy(isLoading = false) }
-
                     sendEffect(LoginEffect.NavigateToHome)
                 }
                 .onError { appError ->
                     val uiError = appError.asUiText()
+
                     _state.update {
                         it.copy(
                             isLoading = false,

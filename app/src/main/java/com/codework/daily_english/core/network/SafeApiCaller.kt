@@ -46,14 +46,14 @@ fun <T> AppResult<BaseResponse<T>>.unwrap(): AppResult<T> {
             if (body.isSuccess && body.data != null) {
                 AppResult.Success(body.data)
             } else {
-                // Nếu HTTP 200 OK nhưng Backend báo lỗi logic (VD: text quá dài)
+                // Nếu HTTP 200 OK, Backend error
                 AppResult.Error(
                     error = AppError.Validation(body.message ?: "Lỗi xác thực từ Server"),
                     message = body.message ?: "Lỗi dữ liệu Server"
                 )
             }
         }
-        // Nếu đã bị lỗi mạng (HttpException, Mất mạng...) từ safeApiCall thì giữ nguyên
+        // other error
         is AppResult.Error -> this
     }
 }

@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import com.codework.daily_english.presentation.theme.ButtonHeightLarge
 import com.codework.daily_english.presentation.theme.Colors
 import com.codework.daily_english.presentation.theme.IconSizeMedium
+import com.codework.daily_english.presentation.theme.IconSizeSmall
 import com.codework.daily_english.presentation.theme.RadiusFull
 import com.codework.daily_english.presentation.theme.Spaces
 import com.codework.daily_english.presentation.theme.TextSizes
@@ -45,7 +46,7 @@ fun SocialLoginButton(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .padding(start = Spaces.Space20)
-                        .size(IconSizeMedium)
+                        .size(IconSizeSmall)
                 )
             }
 

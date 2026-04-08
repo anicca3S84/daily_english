@@ -1,28 +1,53 @@
 package com.codework.daily_english.data.auth.local
 
-
 import android.content.SharedPreferences
-import javax.inject.Inject
 import androidx.core.content.edit
+import javax.inject.Inject
 
 class AuthPreferences @Inject constructor(
     private val sharedPreferences: SharedPreferences
 ) {
     companion object {
         private const val KEY_ACCESS_TOKEN = "PREF_KEY_ACCESS_TOKEN"
-        // Sau này bạn có thể thêm KEY_USER_ID, KEY_IS_PREMIUM... ở đây
+        private const val KEY_REFRESH_TOKEN = "PREF_KEY_REFRESH_TOKEN"
+        private const val KEY_USER_ID = "PREF_KEY_USER_ID"
+        private const val KEY_USER_EMAIL = "PREF_KEY_USER_EMAIL"
+        private const val KEY_USER_NAME = "PREF_KEY_USER_NAME"
+        private const val KEY_USER_AVATAR = "PREF_KEY_USER_AVATAR"
     }
 
+    // Lưu cả cặp (Dùng khi Login mới)
+    fun saveTokens(accessToken: String, refreshToken: String) {
+        sharedPreferences.edit {
+            putString(KEY_ACCESS_TOKEN, accessToken)
+            putString(KEY_REFRESH_TOKEN, refreshToken)
+        }
+    }
+
+    // Lưu lẻ Access Token (Dùng trong Authenticator)
     fun saveAccessToken(token: String) {
-        // Dùng apply() để ghi bất đồng bộ (nhanh hơn commit())
         sharedPreferences.edit { putString(KEY_ACCESS_TOKEN, token) }
     }
 
-    fun getAccessToken(): String? {
-        return sharedPreferences.getString(KEY_ACCESS_TOKEN, null)
+    // Lưu lẻ Refresh Token (Dùng trong Authenticator)
+    fun saveRefreshToken(token: String) {
+        sharedPreferences.edit { putString(KEY_REFRESH_TOKEN, token) }
     }
 
-    fun clearSession() {
-        sharedPreferences.edit { remove(KEY_ACCESS_TOKEN) }
+    fun saveUser(userId: String, email: String, fullName: String?, avatarUrl: String?) {
+        sharedPreferences.edit {
+            putString(KEY_USER_ID, userId)
+            putString(KEY_USER_EMAIL, email)
+            putString(KEY_USER_NAME, fullName)
+            putString(KEY_USER_AVATAR, avatarUrl)
+        }
+    }
+
+    fun getAccessToken(): String? = sharedPreferences.getString(KEY_ACCESS_TOKEN, null)
+
+    fun getRefreshToken(): String? = sharedPreferences.getString(KEY_REFRESH_TOKEN, null)
+
+    fun clearAll() {
+        sharedPreferences.edit { clear() }
     }
 }

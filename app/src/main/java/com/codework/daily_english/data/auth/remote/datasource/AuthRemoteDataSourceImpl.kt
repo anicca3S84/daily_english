@@ -1,8 +1,11 @@
 package com.codework.daily_english.data.auth.remote.datasource
 
 import com.codework.daily_english.core.network.AppResult
+import com.codework.daily_english.core.network.safeApiCall
+import com.codework.daily_english.core.network.unwrap
 import com.codework.daily_english.data.auth.remote.AuthApi
 import com.codework.daily_english.data.auth.remote.dto.AuthDto
+import com.codework.daily_english.data.auth.remote.dto.GoogleLoginDto
 import com.codework.daily_english.data.auth.remote.dto.UserDto
 import kotlinx.coroutines.delay
 import java.util.UUID
@@ -13,24 +16,6 @@ class AuthRemoteDataSourceImpl @Inject constructor(
 ) : AuthRemoteDataSource {
 
     override suspend fun loginWithGoogle(idToken: String): AppResult<AuthDto> {
-        // return safeApiCall { api.loginWithGoogle(GoogleLoginRequest(idToken)) }.unwrap()
-
-        // FAKE DATA ĐỂ TEST UI:
-        delay(1500)
-
-        val fakeUser = UserDto(
-            id = UUID.randomUUID().toString(),
-            email = "hello@codework.com",
-            displayName = "CodeWork Student",
-            avatarUrl = "https://example.com/avatar.png",
-            isPremium = 1
-        )
-
-        val fakeResponse = AuthDto(
-            accessToken = "fake_jwt_token_12345",
-            user = fakeUser
-        )
-
-        return AppResult.Success(fakeResponse)
+         return safeApiCall { api.loginWithGoogle(GoogleLoginDto(idToken)) }.unwrap()
     }
 }

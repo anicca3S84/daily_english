@@ -7,7 +7,7 @@
     <string name="login_google">Continue with Google</string>
     <string name="login_apple">Continue with Apple</string>
     <string name="login_email">Continue with Email</string>
-    <string name="login_no_account_full">Don\'t have an account? <xliff:g id="action">%1$s</xliff:g></string>
+    <string name="login_no_account_full">Don\'t have an account? </string>
     <string name="login_sign_up">Sign up</string>
 
     <!--Common-->

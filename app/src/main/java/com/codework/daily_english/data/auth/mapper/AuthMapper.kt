@@ -7,8 +7,9 @@ fun UserDto.toDomain(): User {
     return User(
         id = this.id ?: "",
         email = this.email ?: "",
-        displayName = this.displayName ?: "Learner",
+        displayName = this.fullName ?: "Learner",
         avatarUrl = this.avatarUrl ?: "",
-        isPremium = this.isPremium == 1
+        fullName = this.fullName ?: "",
+        isPremium = this.isPremium ?: false
     )
 }

@@ -2,15 +2,24 @@ package com.codework.daily_english.core.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.codework.daily_english.BuildConfig
+import com.codework.daily_english.core.utils.GoogleAuthHelper
 import com.codework.daily_english.presentation.screen.lessons.review.model.QuizType
 import com.codework.daily_english.presentation.screen.ai.*
 import com.codework.daily_english.presentation.screen.ai.mvi.AiEffect
 import com.codework.daily_english.presentation.screen.ai.mvi.AiEvent
 import com.codework.daily_english.presentation.screen.ai.mvi.AiState
+import com.codework.daily_english.presentation.screen.auth.login.LoginScreen
+import com.codework.daily_english.presentation.screen.auth.login.LoginViewModel
+import com.codework.daily_english.presentation.screen.auth.login.mvi.LoginEffect
+import com.codework.daily_english.presentation.screen.auth.login.mvi.LoginEvent
+import com.codework.daily_english.presentation.screen.auth.login.mvi.LoginState
 import com.codework.daily_english.presentation.screen.course_details.CourseDetailViewModel
 import com.codework.daily_english.presentation.screen.course_details.CourseDetailsScreen
 import com.codework.daily_english.presentation.screen.courses.*
@@ -65,6 +74,7 @@ import com.codework.daily_english.presentation.screen.translate.mvi.TranslateSta
 import com.codework.daily_english.presentation.screen.course_details.mvi.CourseDetailState
 import com.codework.daily_english.presentation.screen.course_details.mvi.CourseDetailEvent
 import com.codework.daily_english.presentation.screen.course_details.mvi.CourseDetailEffect
+import kotlinx.coroutines.launch
 
 @Composable
 fun NavGraph(
@@ -72,17 +82,35 @@ fun NavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Route.HomeScreen,
+        startDestination = Route.LoginScreen,
         modifier = Modifier.padding(bottom = 0.dp)
     ) {
 
+        composableScreen<Route.LoginScreen, LoginViewModel, LoginState, LoginEvent, LoginEffect>(
+            onNavigate = { effect ->
+                when (effect) {
+                    is LoginEffect.NavigateBack -> {}
+                    is LoginEffect.NavigateToSignUp -> {}
+                    is LoginEffect.NavigateToEmailLogin -> {}
+                    is LoginEffect.NavigateToHome -> {
+                        navController.navigate(Route.HomeScreen)
+                    }
+                }
+            }
+        ) { state, onEvent ->
+            LoginScreen(
+                state = state,
+                onEvent = onEvent
+            )
+        }
+
         composableScreen<Route.HomeScreen, HomeViewModel, HomeState, HomeEvent, HomeEffect>(
             onNavigate = { effect ->
-                when(effect) {
+                when (effect) {
                     is HomeEffect.NavigateToAi -> navController.navigate(Route.AIScreen)
                     is HomeEffect.NavigateToDictionary -> navController.navigate(Route.DictionaryScreen)
                     is HomeEffect.NavigateToGrammar -> navController.navigate(Route.CourseDetailScreen)
-                    is HomeEffect.NavigateToTranslate -> navController.navigate(Route.TranslateScreen) // Hoặc TranslateScreen tùy bạn setup
+                    is HomeEffect.NavigateToTranslate -> navController.navigate(Route.TranslateScreen)
                 }
             }
         ) { state, onEvent ->
@@ -91,7 +119,7 @@ fun NavGraph(
 
         composableScreen<Route.CourseScreen, CourseViewModel, CourseState, CourseEvent, CourseEffect>(
             onNavigate = { effect ->
-                when(effect) {
+                when (effect) {
                     is CourseEffect.NavigateToCourseDetails -> {
                         navController.navigate(
                             Route.CourseDetailScreen(
@@ -108,7 +136,7 @@ fun NavGraph(
 
         composableScreen<Route.LessonScreen, LessonViewModel, LessonState, LessonEvent, LessonEffect>(
             onNavigate = { effect ->
-                when(effect) {
+                when (effect) {
                     is LessonEffect.NavigateToVocabulary -> navController.navigate(Route.VocabularyScreen)
                     is LessonEffect.NavigateToListening -> navController.navigate(Route.ListeningScreen)
                     is LessonEffect.NavigateToSentenceBuilder -> navController.navigate(Route.SentenceBuilderScreen)
@@ -130,12 +158,17 @@ fun NavGraph(
 
         composableScreen<Route.PracticeScreen, PracticeViewModel, PracticeState, PracticeEvent, PracticeEffect>(
             onNavigate = { effect ->
-                when(effect) {
+                when (effect) {
                     is PracticeEffect.NavigateToAiSpeaking -> navController.navigate(Route.AIScreen)
                     is PracticeEffect.NavigateToFlashcard -> navController.navigate(Route.VocabularyScreen)
-                    is PracticeEffect.NavigateToCategory -> { /* TODO: Điều hướng category */ }
-                    is PracticeEffect.NavigateToGame -> { /* TODO: Điều hướng vào minigame */ }
-                    is PracticeEffect.ShowToast -> { /* Hiện toast */ }
+                    is PracticeEffect.NavigateToCategory -> { /* TODO: Điều hướng category */
+                    }
+
+                    is PracticeEffect.NavigateToGame -> { /* TODO: Điều hướng vào minigame */
+                    }
+
+                    is PracticeEffect.ShowToast -> { /* Hiện toast */
+                    }
                 }
             }
         ) { state, onEvent ->
@@ -144,11 +177,18 @@ fun NavGraph(
 
         composableScreen<Route.MoreScreen, MoreViewModel, MoreState, MoreEvent, MoreEffect>(
             onNavigate = { effect ->
-                when(effect) {
-                        is MoreEffect.NavigateToEditProfile -> { /* TODO: Chuyển sang màn Edit Profile */ }
-                        is MoreEffect.HandleLogout -> { /* TODO: Xóa token, chuyển về màn Login */ }
-                        is MoreEffect.NavigateToMenu -> { /* TODO: Xử lý click menu phụ dựa vào effect.label */ }
-                        is MoreEffect.ShowToast -> { /* Hiện toast */ }
+                when (effect) {
+                    is MoreEffect.NavigateToEditProfile -> { /* TODO: Chuyển sang màn Edit Profile */
+                    }
+
+                    is MoreEffect.HandleLogout -> { /* TODO: Xóa token, chuyển về màn Login */
+                    }
+
+                    is MoreEffect.NavigateToMenu -> { /* TODO: Xử lý click menu phụ dựa vào effect.label */
+                    }
+
+                    is MoreEffect.ShowToast -> { /* Hiện toast */
+                    }
                 }
             }
         ) { state, onEvent ->
@@ -157,72 +197,98 @@ fun NavGraph(
 
         composableScreen<Route.AIScreen, AiViewModel, AiState, AiEvent, AiEffect>(
             onNavigate = { effect ->
-                when(effect) {
-                    is AiEffect.ShowToast -> { /* TODO: Xử lý hiện Toast hoặc Snackbar báo lỗi mạng */ }
-                    is AiEffect.OpenGallery -> { /* TODO: Gọi intent mở thư viện ảnh */ }
-                    is AiEffect.OpenMicrophone -> { /* TODO: Gọi intent mở Voice Input Google */ }
+                when (effect) {
+                    is AiEffect.ShowToast -> { /* TODO: Xử lý hiện Toast hoặc Snackbar báo lỗi mạng */
+                    }
+
+                    is AiEffect.OpenGallery -> { /* TODO: Gọi intent mở thư viện ảnh */
+                    }
+
+                    is AiEffect.OpenMicrophone -> { /* TODO: Gọi intent mở Voice Input Google */
+                    }
                 }
             }
         ) { state, onEvent ->
-            AiScreen(state = state, onEvent = onEvent, onBackClick = { navController.popBackStack() })
+            AiScreen(
+                state = state,
+                onEvent = onEvent,
+                onBackClick = { navController.popBackStack() })
         }
 
         composableScreen<Route.DictionaryScreen, DictionaryViewModel, DictionaryState, DictionaryEvent, DictionaryEffect>(
             onNavigate = { effect ->
-                when(effect) {
+                when (effect) {
                     is DictionaryEffect.PlayAudio -> {
                     }
+
                     is DictionaryEffect.NavigateToFeature -> {
-                        when(effect.feature) {
-                            "Saved" -> { /* navController.navigate(Route.SavedWords) */ }
+                        when (effect.feature) {
+                            "Saved" -> { /* navController.navigate(Route.SavedWords) */
+                            }
+
                             "Flashcards" -> navController.navigate(Route.VocabularyScreen)
                             // ... các mục khác
                         }
                     }
-                    is DictionaryEffect.ShowToast -> { /* Hiện toast */ }
+
+                    is DictionaryEffect.ShowToast -> { /* Hiện toast */
+                    }
                 }
             }
         ) { state, onEvent ->
-            DictionaryScreen(state = state, onEvent = onEvent, onBackClick = { navController.popBackStack() })
+            DictionaryScreen(
+                state = state,
+                onEvent = onEvent,
+                onBackClick = { navController.popBackStack() })
         }
 
         composableScreen<Route.TranslateScreen, TranslateViewModel, TranslateState, TranslateEvent, TranslateEffect>(
             onNavigate = { effect ->
-                when(effect) {
+                when (effect) {
                     TranslateEffect.NavigateToHistory -> TODO()
                 }
             }
         ) { state, onEvent ->
-            TranslateScreen(state = state, onEvent = onEvent, onBackClick = { navController.popBackStack() })
+            TranslateScreen(
+                state = state,
+                onEvent = onEvent,
+                onBackClick = { navController.popBackStack() })
         }
 
         composableScreen<Route.VocabularyScreen, VocabularyViewModel, VocabularyState, VocabularyEvent, VocabularyEffect>(
             onNavigate = { effect ->
-                when(effect) {
+                when (effect) {
                     is VocabularyEffect.NavigateBack -> navController.popBackStack()
                     is VocabularyEffect.NavigateToReview -> {
                         // Import QuizType nếu NavGraph chưa có
                         navController.navigate(Route.QuizReviewScreen(QuizType.VOCABULARY))
                     }
+
                     is VocabularyEffect.PlayAudio -> {
                         // TODO: Gọi TextToSpeech/ExoPlayer để phát âm thanh dựa trên effect.region (UK/US)
                     }
                 }
             }
         ) { state, onEvent ->
-            VocabularyScreen(state = state, onEvent = onEvent, onBackClick = { navController.popBackStack() })
+            VocabularyScreen(
+                state = state,
+                onEvent = onEvent,
+                onBackClick = { navController.popBackStack() })
         }
 
         composableScreen<Route.QuizReviewScreen, QuizReviewViewModel, QuizReviewState, QuizReviewEvent, QuizReviewEffect>(
             onNavigate = { effect ->
-                when(effect) {
+                when (effect) {
                     is QuizReviewEffect.NavigateBack -> navController.popBackStack()
                     is QuizReviewEffect.NavigateToListening -> navController.navigate(Route.ListeningScreen)
                     is QuizReviewEffect.NavigateToGrammar -> navController.navigate(Route.SentenceBuilderScreen)
                 }
             }
         ) { state, onEvent ->
-            QuizReviewScreen(state = state, onEvent = onEvent, onBackClick = { navController.popBackStack() })
+            QuizReviewScreen(
+                state = state,
+                onEvent = onEvent,
+                onBackClick = { navController.popBackStack() })
         }
 
 //        composableScreen<Route.ListeningScreen, ListeningViewModel, ListeningState, ListeningEvent, ListeningEffect>(
@@ -238,56 +304,76 @@ fun NavGraph(
 
         composableScreen<Route.GrammarScreen, GrammarViewModel, GrammarState, GrammarEvent, GrammarEffect>(
             onNavigate = { effect ->
-                when(effect) {
+                when (effect) {
                     is GrammarEffect.NavigateBack -> navController.popBackStack()
                     is GrammarEffect.NavigateToTopic -> {
                         navController.navigate(Route.LessonScreen)
                     }
-                    is GrammarEffect.OpenSearch -> { /* TODO: Mở thanh tìm kiếm */ }
-                    is GrammarEffect.ShowToast -> { /* Hiện toast */ }
+
+                    is GrammarEffect.OpenSearch -> { /* TODO: Mở thanh tìm kiếm */
+                    }
+
+                    is GrammarEffect.ShowToast -> { /* Hiện toast */
+                    }
                 }
             }
         ) { state, onEvent ->
-            GrammarScreen(state = state, onEvent = onEvent, onBackClick = { navController.popBackStack() })
+            GrammarScreen(
+                state = state,
+                onEvent = onEvent,
+                onBackClick = { navController.popBackStack() })
         }
 
         composableScreen<Route.SentenceBuilderScreen, SentenceBuilderViewModel, SentenceBuilderState, SentenceBuilderEvent, SentenceBuilderEffect>(
             onNavigate = { effect ->
-                when(effect) {
+                when (effect) {
                     is SentenceBuilderEffect.NavigateBack -> navController.popBackStack()
                     is SentenceBuilderEffect.NavigateToSpeaking -> navController.navigate(Route.SpeakingScreen)
-                    is SentenceBuilderEffect.ShowToast -> { /* Hiện Toast */ }
+                    is SentenceBuilderEffect.ShowToast -> { /* Hiện Toast */
+                    }
                 }
             }
         ) { state, onEvent ->
-            SentenceBuilderScreen(state = state, onEvent = onEvent, onBackClick = { navController.popBackStack() })
+            SentenceBuilderScreen(
+                state = state,
+                onEvent = onEvent,
+                onBackClick = { navController.popBackStack() })
         }
 
         composableScreen<Route.SpeakingScreen, SpeakingViewModel, SpeakingState, SpeakingEvent, SpeakingEffect>(
             onNavigate = { effect ->
-                when(effect) {
+                when (effect) {
                     is SpeakingEffect.NavigateBack -> navController.popBackStack()
                     is SpeakingEffect.NavigateToFinish -> {
                         navController.popBackStack(Route.CourseScreen, inclusive = false)
                     }
+
                     is SpeakingEffect.PlayTtsAudio -> {
                     }
-                    is SpeakingEffect.ShowToast -> { /* Hiện toast */ }
+
+                    is SpeakingEffect.ShowToast -> { /* Hiện toast */
+                    }
                 }
             }
         ) { state, onEvent ->
-            SpeakingScreen(state = state, onEvent = onEvent, onBackClick = { navController.popBackStack() })
+            SpeakingScreen(
+                state = state,
+                onEvent = onEvent,
+                onBackClick = { navController.popBackStack() })
         }
 
         composableScreen<Route.CourseDetailScreen, CourseDetailViewModel, CourseDetailState, CourseDetailEvent, CourseDetailEffect>(
             onNavigate = { effect ->
-                when(effect) {
+                when (effect) {
                     is CourseDetailEffect.NavigateToLearning -> {
                     }
                 }
             }
         ) { state, onEvent ->
-            CourseDetailsScreen(state = state, onEvent = onEvent, onBackClick = { navController.popBackStack() })
+            CourseDetailsScreen(
+                state = state,
+                onEvent = onEvent,
+                onBackClick = { navController.popBackStack() })
         }
     }
 }
