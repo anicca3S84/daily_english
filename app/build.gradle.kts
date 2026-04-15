@@ -30,7 +30,7 @@ fun getLocalProperty(key: String): String {
 }
 
 android {
-    namespace = "com.codework.daily_english"
+    namespace = "com.codework.dailyenglish"
     compileSdk = 36
 
     defaultConfig {
