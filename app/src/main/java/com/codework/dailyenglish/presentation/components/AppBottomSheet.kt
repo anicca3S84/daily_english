@@ -92,18 +92,40 @@ fun AppBottomSheet(
             // Sheet content
             Box(
                 modifier = modifier
-                    .offset { IntOffset(0, offsetY.value.toInt()) }
+                    .offset { IntOffset(0, offsetY.value.toInt().coerceAtLeast(0)) } // Không cho kéo ngược lên trên quá đà
                     .fillMaxWidth()
-                    .wrapContentHeight() // Bắt buộc phải có để ôm sát ruột
-                    .heightIn(max = maxSheetHeight) // Chiều cao tối đa (tránh tràn màn hình)
+                    .wrapContentHeight()
+                    .heightIn(max = maxSheetHeight)
                     .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
                     .background(MaterialTheme.colorScheme.surface)
-                // ... (phần pointerInput giữ nguyên) ...
+                    // THÊM ĐOẠN NÀY ĐỂ KÉO ĐƯỢC:
+                    .pointerInput(enableDrag) {
+                        if (!enableDrag) return@pointerInput
+                        detectVerticalDragGestures(
+                            onDragEnd = {
+                                // Nếu kéo xuống quá 1/4 chiều cao sheet thì đóng, không thì nảy lại vị trí cũ
+                                if (offsetY.value > screenHeight.value / 4) {
+                                    onDismiss()
+                                } else {
+                                    coroutineScope.launch {
+                                        offsetY.animateTo(0f, tween(200))
+                                    }
+                                }
+                            },
+                            onVerticalDrag = { change, dragAmount ->
+                                change.consume()
+                                // Chỉ cho phép kéo xuống (dragAmount > 0)
+                                coroutineScope.launch {
+                                    val newValue = offsetY.value + dragAmount
+                                    offsetY.snapTo(newValue.coerceAtLeast(0f))
+                                }
+                            }
+                        )
+                    }
             ) {
                 // ĐÂY LÀ PHẦN QUAN TRỌNG NHẤT: Bọc thẳng bằng Column, không dùng Box trung gian
                 Column(
                     modifier = Modifier
-                        .navigationBarsPadding()
                         .imePadding()
                         .fillMaxWidth()
                 ) {

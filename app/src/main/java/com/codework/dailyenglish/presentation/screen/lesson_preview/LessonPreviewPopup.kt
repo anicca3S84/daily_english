@@ -45,7 +45,7 @@ fun LessonPreviewPopup(
     AppBottomSheet(
         visible = visible,
         onDismiss = onDismiss,
-        maxHeight = 0.68f,
+        maxHeight = 0.66f,
         enableDrag = true
     ) {
         // Bây giờ 'state' đã tồn tại và có thể truyền vào đây
