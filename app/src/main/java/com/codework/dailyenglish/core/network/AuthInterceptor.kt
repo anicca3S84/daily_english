@@ -4,6 +4,7 @@ import com.codework.dailyenglish.data.auth.local.AuthPreferences
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
+import java.util.Locale
 import javax.inject.Inject
 
 class AuthInterceptor @Inject constructor(
@@ -13,22 +14,24 @@ class AuthInterceptor @Inject constructor(
         val originalRequest = chain.request()
         val requestUrl = originalRequest.url.encodedPath
 
-        // 1. CHẶN LẠI NGAY ĐÂY: Nếu đường dẫn có chứa "/auth"
-        // (nghĩa là đang gọi login Google, Apple, Email hoặc Refresh token)
-        // thì KHÔNG ĐƯỢC gắn Header Authorization, cho đi qua luôn!
-        if (requestUrl.contains("/auth")) {
-            return chain.proceed(originalRequest)
+        var currentLanguage = Locale.getDefault().language.uppercase()
+
+        if (currentLanguage != "VI" && currentLanguage != "EN") {
+            currentLanguage = "EN"
         }
 
-        // 2. Nếu là các API bình thường (lấy thông tin user, bài học...)
-        // thì mới lấy Token ra và gắn vào Header
-        val token = runBlocking { prefs.getAccessToken() }
-        val request = originalRequest.newBuilder().apply {
-            token?.let {
-                addHeader("Authorization", "Bearer $it")
-            }
-        }.build()
+        val requestBuilder = originalRequest.newBuilder()
+            .addHeader("Accept-Language", currentLanguage)
 
-        return chain.proceed(request)
+        if (requestUrl.contains("/auth")) {
+            return chain.proceed(requestBuilder.build())
+        }
+
+        val token = runBlocking { prefs.getAccessToken() }
+        token?.let {
+            requestBuilder.addHeader("Authorization", "Bearer $it")
+        }
+
+        return chain.proceed(requestBuilder.build())
     }
 }

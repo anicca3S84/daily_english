@@ -14,7 +14,6 @@ sealed interface AppError {
         val throwable: Throwable? = null
     ) : AppError
 
-    // 🔥 MỚI: Lỗi chuẩn hóa dữ liệu đầu vào (Không chứa text UI)
     data class Validation(
         val reason: String
     ) : AppError

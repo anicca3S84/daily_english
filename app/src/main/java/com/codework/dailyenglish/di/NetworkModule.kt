@@ -2,6 +2,10 @@ package com.codework.dailyenglish.di
 
 import com.codework.dailyenglish.core.network.AuthInterceptor
 import com.codework.dailyenglish.core.network.TokenAuthenticator
+import com.codework.dailyenglish.data.lesson.remote.dto.LessonStepDeserializer
+import com.codework.dailyenglish.data.lesson.remote.dto.LessonStepDto
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,6 +19,13 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+    @Provides
+    @Singleton
+    fun provideGson(): Gson {
+        return GsonBuilder()
+            .registerTypeAdapter(LessonStepDto::class.java, LessonStepDeserializer())
+            .create()
+    }
 
     @Provides
     @Singleton
@@ -40,11 +51,14 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient,
+        gson: Gson
+    ): Retrofit {
         return Retrofit.Builder()
             .baseUrl("http://10.0.2.2:8080/api/v1/")
             .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
     }
 }

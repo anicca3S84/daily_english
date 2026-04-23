@@ -1,5 +1,6 @@
 package com.codework.dailyenglish.presentation.components
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,6 +11,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,26 +24,30 @@ import com.codework.dailyenglish.presentation.theme.MainGradient
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProgressTopBar(
-    currentStep: Int,
-    totalSteps: Int,
+fun AppProgressTopBar(
+    progress: Float,
+    progressText: String,
     onBackClick: () -> Unit,
-    onCloseClick: (() -> Unit)? = null // Tùy chọn: Đôi khi bạn muốn nút đóng thay vì menu
+    onCloseClick: (() -> Unit)? = null
 ) {
-    // Sử dụng Surface để có màu nền và đổ bóng chuẩn
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress,
+        label = "progressAnimation"
+    )
+
     Surface(
         color = AppBackground,
         modifier = Modifier.fillMaxWidth(),
-        shadowElevation = 0.dp // Hoặc tăng lên nếu muốn có bóng
+        shadowElevation = 0.dp
     ) {
         Row(
             modifier = Modifier
-                .statusBarsPadding() // Tránh tai thỏ
+                .statusBarsPadding()
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // --- 1. NÚT BACK (Custom Style) ---
+            // Nút Back tròn trịa phong cách Pro
             Surface(
                 onClick = onBackClick,
                 shape = CircleShape,
@@ -61,38 +67,33 @@ fun ProgressTopBar(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // --- 2. THANH PROGRESS (Co giãn linh hoạt) ---
+            // Thanh Progress Bar tùy chỉnh
             Box(
                 modifier = Modifier
-                    .weight(1f) // Chiếm hết không gian ở giữa
-                    .height(12.dp)
-                    .clip(RoundedCornerShape(6.dp))
+                    .weight(1f)
+                    .height(10.dp) // Chỉnh lại độ cao cho thanh thoát
+                    .clip(RoundedCornerShape(5.dp))
                     .background(Color(0xFFE5E7EB))
             ) {
-                val progress = if (totalSteps > 0) currentStep / totalSteps.toFloat() else 0f
-
-                // Thanh màu gradient
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth(progress)
+                        .fillMaxWidth(animatedProgress) // Dùng giá trị đã animate
                         .fillMaxHeight()
-                        .background(MainGradient)
-                        .clip(RoundedCornerShape(6.dp))
+                        .background(MainGradient) // Sử dụng Gradient xịn của bạn
+                        .clip(RoundedCornerShape(5.dp))
                 )
             }
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // --- 3. TEXT CHỈ SỐ HOẶC NÚT ĐÓNG ---
+            // Hiển thị nút Close hoặc Text tiến độ
             if (onCloseClick != null) {
-                // Nếu có action Close (ví dụ trong bài Quiz)
                 IconButton(onClick = onCloseClick, modifier = Modifier.size(24.dp)) {
                     Icon(Icons.Default.Close, null, tint = GrayText)
                 }
             } else {
-                // Mặc định hiện chỉ số text (1/10)
                 Text(
-                    text = "$currentStep/$totalSteps",
+                    text = progressText, // Dùng text truyền từ State
                     style = MaterialTheme.typography.bodyMedium,
                     color = GrayText,
                     fontWeight = FontWeight.Bold

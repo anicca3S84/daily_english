@@ -29,7 +29,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import com.codework.dailyenglish.R
-import com.codework.dailyenglish.presentation.components.StandardCircleButton
+import com.codework.dailyenglish.presentation.components.AppCircleButton
 import com.codework.dailyenglish.presentation.theme.BluePrimary
 import androidx.compose.ui.platform.LocalClipboardManager
 import com.codework.dailyenglish.presentation.theme.BorderStrokeColor
@@ -87,7 +87,7 @@ fun ResultCard(text: String, isTranslating: Boolean) {
 
                 Spacer(modifier = Modifier.width(Spaces.Space16))
 
-                StandardCircleButton(
+                AppCircleButton(
                     icon = Icons.Rounded.ContentCopy,
                     onClick = { clipboardManager.setText(AnnotatedString(text)) },
                 )
@@ -100,7 +100,7 @@ fun ResultCard(text: String, isTranslating: Boolean) {
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                StandardCircleButton(
+                AppCircleButton(
                     icon = Icons.AutoMirrored.Filled.VolumeUp,
                     onClick = { /* Speak Result */ },
                 )

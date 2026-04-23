@@ -64,7 +64,6 @@ private fun <T> BoxScope.WrapperInnerContent(
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
 
-        // ❌ ĐỪNG render content khi loading lần đầu
         if (!(isLoading && isDataEmpty)) {
             content(uiState.data)
         }
@@ -73,7 +72,7 @@ private fun <T> BoxScope.WrapperInnerContent(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .zIndex(10f) // 👈 đảm bảo đè hết
+                    .zIndex(10f)
                     .background(Color.White)
             ) {
                 CircularProgressIndicator(

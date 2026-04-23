@@ -26,7 +26,6 @@ fun PrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    // Thêm tham số brush với giá trị mặc định là MainGradient
     brush: Brush = MainGradient
 ) {
     Button(

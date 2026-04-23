@@ -32,9 +32,10 @@ import com.codework.dailyenglish.presentation.screen.course_details.components.L
 import com.codework.dailyenglish.presentation.screen.course_details.components.ModuleHeaderLabel
 import com.codework.dailyenglish.presentation.screen.course_details.components.VerticalDividerCourse
 import com.codework.dailyenglish.presentation.screen.course_details.model.LessonStatus
+import com.codework.dailyenglish.presentation.screen.course_details.model.SkillType
 import com.codework.dailyenglish.presentation.screen.course_details.mvi.CourseDetailEvent
 import com.codework.dailyenglish.presentation.screen.course_details.mvi.CourseDetailState
-import com.codework.dailyenglish.presentation.screen.lesson_preview.LessonPreviewPopup
+import com.codework.dailyenglish.presentation.screen.lessons.lesson_preview.LessonPreviewPopup
 import com.codework.dailyenglish.presentation.theme.Spaces
 import com.codework.dailyenglish.presentation.theme.TextSizes
 
@@ -44,7 +45,7 @@ fun CourseDetailsScreen(
     state: CourseDetailState,
     onEvent: (CourseDetailEvent) -> Unit,
     onBackClick: () -> Unit,
-    navController: NavController // Thêm navController để điều hướng từ Popup
+    navController: NavController
 ) {
     val snackBar = remember { SnackbarHostState() }
     var showPreview by remember { mutableStateOf(false) }
@@ -168,11 +169,9 @@ fun CourseDetailsScreen(
                                 isLastItem = index == module.lessons.lastIndex,
                                 onClick = {
                                     if (lesson.status != LessonStatus.LOCKED) {
-                                        // --- 2. Thay vì chuyển màn hình, ta mở Popup ---
                                         selectedLessonId = lesson.id
                                         showPreview = true
                                     } else {
-                                        // Bắn event để ViewModel xử lý thông báo khóa bài học
                                         onEvent(CourseDetailEvent.OnLessonClick(lesson.id, true))
                                     }
                                 },
@@ -185,21 +184,24 @@ fun CourseDetailsScreen(
 
                     item { Spacer(modifier = Modifier.height(Spaces.Space32)) }
                 }
+
+                val currentLesson = modules?.flatMap { it.lessons }?.find { it.id == selectedLessonId }
+
+                if (showPreview && currentLesson != null) {
+                    LessonPreviewPopup(
+                        lessonId = selectedLessonId,
+                        visible = true,
+                        onDismiss = { showPreview = false },
+                        onNavigateToLearn = { lessonId ->
+                            showPreview = false
+                            navController.navigate(Route.LessonScreen(lessonId = lessonId))
+                        },
+                        courseTheme = state.courseTheme
+                    )
+                }
             }
 
-            // --- 3. Đặt Custom Popup ở cuối Box để nó nằm trên cùng ---
-            if (showPreview) {
-                LessonPreviewPopup(
-                    lessonId = selectedLessonId,
-                    visible = showPreview,
-                    onDismiss = { showPreview = false },
-                    onNavigateToLearn = { lessonId ->
-                        showPreview = false
-                        navController.navigate(Route.LessonScreen(lessonId))
-                    },
-                    courseTheme = state.courseTheme
-                )
-            }
+
         }
     }
 }

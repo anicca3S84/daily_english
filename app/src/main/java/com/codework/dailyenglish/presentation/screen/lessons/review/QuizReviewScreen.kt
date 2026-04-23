@@ -17,7 +17,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import com.codework.dailyenglish.presentation.components.ProgressTopBar
+import com.codework.dailyenglish.presentation.components.AppProgressTopBar
 import com.codework.dailyenglish.presentation.screen.lessons.review.mvi.QuizReviewEvent
 import com.codework.dailyenglish.presentation.screen.lessons.review.mvi.QuizReviewState
 import com.codework.dailyenglish.presentation.theme.AppBackground
@@ -48,11 +48,11 @@ fun QuizReviewScreen(
         containerColor = AppBackground,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
-            ProgressTopBar(
-                currentStep = progressCurrent,
-                totalSteps = progressTotal,
-                onBackClick = { onEvent(QuizReviewEvent.OnGoBack) }
-            )
+//            AppProgressTopBar(
+//                currentStep = progressCurrent,
+//                totalSteps = progressTotal,
+//                onBackClick = { onEvent(QuizReviewEvent.OnGoBack) }
+//            )
         },
         bottomBar = {
 //            if (state is BaseState.Success) {

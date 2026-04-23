@@ -51,10 +51,6 @@ import com.codework.dailyenglish.presentation.screen.lessons.speaking.*
 import com.codework.dailyenglish.presentation.screen.lessons.speaking.mvi.SpeakingEffect
 import com.codework.dailyenglish.presentation.screen.lessons.speaking.mvi.SpeakingEvent
 import com.codework.dailyenglish.presentation.screen.lessons.speaking.mvi.SpeakingState
-import com.codework.dailyenglish.presentation.screen.lessons.vocabulary.*
-import com.codework.dailyenglish.presentation.screen.lessons.vocabulary.mvi.VocabularyEffect
-import com.codework.dailyenglish.presentation.screen.lessons.vocabulary.mvi.VocabularyEvent
-import com.codework.dailyenglish.presentation.screen.lessons.vocabulary.mvi.VocabularyState
 import com.codework.dailyenglish.presentation.screen.more.*
 import com.codework.dailyenglish.presentation.screen.more.mvi.MoreEffect
 import com.codework.dailyenglish.presentation.screen.more.mvi.MoreEvent
@@ -130,26 +126,26 @@ fun NavGraph(
             CourseScreen(state = state, onEvent = onEvent)
         }
 
-        composableScreen<Route.LessonScreen, LessonViewModel, LessonState, LessonEvent, LessonEffect>(
+        composableScreen<
+                Route.LessonScreen, LessonViewModel, LessonState, LessonEvent, LessonEffect>(
             onNavigate = { effect ->
                 when (effect) {
-                    is LessonEffect.NavigateToVocabulary -> navController.navigate(Route.VocabularyScreen)
-                    is LessonEffect.NavigateToListening -> navController.navigate(Route.ListeningScreen)
-                    is LessonEffect.NavigateToSentenceBuilder -> navController.navigate(Route.SentenceBuilderScreen)
-                    is LessonEffect.NavigateToSpeaking -> navController.navigate(Route.SpeakingScreen)
-                    // is LessonEffect.NavigateToQuiz -> navController.navigate(Route.QuizReviewScreen(QuizType...))
-                    is LessonEffect.ShowToast -> {
-                        // TODO: Hiện Toast báo lỗi (bạn có thể setup Snackbar sau)
+                    is LessonEffect.NavigateBack -> navController.popBackStack()
+                    is LessonEffect.NavigateToResult -> {
+                        navController.navigate(
+                            Route.LessonScreen(
+                                lessonId = effect.lessonId
+                            )
+                        ) {
+                            popUpTo<Route.LessonScreen> { inclusive = true }
+                        }
                     }
-
-                    LessonEffect.NavigateToQuiz -> TODO()
+                    is LessonEffect.ShowQuitDialog -> {
+                    }
                 }
             }
         ) { state, onEvent ->
-            LessonScreen(
-                state = state,
-                onEvent = onEvent,
-                onBackClick = { navController.popBackStack() })
+            LessonScreen(state = state, onEvent = onEvent)
         }
 
         composableScreen<Route.PracticeScreen, PracticeViewModel, PracticeState, PracticeEvent, PracticeEffect>(
@@ -157,10 +153,10 @@ fun NavGraph(
                 when (effect) {
                     is PracticeEffect.NavigateToAiSpeaking -> navController.navigate(Route.AIScreen)
                     is PracticeEffect.NavigateToFlashcard -> navController.navigate(Route.VocabularyScreen)
-                    is PracticeEffect.NavigateToCategory -> { /* TODO: Điều hướng category */
+                    is PracticeEffect.NavigateToCategory -> { /* TODO */
                     }
 
-                    is PracticeEffect.NavigateToGame -> { /* TODO: Điều hướng vào minigame */
+                    is PracticeEffect.NavigateToGame -> { /* TODO */
                     }
 
                     is PracticeEffect.ShowToast -> { /* Hiện toast */
@@ -251,26 +247,26 @@ fun NavGraph(
                 onBackClick = { navController.popBackStack() })
         }
 
-        composableScreen<Route.VocabularyScreen, VocabularyViewModel, VocabularyState, VocabularyEvent, VocabularyEffect>(
-            onNavigate = { effect ->
-                when (effect) {
-                    is VocabularyEffect.NavigateBack -> navController.popBackStack()
-                    is VocabularyEffect.NavigateToReview -> {
-                        // Import QuizType nếu NavGraph chưa có
-                        navController.navigate(Route.QuizReviewScreen(QuizType.VOCABULARY))
-                    }
-
-                    is VocabularyEffect.PlayAudio -> {
-                        // TODO: Gọi TextToSpeech/ExoPlayer để phát âm thanh dựa trên effect.region (UK/US)
-                    }
-                }
-            }
-        ) { state, onEvent ->
-            VocabularyScreen(
-                state = state,
-                onEvent = onEvent,
-                onBackClick = { navController.popBackStack() })
-        }
+//        composableScreen<Route.VocabularyScreen, VocabularyViewModel, VocabularyState, VocabularyEvent, VocabularyEffect>(
+//            onNavigate = { effect ->
+//                when (effect) {
+//                    is VocabularyEffect.NavigateBack -> navController.popBackStack()
+//                    is VocabularyEffect.NavigateToReview -> {
+//                        // Import QuizType nếu NavGraph chưa có
+//                        navController.navigate(Route.QuizReviewScreen(QuizType.VOCABULARY))
+//                    }
+//
+//                    is VocabularyEffect.PlayAudio -> {
+//                        // TODO: Gọi TextToSpeech/ExoPlayer để phát âm thanh dựa trên effect.region (UK/US)
+//                    }
+//                }
+//            }
+//        ) { state, onEvent ->
+//            VocabularyScreen(
+//                state = state,
+//                onEvent = onEvent,
+//                onBackClick = { navController.popBackStack() })
+//        }
 
         composableScreen<Route.QuizReviewScreen, QuizReviewViewModel, QuizReviewState, QuizReviewEvent, QuizReviewEffect>(
             onNavigate = { effect ->

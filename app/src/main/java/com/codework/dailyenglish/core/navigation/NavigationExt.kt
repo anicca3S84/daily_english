@@ -34,7 +34,7 @@ fun <Effect> CollectEffect(
 
 inline fun <reified R : Route, reified VM : BaseViewModel<S, E, F>, S, E, F>
         NavGraphBuilder.composableScreen(
-    crossinline onNavigate: (F) -> Unit, // ✅ dùng F
+    crossinline onNavigate: (F) -> Unit,
     crossinline content: @Composable (state: S, onEvent: (E) -> Unit) -> Unit
 ) {
     composable<R> {

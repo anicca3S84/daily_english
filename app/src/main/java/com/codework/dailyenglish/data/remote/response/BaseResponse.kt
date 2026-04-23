@@ -7,7 +7,6 @@ data class  BaseResponse<T>(
     @SerializedName("message") val message: String?,
     @SerializedName("data") val data: T?
 ) {
-    // Check xem status có lọt vào nhóm thành công (200-299) không
     val isSuccess: Boolean
         get() = status in 200..299
 }

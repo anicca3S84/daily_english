@@ -1,13 +1,22 @@
 package com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi
 
-import com.codework.dailyenglish.presentation.screen.lessons.lesson.model.LessonStep
+import com.codework.dailyenglish.core.base.BaseUiState
+import com.codework.dailyenglish.domain.lesson.model.LessonStep
+import kotlin.collections.getOrNull
 
-data class LessonState(
-    val lessonId: String = "",
-    val title: String = "",
-    val description: String = "",
-    val imageUrl: String = "",
-    val totalProgress: Float = 0.0f,
-    val steps: List<LessonStep> = emptyList(),
-    val level: String = ""
-)
+data class LessonConfigUi(
+    val lessonId: String,
+    val steps: List<LessonStep>,
+    val currentIndex: Int
+) {
+    val currentStep: LessonStep?
+        get() = steps.getOrNull(currentIndex)
+
+    val progressPercent: Float
+        get() = if (steps.isEmpty()) 0f else (currentIndex + 1).toFloat() / steps.size
+
+    val progressText: String
+        get() = "${currentIndex + 1} / ${steps.size}"
+}
+
+typealias LessonState = BaseUiState<LessonConfigUi>

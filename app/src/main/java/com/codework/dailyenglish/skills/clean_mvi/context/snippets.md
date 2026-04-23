@@ -151,3 +151,41 @@ abstract class FeatureModule {
     ): FeatureRemoteDataSource
 }
 ```
+
+## 6.DTO data Class
+```Kotlin
+data class UserStatsDto(
+    @SerializedName("streak")
+    val streak: Int?,
+    @SerializedName("total_exp")
+    val totalExp: Int?,
+    @SerializedName("lessons_done")
+    val lessonsDone: Int?,
+    @SerializedName("words_learned")
+    val wordsLearned: Int?
+)
+```
+
+## 7. Domain data Class
+```Kotlin
+data class UserStats(
+val streak: Int,
+val totalExp: Int,
+val lessonsDone: Int,
+val wordsLearned: Int
+)
+```
+
+## 8. Mapper class
+```Kotlin
+fun CourseDto.toDomain() = Course(
+id = id ?: "no_id_${System.currentTimeMillis()}",
+title = title.orEmpty(),
+description = description.orEmpty(),
+cefr = cefr.orEmpty(),
+lessons = lessons ?: 0,
+progress = progress ?: 0f,
+isLocked = isLocked ?: true,
+code = code ?: "default"
+)
+```

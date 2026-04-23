@@ -14,14 +14,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.codework.dailyenglish.presentation.screen.home.model.QuickActionItem // Import Data Class của bạn
 
-// 1. Đây là Composable hiển thị từng item (Đã đổi tên thành QuickActionCard)
 @Composable
 fun QuickActionCard(
-    iconResId: Int, // Đổi tên cho rõ, nhận Int (R.drawable.xxx)
+    iconResId: Int,
     label: String,
     color: Color,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier // BẮT BUỘC PHẢI CÓ THAM SỐ NÀY
+    modifier: Modifier = Modifier
 ) {
     Card(
         onClick = onClick,
@@ -66,11 +65,10 @@ fun QuickActionCard(
     }
 }
 
-// 2. Section xử lý danh sách
 @Composable
 fun QuickActionSection(
     title: String = "Quick Access",
-    actions: List<QuickActionItem> // Nhận List Data Class
+    actions: List<QuickActionItem>
 ) {
     Column(modifier = Modifier.padding(horizontal = 20.dp)) {
         Text(

@@ -32,7 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import com.codework.dailyenglish.R
-import com.codework.dailyenglish.presentation.components.StandardCircleButton
+import com.codework.dailyenglish.presentation.components.AppCircleButton
 import com.codework.dailyenglish.presentation.theme.BluePrimary
 import com.codework.dailyenglish.presentation.theme.BorderStrokeColor
 import com.codework.dailyenglish.presentation.theme.Spaces
@@ -90,8 +90,8 @@ fun InputCard(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(Spaces.Space8)
                     ) {
-                        StandardCircleButton(icon = Icons.Default.Close, onClick = onClear)
-                        StandardCircleButton(icon = Icons.AutoMirrored.Filled.VolumeUp, onClick = { })
+                        AppCircleButton(icon = Icons.Default.Close, onClick = onClear)
+                        AppCircleButton(icon = Icons.AutoMirrored.Filled.VolumeUp, onClick = { })
                     }
                 }
             }
@@ -107,9 +107,9 @@ fun InputCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(Spaces.Space12)
                 ) {
-                    StandardCircleButton(icon = Icons.Default.Image, onClick = onImageClick)
-                    StandardCircleButton(icon = Icons.Default.CameraAlt, onClick = onCameraClick)
-                    StandardCircleButton(icon = Icons.Default.Mic, onClick = onMicClick)
+                    AppCircleButton(icon = Icons.Default.Image, onClick = onImageClick)
+                    AppCircleButton(icon = Icons.Default.CameraAlt, onClick = onCameraClick)
+                    AppCircleButton(icon = Icons.Default.Mic, onClick = onMicClick)
                 }
 
                 Box(

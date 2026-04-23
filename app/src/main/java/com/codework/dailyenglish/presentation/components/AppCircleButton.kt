@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun StandardCircleButton(
+fun AppCircleButton(
     icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,

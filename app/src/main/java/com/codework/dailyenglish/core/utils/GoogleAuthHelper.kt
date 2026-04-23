@@ -42,13 +42,12 @@ object GoogleAuthHelper {
             }
 
             null
-        } catch (e: GetCredentialCancellationException) {
-            Log.d("GoogleSignIn", "Người dùng đã hủy.")
+        } catch (_: GetCredentialCancellationException) {
+            Log.d("GoogleSignIn", "Cancel")
             null
         } catch (e: Exception) {
-            // IN ĐẬM LỖI RA ĐÂY ĐỂ BIẾT CHÍNH XÁC NÓ BỊ GÌ
-            Log.e("GoogleSignIn", "Lỗi ném ra là class: ${e.javaClass.simpleName}")
-            Log.e("GoogleSignIn", "Chi tiết lỗi: ${e.message}")
+            Log.e("GoogleSignIn", "${e.javaClass.simpleName}")
+            Log.e("GoogleSignIn", "${e.message}")
             e.printStackTrace()
             null
         }

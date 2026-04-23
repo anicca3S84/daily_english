@@ -34,7 +34,6 @@ class AuthRepositoryImpl @Inject constructor(
                 userDomain
             }
         } catch (e: Exception) {
-            // Hứng lỗi và trả về chuẩn AppError của bạn
             AppResult.Error(AppError.Unknown(e))
         }
     }

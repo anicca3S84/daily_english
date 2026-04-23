@@ -1,4 +1,4 @@
-package com.codework.dailyenglish.presentation.screen.lesson_preview
+package com.codework.dailyenglish.presentation.screen.lessons.lesson_preview
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -25,8 +25,8 @@ import androidx.compose.ui.unit.sp
 import com.codework.dailyenglish.domain.lesson_preview.model.LessonPreview
 import com.codework.dailyenglish.presentation.components.LoadingType
 import com.codework.dailyenglish.presentation.components.StateWrapper
-import com.codework.dailyenglish.presentation.screen.lesson_preview.mvi.LessonPreviewEvent
-import com.codework.dailyenglish.presentation.screen.lesson_preview.mvi.LessonPreviewState
+import com.codework.dailyenglish.presentation.screen.lessons.lesson_preview.mvi.LessonPreviewEvent
+import com.codework.dailyenglish.presentation.screen.lessons.lesson_preview.mvi.LessonPreviewState
 import com.codework.dailyenglish.presentation.theme.CourseTheme
 import com.codework.dailyenglish.presentation.theme.GrayText
 
@@ -57,7 +57,7 @@ fun LessonPreviewSheet(
         }
     }
 }
-@OptIn(ExperimentalLayoutApi::class)
+
 @Composable
 private fun LessonPreviewMainContent(
     preview: LessonPreview,
@@ -70,80 +70,112 @@ private fun LessonPreviewMainContent(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .navigationBarsPadding() // Đẩy lên trên Navigation Bar của hệ thống
+            .navigationBarsPadding()
     ) {
-        // --- 1. VÙNG NỘI DUNG SCROLL ---
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                // Không dùng weight nữa, chỉ cần verticalScroll là đủ
-                .verticalScroll(scrollState)
-                .padding(horizontal = 24.dp)
-                .padding(top = 8.dp)
         ) {
-            LessonHeader(preview, theme)
 
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 16.dp),
-                color = GrayText.copy(alpha = 0.1f)
-            )
-
-            SectionTitle(icon = Icons.Rounded.MenuBook, title = "Lesson Content", theme = theme)
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = preview.content.ifBlank { "No content available" },
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                lineHeight = 24.sp,
+            // 🔥 HEADER (KHÔNG SCROLL)
+            Column(
                 modifier = Modifier
-                    .padding(start = 4.dp)
-                    .drawBehind {
-                        drawLine(
-                            color = theme.primaryColor.copy(alpha = 0.3f),
-                            start = Offset(0f, 0f),
-                            end = Offset(0f, size.height),
-                            strokeWidth = 3.dp.toPx()
-                        )
-                    }
-                    .padding(start = 16.dp)
-            )
-
-            Spacer(modifier = Modifier.height(28.dp))
-
-            if (preview.outcomes.isNotEmpty()) {
-                SectionTitle(icon = Icons.Rounded.CheckCircle, title = "What you'll learn", theme = theme)
-                Spacer(modifier = Modifier.height(12.dp))
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    preview.outcomes.forEach { OutcomeItem(text = it) }
-                }
-                Spacer(modifier = Modifier.height(28.dp))
-            }
-
-            SectionTitle(icon = Icons.Rounded.HistoryEdu, title = "Practice Skills", theme = theme)
-            Spacer(modifier = Modifier.height(12.dp))
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 8.dp)
             ) {
-                if (preview.hasVocab) SkillTag("Reading", Icons.Rounded.MenuBook, theme)
-                if (preview.hasGrammar) SkillTag("Writing", Icons.Rounded.Edit, theme)
-                if (preview.hasListening) SkillTag("Listening", Icons.Rounded.Headset, theme)
-                if (preview.hasSpeaking) SkillTag("Speaking", Icons.Rounded.Mic, theme)
+                LessonHeader(preview, theme)
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 16.dp),
+                    color = GrayText.copy(alpha = 0.1f)
+                )
             }
 
-            // ✅ FIX ĐIỂM NHẤN: Chừa một khoảng trống ở cuối vùng cuộn bằng đúng chiều cao của cái Footer bên dưới.
-            // Điều này giúp nội dung cuộn xuống cuối cùng không bị cái Footer đè lên che mất chữ.
-            Spacer(modifier = Modifier.height(148.dp))
+            // 🔥 CONTENT SCROLL
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(scrollState)
+                    .padding(horizontal = 24.dp)
+            ) {
+
+                SectionTitle(
+                    icon = Icons.Rounded.MenuBook,
+                    title = "Lesson Content",
+                    theme = theme
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = preview.content.ifBlank { "No content available" },
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 24.sp,
+                    modifier = Modifier
+                        .padding(start = 4.dp)
+                        .drawBehind {
+                            drawLine(
+                                color = theme.primaryColor.copy(alpha = 0.3f),
+                                start = Offset(0f, 0f),
+                                end = Offset(0f, size.height),
+                                strokeWidth = 3.dp.toPx()
+                            )
+                        }
+                        .padding(start = 16.dp)
+                )
+
+                Spacer(modifier = Modifier.height(28.dp))
+
+                if (preview.outcomes.isNotEmpty()) {
+                    SectionTitle(
+                        icon = Icons.Rounded.CheckCircle,
+                        title = "What you'll learn",
+                        theme = theme
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        preview.outcomes.forEach {
+                            OutcomeItem(text = it)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(28.dp))
+                }
+
+                SectionTitle(
+                    icon = Icons.Rounded.HistoryEdu,
+                    title = "Practice Skills",
+                    theme = theme
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    if (preview.hasVocab) SkillTag("Vocabulary", Icons.Rounded.MenuBook, theme)
+                    if (preview.hasGrammar) SkillTag("Grammar", Icons.Rounded.Edit, theme)
+                    if (preview.hasListening) SkillTag("Listening", Icons.Rounded.Headset, theme)
+                    if (preview.hasSpeaking) SkillTag("Speaking", Icons.Rounded.Mic, theme)
+                }
+
+                Spacer(modifier = Modifier.height(140.dp)) // tránh bị che bởi button
+            }
         }
 
-        // --- 2. FOOTER (GHIM CHẶT DƯỚI ĐÁY SHEET) ---
+        // 🔥 BOTTOM FIXED
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.BottomCenter), // ✅ FIX: Luôn ghim thẻ này ở dưới đáy cùng của Box
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 0.dp
+                .align(Alignment.BottomCenter),
+            color = MaterialTheme.colorScheme.surface
         ) {
             Column(
                 modifier = Modifier
@@ -152,7 +184,7 @@ private fun LessonPreviewMainContent(
                     .padding(bottom = 16.dp, top = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // XP Badge
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -160,10 +192,14 @@ private fun LessonPreviewMainContent(
                         .padding(horizontal = 14.dp, vertical = 6.dp)
                 ) {
                     Icon(
-                        Icons.Rounded.ElectricBolt, null,
-                        tint = Color(0xFFFFC107), modifier = Modifier.size(18.dp)
+                        Icons.Rounded.ElectricBolt,
+                        null,
+                        tint = Color(0xFFFFC107),
+                        modifier = Modifier.size(18.dp)
                     )
+
                     Spacer(modifier = Modifier.width(6.dp))
+
                     Text(
                         text = "Complete to earn +${preview.xpReward} XP",
                         style = MaterialTheme.typography.labelLarge,
@@ -177,7 +213,7 @@ private fun LessonPreviewMainContent(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(58.dp)
+                        .height(50.dp)
                         .clip(RoundedCornerShape(18.dp))
                         .background(theme.headerColor)
                         .clickable { onStartClick(preview.id) },
@@ -195,8 +231,6 @@ private fun LessonPreviewMainContent(
     }
 }
 
-// --- GIỮ NGUYÊN CÁC COMPONENT CON (NHƯNG CĂN CHỈNH LẠI SPACE) ---
-
 @Composable
 private fun LessonHeader(preview: LessonPreview, theme: CourseTheme) {
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -206,13 +240,29 @@ private fun LessonHeader(preview: LessonPreview, theme: CourseTheme) {
             color = theme.primaryColor.copy(alpha = 0.1f)
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(Icons.Rounded.AutoAwesome, null, tint = theme.primaryColor, modifier = Modifier.size(32.dp))
+                Icon(
+                    Icons.Rounded.AutoAwesome,
+                    null,
+                    tint = theme.primaryColor,
+                    modifier = Modifier.size(32.dp)
+                )
             }
         }
+
         Spacer(modifier = Modifier.width(16.dp))
+
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(preview.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black)
-            Text(preview.subtitle, style = MaterialTheme.typography.bodyMedium, color = GrayText)
+            Text(
+                preview.title,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Black
+            )
+
+            Text(
+                preview.subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = GrayText
+            )
         }
     }
 }
@@ -230,11 +280,16 @@ private fun SectionTitle(icon: ImageVector, title: String, theme: CourseTheme) {
 private fun OutcomeItem(text: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
-            Icons.Rounded.Check, null, tint = Color(0xFF4CAF50),
-            modifier = Modifier.size(20.dp).background(Color(0xFF4CAF50).copy(0.1f), CircleShape).padding(4.dp)
+            Icons.Rounded.Check,
+            null,
+            tint = Color(0xFF4CAF50),
+            modifier = Modifier
+                .size(20.dp)
+                .background(Color(0xFF4CAF50).copy(0.1f), CircleShape)
+                .padding(4.dp)
         )
         Spacer(modifier = Modifier.width(12.dp))
-        Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(text, style = MaterialTheme.typography.bodyMedium)
     }
 }
 
@@ -249,9 +304,14 @@ private fun SkillTag(label: String, icon: ImageVector, theme: CourseTheme) {
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, null, tint = theme.primaryColor.copy(alpha = 0.7f), modifier = Modifier.size(14.dp))
+            Icon(icon, null, tint = theme.primaryColor, modifier = Modifier.size(14.dp))
             Spacer(modifier = Modifier.width(6.dp))
-            Text(label, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = theme.primaryColor)
+            Text(
+                label,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = theme.primaryColor
+            )
         }
     }
 }
