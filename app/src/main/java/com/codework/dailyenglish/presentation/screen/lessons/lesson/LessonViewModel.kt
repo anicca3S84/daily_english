@@ -6,6 +6,7 @@ import com.codework.dailyenglish.core.base.BaseViewModel
 import com.codework.dailyenglish.core.base.BaseUiState
 import com.codework.dailyenglish.core.network.onError
 import com.codework.dailyenglish.core.network.onSuccess
+import com.codework.dailyenglish.domain.lesson.model.QuestionContent
 import com.codework.dailyenglish.domain.lesson.model.StepData
 import com.codework.dailyenglish.domain.lesson.usecase.GetLessonPlayDataUseCase
 import com.codework.dailyenglish.domain.lesson.usecase.UpdateLessonProgressUseCase
@@ -65,38 +66,91 @@ class LessonViewModel @Inject constructor(
         }
     }
 
-    private fun handleNextStep() {
+    private fun handleOptionSelected(optionId: String) {
         _state.update { state ->
             val currentData = state.data ?: return@update state
-            val currentStep = currentData.currentStep
-            val nextIndex = currentData.currentIndex + 1
+            val currentStep = currentData.steps[currentData.currentIndex]
+            val questionData = currentStep.data as? StepData.Question ?: return@update state
+            if (questionData.isAnswerEvaluated) return@update state
+            val shouldCheckImmediately = questionData.content is QuestionContent.MultipleChoice
+            val updatedQuestionData = questionData.copy(
+                selectedOptionId = optionId,
+                isAnswerEvaluated = shouldCheckImmediately
+            )
+            val updatedSteps = currentData.steps.toMutableList()
+            updatedSteps[currentData.currentIndex] = currentStep.copy(data = updatedQuestionData)
+            state.copy(data = currentData.copy(steps = updatedSteps))
+        }
+    }
 
-            var qId: String? = null
-            var oId: String? = null
-            var isCorrect: Boolean? = null
+    private fun handleCheckAnswer() {
+        _state.update { state ->
+            val currentData = state.data ?: return@update state
+            val currentStep = currentData.steps[currentData.currentIndex]
+            val questionData = currentStep.data as? StepData.Question ?: return@update state
+            val updatedQuestionData = questionData.copy(isAnswerEvaluated = true)
+            val updatedSteps = currentData.steps.toMutableList()
+            updatedSteps[currentData.currentIndex] = currentStep.copy(data = updatedQuestionData)
+            state.copy(data = currentData.copy(steps = updatedSteps))
+        }
+    }
 
-            if (currentStep?.data is StepData.Question) {
-                val qData = currentStep.data
-                qId = currentStep.refId
-                oId = qData.selectedOptionId
-                isCorrect = qData.options.find { it.id == oId }?.isCorrect ?: false
-            }
+    private fun handleNextStep() {
+        val currentData = _state.value.data ?: return
+        val currentIndex = currentData.currentIndex
+        val currentStep = currentData.steps[currentIndex]
+        val nextIndex = currentIndex + 1
 
-            viewModelScope.launch(Dispatchers.IO) {
-                updateLessonProgressUseCase(
-                    lessonId = lessonId,
-                    cursor = nextIndex,
-                    questionId = qId,
-                    optionId = oId,
-                    isCorrect = isCorrect
-                )
+        var qId: String? = null
+        var oId: String? = null
+        var isCorrect: Boolean? = null
+        if (currentStep.data is StepData.Question) {
+            val qData = currentStep.data
+            qId = currentStep.refId
+            oId = qData.selectedOptionId
+
+            isCorrect = when (val content = qData.content) {
+                is QuestionContent.MultipleChoice -> {
+                    content.options.find { it.id == oId }?.isCorrect == true
+                }
+                is QuestionContent.SentenceBuilder -> {
+                    oId?.trim().equals(content.correctSentence.trim(), ignoreCase = true)
+                }
+                is QuestionContent.FillBlank -> {
+                    oId?.trim().equals(content.correctAnswer.trim(), ignoreCase = true)
+                }
+                is QuestionContent.Dictation -> {
+                    val userAnswer = oId?.trim() ?: ""
+                    userAnswer.equals(content.targetWord.trim(), ignoreCase = true) ||
+                            userAnswer.equals(content.correctAnswer.trim(), ignoreCase = true) ||
+                            content.acceptedAnswers.any { it.trim().equals(userAnswer, ignoreCase = true) }
+                }
+                is QuestionContent.Speaking -> {
+                    oId?.trim().equals(content.targetText.trim(), ignoreCase = true) || oId == "PASSED"
+                }
+
+                is QuestionContent.Matching -> {
+                    oId == "CORRECT" || oId == "PASSED"
+                }
+
+                else -> false
             }
-            if (nextIndex < currentData.steps.size) {
-                state.copy(data = currentData.copy(currentIndex = nextIndex))
-            } else {
-                sendEffect(LessonEffect.NavigateToResult(lessonId))
-                state
-            }
+        }
+
+        if (nextIndex < currentData.steps.size) {
+            _state.update { it.copy(data = currentData.copy(currentIndex = nextIndex)) }
+        } else {
+            sendEffect(LessonEffect.NavigateToResult(lessonId))
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            updateLessonProgressUseCase(
+                lessonId = lessonId,
+                cursor = nextIndex,
+                questionId = qId,
+                optionId = oId,
+                isCorrect = isCorrect
+            )
         }
     }
 
@@ -113,46 +167,6 @@ class LessonViewModel @Inject constructor(
                 sendEffect(LessonEffect.ShowQuitDialog(0f))
                 state
             }
-        }
-    }
-
-    private fun handleOptionSelected(optionId: String) {
-        _state.update { state ->
-            val currentData = state.data ?: return@update state
-            val currentStep = currentData.steps[currentData.currentIndex]
-            val questionData = currentStep.data as? StepData.Question ?: return@update state
-            if (questionData.isChecked) return@update state
-            val updatedQuestionData = questionData.copy(
-                selectedOptionId = optionId,
-                isChecked = true
-            )
-            val updatedStep = currentStep.copy(data = updatedQuestionData)
-            val updatedSteps = currentData.steps.toMutableList()
-            updatedSteps[currentData.currentIndex] = updatedStep
-            state.copy(data = currentData.copy(steps = updatedSteps))
-        }
-    }
-
-    private fun handleCheckAnswer() {
-        _state.update { state ->
-            val currentData = state.data ?: return@update state
-            val currentStep = currentData.steps[currentData.currentIndex]
-            val questionData = currentStep.data as? StepData.Question ?: return@update state
-
-            if (!questionData.isChecked) {
-                val updatedStep = currentStep.copy(data = questionData.copy(isChecked = true))
-                val updatedSteps = currentData.steps.toMutableList()
-                updatedSteps[currentData.currentIndex] = updatedStep
-                state.copy(data = currentData.copy(steps = updatedSteps))
-            } else {
-                state
-            }
-        }
-
-        val currentData = _state.value.data ?: return
-        val stepData = currentData.steps[currentData.currentIndex].data
-        if (stepData is StepData.Question && stepData.isChecked) {
-            handleNextStep()
         }
     }
 

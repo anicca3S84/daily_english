@@ -13,11 +13,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import com.codework.dailyenglish.presentation.theme.ButtonHeightLarge
-import com.codework.dailyenglish.presentation.theme.Colors
-import com.codework.dailyenglish.presentation.theme.IconSizeSmall
-import com.codework.dailyenglish.presentation.theme.RadiusFull
+import com.codework.dailyenglish.presentation.theme.AppColors
+import com.codework.dailyenglish.presentation.theme.AppIcons
+import com.codework.dailyenglish.presentation.theme.AppRadius
 import com.codework.dailyenglish.presentation.theme.Spaces
-import com.codework.dailyenglish.presentation.theme.TextSizes
+import com.codework.dailyenglish.presentation.theme.AppTextSizes
 
 @Composable
 fun SocialLoginButton(
@@ -27,9 +27,9 @@ fun SocialLoginButton(
 ) {
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(RadiusFull),
+        shape = RoundedCornerShape(AppRadius.RadiusFull),
         color = Color.White,
-        border = BorderStroke(Spaces.Space1_2, Colors.LoginButtonColor),
+        border = BorderStroke(Spaces.Space1_2, AppColors.LoginButtonColor),
         modifier = Modifier
             .fillMaxWidth()
             .height(ButtonHeightLarge)
@@ -45,14 +45,14 @@ fun SocialLoginButton(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .padding(start = Spaces.Space20)
-                        .size(IconSizeSmall)
+                        .size(AppIcons.IconSizeSmall)
                 )
             }
 
             Text(
                 text = text,
                 color = Color.Black,
-                fontSize = TextSizes.TextSizeMain,
+                fontSize = AppTextSizes.TextSizeMain,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.align(Alignment.Center)
             )

@@ -18,15 +18,15 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codework.dailyenglish.presentation.theme.DisableBtn
-import com.codework.dailyenglish.presentation.theme.MainGradient
+import com.codework.dailyenglish.presentation.theme.AppColors
+
 @Composable
 fun PrimaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    brush: Brush = MainGradient
+    brush: Brush = AppColors.MainGradient
 ) {
     Button(
         onClick = onClick,
@@ -43,7 +43,7 @@ fun PrimaryButton(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    brush = if (enabled) brush else SolidColor(DisableBtn),
+                    brush = if (enabled) brush else SolidColor(AppColors.DisableBtn),
                     shape = RoundedCornerShape(25.dp)
                 ),
             contentAlignment = Alignment.Center

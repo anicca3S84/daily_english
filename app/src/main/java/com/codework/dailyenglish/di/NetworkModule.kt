@@ -3,9 +3,12 @@ package com.codework.dailyenglish.di
 import com.codework.dailyenglish.core.network.AuthInterceptor
 import com.codework.dailyenglish.core.network.TokenAuthenticator
 import com.codework.dailyenglish.data.lesson.remote.dto.LessonStepDeserializer
+import com.codework.dailyenglish.data.lesson.remote.dto.QuestionDeserializer
 import com.codework.dailyenglish.data.lesson.remote.dto.LessonStepDto
+import com.codework.dailyenglish.data.lesson.remote.dto.QuestionDto
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,7 +27,7 @@ object NetworkModule {
     fun provideGson(): Gson {
         return GsonBuilder()
             .registerTypeAdapter(LessonStepDto::class.java, LessonStepDeserializer())
-            .create()
+            .registerTypeAdapter(QuestionDto::class.java, QuestionDeserializer())            .create()
     }
 
     @Provides

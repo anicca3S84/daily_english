@@ -1,13 +1,13 @@
-package com.codework.dailyenglish.presentation.screen.lessons.lesson_preview
+package com.codework.dailyenglish.presentation.screen.lessons.preview
 
 import androidx.lifecycle.viewModelScope
 import com.codework.dailyenglish.core.base.BaseViewModel
 import com.codework.dailyenglish.core.network.onError
 import com.codework.dailyenglish.core.network.onSuccess
 import com.codework.dailyenglish.domain.lesson_preview.usecase.GetLessonPreviewUseCase
-import com.codework.dailyenglish.presentation.screen.lessons.lesson_preview.mvi.LessonPreviewEffect
-import com.codework.dailyenglish.presentation.screen.lessons.lesson_preview.mvi.LessonPreviewEvent
-import com.codework.dailyenglish.presentation.screen.lessons.lesson_preview.mvi.LessonPreviewState
+import com.codework.dailyenglish.presentation.screen.lessons.preview.mvi.LessonPreviewEffect
+import com.codework.dailyenglish.presentation.screen.lessons.preview.mvi.LessonPreviewEvent
+import com.codework.dailyenglish.presentation.screen.lessons.preview.mvi.LessonPreviewState
 import com.codework.dailyenglish.presentation.utils.asUiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update

@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.zIndex
 import com.codework.dailyenglish.core.base.BaseUiState
-import com.codework.dailyenglish.presentation.theme.BluePrimary
+import com.codework.dailyenglish.presentation.theme.AppColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,11 +63,9 @@ private fun <T> BoxScope.WrapperInnerContent(
     content: @Composable (T?) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-
         if (!(isLoading && isDataEmpty)) {
             content(uiState.data)
         }
-
         if (isLoading && isDataEmpty) {
             Box(
                 modifier = Modifier
@@ -77,7 +75,7 @@ private fun <T> BoxScope.WrapperInnerContent(
             ) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
-                    color = BluePrimary
+                    color = AppColors.BluePrimary
                 )
             }
         }
@@ -85,11 +83,10 @@ private fun <T> BoxScope.WrapperInnerContent(
         errorString?.let { message ->
             if (isDataEmpty) {
                 val visualType = when {
-                    message.contains("mạng", true) || message.contains("connection", true) -> ErrorVisual.NO_INTERNET
-                    message.contains("không tìm thấy", true) || message.contains("not found", true) -> ErrorVisual.NOT_FOUND
+                    message.contains("Network", true) || message.contains("connection", true) -> ErrorVisual.NO_INTERNET
+                    message.contains("Not found", true) -> ErrorVisual.NOT_FOUND
                     else -> ErrorVisual.SERVER_ERROR
                 }
-
                 ErrorOverlay(
                     errorType = visualType,
                     message = message,

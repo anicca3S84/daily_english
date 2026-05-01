@@ -9,6 +9,9 @@ import com.codework.dailyenglish.presentation.screen.course_details.model.SkillT
 fun CourseDetailDto.toDomain(): CourseDetailData {
     return CourseDetailData(
         courseTitle = this.courseTitle.orEmpty(),
+        cefr = this.cefr.orEmpty(),
+        duration = this.duration.orEmpty(),
+        introduction = this.introduction.orEmpty(),
         overallProgress = this.overallProgress ?: 0f,
         totalLessons = this.totalLessons ?: 0,
         completedLessons = this.completedLessons ?: 0,

@@ -37,7 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.codework.dailyenglish.R
 import com.codework.dailyenglish.presentation.screen.courses.model.CourseUi
-import com.codework.dailyenglish.presentation.theme.Colors
+import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.Spaces
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -160,7 +160,7 @@ fun CourseCard(
                         .height(Spaces.Space7)
                         .clip(RoundedCornerShape(50)),
                     color = activeColor,
-                    trackColor = Colors.TrackColorProgress
+                    trackColor = AppColors.TrackColorProgress
                 )
             }
         }

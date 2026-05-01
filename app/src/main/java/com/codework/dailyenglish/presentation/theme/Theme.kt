@@ -18,9 +18,9 @@ private val DarkColorScheme = darkColorScheme(
 
 )
 private val LightColorScheme = lightColorScheme(
-    primary = BluePrimary,
-    secondary = IndigoPurple,
-    background = AppBackground,
+    primary = AppColors.BluePrimary,
+    secondary = AppColors.IndigoPurple,
+    background = AppColors.AppBackground,
     surface = Color.White,
     onPrimary = Color.White,
     onBackground = Color(0xFF263238)

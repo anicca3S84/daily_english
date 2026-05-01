@@ -17,13 +17,10 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import com.codework.dailyenglish.presentation.components.AppProgressTopBar
 import com.codework.dailyenglish.presentation.screen.lessons.review.mvi.QuizReviewEvent
 import com.codework.dailyenglish.presentation.screen.lessons.review.mvi.QuizReviewState
-import com.codework.dailyenglish.presentation.theme.AppBackground
-import com.codework.dailyenglish.presentation.theme.BluePrimary
-import com.codework.dailyenglish.presentation.theme.HintBackGround
-import com.codework.dailyenglish.presentation.theme.MainGradient
+import com.codework.dailyenglish.presentation.theme.AppColors
+
 
 @Composable
 fun QuizReviewScreen(
@@ -31,280 +28,280 @@ fun QuizReviewScreen(
     onEvent: (QuizReviewEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    var showWarningTrigger by remember { mutableIntStateOf(0) }
-    var showCompletionDialog by remember { mutableStateOf(false) }
-
-    BackHandler { onEvent(QuizReviewEvent.OnGoBack) }
-
-    val progressCurrent =
-//        (state as? BaseState.Success)?.data?.progressCurrent ?:
-        0
-    val progressTotal =
-//        (state as? BaseState.Success)?.data?.progressTotal ?:
-        10
-
-    Scaffold(
-        containerColor = AppBackground,
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        topBar = {
-//            AppProgressTopBar(
-//                currentStep = progressCurrent,
-//                totalSteps = progressTotal,
-//                onBackClick = { onEvent(QuizReviewEvent.OnGoBack) }
-//            )
-        },
-        bottomBar = {
-//            if (state is BaseState.Success) {
-//                val data = state.data
-//                val isSelected = data.selectedOptionIndex != null
-//                val textBtn = if (data.progressCurrent >= data.progressTotal) "Finish" else "Next"
+//    val snackbarHostState = remember { SnackbarHostState() }
+//    var showWarningTrigger by remember { mutableIntStateOf(0) }
+//    var showCompletionDialog by remember { mutableStateOf(false) }
 //
-//                Box(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(start = 16.dp, end = 16.dp, bottom = 32.dp, top = 16.dp)
-//                ) {
-//                    PrimaryButton(
-//                        text = textBtn,
-//                        enabled = isSelected,
-//                        onClick = {
-//                            if (!isSelected) {
-//                                showWarningTrigger++
-//                            } else {
-//                                if (data.progressCurrent < data.progressTotal) {
-//                                    onEvent(QuizReviewEvent.OnNextQuestion)
-//                                } else {
-//                                    showCompletionDialog = true
-//                                }
-//                            }
-//                        },
-//                        modifier = Modifier.fillMaxWidth()
+//    BackHandler { onEvent(QuizReviewEvent.OnGoBack) }
+//
+//    val progressCurrent =
+////        (state as? BaseState.Success)?.data?.progressCurrent ?:
+//        0
+//    val progressTotal =
+////        (state as? BaseState.Success)?.data?.progressTotal ?:
+//        10
+//
+//    Scaffold(
+//        containerColor = AppColors.AppBackground,
+//        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+//        topBar = {
+////            AppProgressTopBar(
+////                currentStep = progressCurrent,
+////                totalSteps = progressTotal,
+////                onBackClick = { onEvent(QuizReviewEvent.OnGoBack) }
+////            )
+//        },
+//        bottomBar = {
+////            if (state is BaseState.Success) {
+////                val data = state.data
+////                val isSelected = data.selectedOptionIndex != null
+////                val textBtn = if (data.progressCurrent >= data.progressTotal) "Finish" else "Next"
+////
+////                Box(
+////                    modifier = Modifier
+////                        .fillMaxWidth()
+////                        .padding(start = 16.dp, end = 16.dp, bottom = 32.dp, top = 16.dp)
+////                ) {
+////                    PrimaryButton(
+////                        text = textBtn,
+////                        enabled = isSelected,
+////                        onClick = {
+////                            if (!isSelected) {
+////                                showWarningTrigger++
+////                            } else {
+////                                if (data.progressCurrent < data.progressTotal) {
+////                                    onEvent(QuizReviewEvent.OnNextQuestion)
+////                                } else {
+////                                    showCompletionDialog = true
+////                                }
+////                            }
+////                        },
+////                        modifier = Modifier.fillMaxWidth()
+////                    )
+////                }
+////            }
+//        }
+//    ) { paddingValues ->
+//            LaunchedEffect(showWarningTrigger) {
+//                if (showWarningTrigger > 0) {
+//                    snackbarHostState.currentSnackbarData?.dismiss()
+//                    snackbarHostState.showSnackbar(
+//                        message = "Vui lòng chọn 1 đáp án để tiếp tục nhé! 💪",
+//                        duration = SnackbarDuration.Short,
+//                        withDismissAction = true
 //                    )
 //                }
 //            }
-        }
-    ) { paddingValues ->
-            LaunchedEffect(showWarningTrigger) {
-                if (showWarningTrigger > 0) {
-                    snackbarHostState.currentSnackbarData?.dismiss()
-                    snackbarHostState.showSnackbar(
-                        message = "Vui lòng chọn 1 đáp án để tiếp tục nhé! 💪",
-                        duration = SnackbarDuration.Short,
-                        withDismissAction = true
-                    )
-                }
-            }
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = 20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // ==========================================
-                // BADGE
-                // ==========================================
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-
-//                    val badgeIcon = if (data.type == QuizType.VOCABULARY) "🧠" else "🎧"
-//                    val badgeText = if (data.type == QuizType.VOCABULARY) "REVIEW PHASE" else "COMPREHENSION"
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(50))
-                            .background(HintBackGround)
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
-//                        Text(text = badgeIcon, fontSize = 16.sp)
-//                        Spacer(modifier = Modifier.width(6.dp))
-//                        Text(
-//                            text = badgeText,
-//                            color = BluePrimary,
-//                            fontWeight = FontWeight.ExtraBold,
-//                            fontSize = 14.sp,
-//                            letterSpacing = 1.sp
-//                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-                }
-
-                // ==========================================
-                // QUESTION & ANSWERS CARD
-                // ==========================================
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(HintBackGround)
-                            .padding(horizontal = 20.dp, vertical = 24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Spacer(modifier = Modifier.height(20.dp))
-
-//                        val headerText = if (data.type == QuizType.VOCABULARY) "Fill in the blank" else "Choose the correct answer"
-
-//                        Text(
-//                            text = headerText,
-//                            color = TextPrimary,
-//                            fontWeight = FontWeight.Bold,
-//                            fontSize = 20.sp,
-//                            letterSpacing = 0.5.sp
-//                        )
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        // QUESTION
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            color = Color.White,
-                            shadowElevation = 4.dp,
-                            border = BorderStroke(1.5.dp, BluePrimary)
-                        ) {
-                            Box(
-                                modifier = Modifier.padding(20.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-//                                Text(
-//                                    text = formatBlankSentence(
-//                                        sentence = data.sentence,
-//                                        isRevealed = data.selectedOptionIndex != null,
-//                                        correctWord = data.options.getOrNull(data.correctAnswerIndex) ?: ""
-//                                    ),
-//                                    style = TextStyle(
-//                                        color = TextPrimary,
-//                                        fontSize = 18.sp,
-//                                        fontWeight = FontWeight.Normal,
-//                                        textAlign = TextAlign.Center,
-//                                        lineHeight = 32.sp
-//                                    )
-//                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(28.dp))
-
-                        // TRANSLATION
-//                        AnimatedVisibility(visible = data.selectedOptionIndex != null) {
-//                            Text(
-//                                text = data.translatedSentence,
-//                                color = Color(0xFF64748B),
-//                                fontSize = 16.sp,
-//                                textAlign = TextAlign.Center,
-//                                modifier = Modifier
-//                                    .padding(horizontal = 8.dp)
-//                                    .padding(bottom = 24.dp)
-//                            )
-                        }
-
-                        // OPTIONS GRID
-//                        if (data.type == QuizType.VOCABULARY) {
-//                            val rows = data.options.chunked(2)
-//                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-//                                rows.forEach { rowItems ->
-//                                    Row(
-//                                        modifier = Modifier.fillMaxWidth(),
-//                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-//                                    ) {
-//                                        rowItems.forEachIndexed { _, optionText ->
-//                                            val currentIndexInOptions = data.options.indexOf(optionText)
-//                                            Box(modifier = Modifier.weight(1f)) {
-//                                                QuizOption(
-//                                                    text = optionText,
-//                                                    index = currentIndexInOptions,
-//                                                    selectedIndex = data.selectedOptionIndex,
-//                                                    correctIndex = data.correctAnswerIndex,
-//                                                    onClick = { index ->
-//                                                        onEvent(QuizReviewEvent.OnSelectOption(index))
-//                                                    }
-//                                                )
-//                                            }
-//                                        }
-//                                        if (rowItems.size < 2) Spacer(modifier = Modifier.weight(1f))
-//                                    }
-//                                }
-//                            }
-//                        } else {
-//                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-//                                data.options.forEachIndexed { currentIndexInOptions, optionText ->
-//                                    Box(modifier = Modifier.fillMaxWidth()) {
-//                                        QuizOption(
-//                                            text = optionText,
-//                                            index = currentIndexInOptions,
-//                                            selectedIndex = data.selectedOptionIndex,
-//                                            correctIndex = data.correctAnswerIndex,
-//                                            onClick = { index ->
-//                                                onEvent(QuizReviewEvent.OnSelectOption(index))
-//                                            }
-//                                        )
-//                                    }
-//                                }
-//                            }
-//                        }
-
-                        Spacer(modifier = Modifier.height(20.dp))
-                    }
-                }
-            }
-
-//            if (showCompletionDialog) {
-//                // Xác định hướng đi tiếp theo dựa trên loại bài kiểm tra
-//                val isListening = data.type == QuizType.LISTENING
-//                val nextButtonLabel = if (isListening) "Continue to Grammar" else "Continue to Listening"
 //
-//                QuizVocabularyCompleteDialog(
-//                    score = 7,
-//                    total = 10,
-//                    // Truyền nhãn nút bấm
-//                    nextButtonText = nextButtonLabel,
-//                    // Xử lý logic chuyển màn hình
-//                    onContinue = {
-//                        showCompletionDialog = false
-//                        if (isListening) {
-//                            onEvent(QuizReviewEvent.OnNavigateToGrammarScreen)
-//                        } else {
-//                            onEvent(QuizReviewEvent.OnNavigateToListeningScreen)
+//            LazyColumn(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .padding(paddingValues)
+//                    .padding(horizontal = 20.dp),
+//                horizontalAlignment = Alignment.CenterHorizontally
+//            ) {
+//                // ==========================================
+//                // BADGE
+//                // ==========================================
+//                item {
+//                    Spacer(modifier = Modifier.height(16.dp))
+//
+////                    val badgeIcon = if (data.type == QuizType.VOCABULARY) "🧠" else "🎧"
+////                    val badgeText = if (data.type == QuizType.VOCABULARY) "REVIEW PHASE" else "COMPREHENSION"
+//
+//                    Row(
+//                        verticalAlignment = Alignment.CenterVertically,
+//                        horizontalArrangement = Arrangement.Center,
+//                        modifier = Modifier
+//                            .clip(RoundedCornerShape(50))
+//                            .background(HintBackGround)
+//                            .padding(horizontal = 16.dp, vertical = 8.dp)
+//                    ) {
+////                        Text(text = badgeIcon, fontSize = 16.sp)
+////                        Spacer(modifier = Modifier.width(6.dp))
+////                        Text(
+////                            text = badgeText,
+////                            color = BluePrimary,
+////                            fontWeight = FontWeight.ExtraBold,
+////                            fontSize = 14.sp,
+////                            letterSpacing = 1.sp
+////                        )
+//                    }
+//
+//                    Spacer(modifier = Modifier.height(20.dp))
+//                }
+//
+//                // ==========================================
+//                // QUESTION & ANSWERS CARD
+//                // ==========================================
+//                item {
+//                    Column(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .clip(RoundedCornerShape(16.dp))
+//                            .background(HintBackGround)
+//                            .padding(horizontal = 20.dp, vertical = 24.dp),
+//                        horizontalAlignment = Alignment.CenterHorizontally
+//                    ) {
+//                        Spacer(modifier = Modifier.height(20.dp))
+//
+////                        val headerText = if (data.type == QuizType.VOCABULARY) "Fill in the blank" else "Choose the correct answer"
+//
+////                        Text(
+////                            text = headerText,
+////                            color = TextPrimary,
+////                            fontWeight = FontWeight.Bold,
+////                            fontSize = 20.sp,
+////                            letterSpacing = 0.5.sp
+////                        )
+//                        Spacer(modifier = Modifier.height(24.dp))
+//
+//                        // QUESTION
+//                        Surface(
+//                            modifier = Modifier.fillMaxWidth(),
+//                            shape = RoundedCornerShape(12.dp),
+//                            color = Color.White,
+//                            shadowElevation = 4.dp,
+//                            border = BorderStroke(1.5.dp, BluePrimary)
+//                        ) {
+//                            Box(
+//                                modifier = Modifier.padding(20.dp),
+//                                contentAlignment = Alignment.Center
+//                            ) {
+////                                Text(
+////                                    text = formatBlankSentence(
+////                                        sentence = data.sentence,
+////                                        isRevealed = data.selectedOptionIndex != null,
+////                                        correctWord = data.options.getOrNull(data.correctAnswerIndex) ?: ""
+////                                    ),
+////                                    style = TextStyle(
+////                                        color = TextPrimary,
+////                                        fontSize = 18.sp,
+////                                        fontWeight = FontWeight.Normal,
+////                                        textAlign = TextAlign.Center,
+////                                        lineHeight = 32.sp
+////                                    )
+////                                )
+//                            }
 //                        }
-//                    },
-//                    onRetryQuiz = { showCompletionDialog = false },
-//                    onRelearnWords = { showCompletionDialog = false },
-//                    onDismiss = { showCompletionDialog = false }
-//                )
+//                        Spacer(modifier = Modifier.height(28.dp))
+//
+//                        // TRANSLATION
+////                        AnimatedVisibility(visible = data.selectedOptionIndex != null) {
+////                            Text(
+////                                text = data.translatedSentence,
+////                                color = Color(0xFF64748B),
+////                                fontSize = 16.sp,
+////                                textAlign = TextAlign.Center,
+////                                modifier = Modifier
+////                                    .padding(horizontal = 8.dp)
+////                                    .padding(bottom = 24.dp)
+////                            )
+//                        }
+//
+//                        // OPTIONS GRID
+////                        if (data.type == QuizType.VOCABULARY) {
+////                            val rows = data.options.chunked(2)
+////                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+////                                rows.forEach { rowItems ->
+////                                    Row(
+////                                        modifier = Modifier.fillMaxWidth(),
+////                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+////                                    ) {
+////                                        rowItems.forEachIndexed { _, optionText ->
+////                                            val currentIndexInOptions = data.options.indexOf(optionText)
+////                                            Box(modifier = Modifier.weight(1f)) {
+////                                                QuizOption(
+////                                                    text = optionText,
+////                                                    index = currentIndexInOptions,
+////                                                    selectedIndex = data.selectedOptionIndex,
+////                                                    correctIndex = data.correctAnswerIndex,
+////                                                    onClick = { index ->
+////                                                        onEvent(QuizReviewEvent.OnSelectOption(index))
+////                                                    }
+////                                                )
+////                                            }
+////                                        }
+////                                        if (rowItems.size < 2) Spacer(modifier = Modifier.weight(1f))
+////                                    }
+////                                }
+////                            }
+////                        } else {
+////                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+////                                data.options.forEachIndexed { currentIndexInOptions, optionText ->
+////                                    Box(modifier = Modifier.fillMaxWidth()) {
+////                                        QuizOption(
+////                                            text = optionText,
+////                                            index = currentIndexInOptions,
+////                                            selectedIndex = data.selectedOptionIndex,
+////                                            correctIndex = data.correctAnswerIndex,
+////                                            onClick = { index ->
+////                                                onEvent(QuizReviewEvent.OnSelectOption(index))
+////                                            }
+////                                        )
+////                                    }
+////                                }
+////                            }
+////                        }
+//
+//                        Spacer(modifier = Modifier.height(20.dp))
+//                    }
+//                }
 //            }
-}
-
-@Composable
-fun formatBlankSentence(
-    sentence: String,
-    isRevealed: Boolean,
-    correctWord: String
-): androidx.compose.ui.text.AnnotatedString {
-    return buildAnnotatedString {
-        if (!isRevealed) {
-            append(sentence)
-        } else {
-            val parts = sentence.split("________")
-            if (parts.size >= 2) {
-                append(parts[0])
-
-                withStyle(
-                    SpanStyle(
-                        brush = MainGradient,
-                        fontWeight = FontWeight.Bold
-                    )
-                ) {
-                    append(correctWord)
-                }
-
-                append(parts.getOrNull(1) ?: "")
-            } else {
-                append(sentence)
-            }
-        }
-    }
+//
+////            if (showCompletionDialog) {
+////                // Xác định hướng đi tiếp theo dựa trên loại bài kiểm tra
+////                val isListening = data.type == QuizType.LISTENING
+////                val nextButtonLabel = if (isListening) "Continue to Grammar" else "Continue to Listening"
+////
+////                QuizVocabularyCompleteDialog(
+////                    score = 7,
+////                    total = 10,
+////                    // Truyền nhãn nút bấm
+////                    nextButtonText = nextButtonLabel,
+////                    // Xử lý logic chuyển màn hình
+////                    onContinue = {
+////                        showCompletionDialog = false
+////                        if (isListening) {
+////                            onEvent(QuizReviewEvent.OnNavigateToGrammarScreen)
+////                        } else {
+////                            onEvent(QuizReviewEvent.OnNavigateToListeningScreen)
+////                        }
+////                    },
+////                    onRetryQuiz = { showCompletionDialog = false },
+////                    onRelearnWords = { showCompletionDialog = false },
+////                    onDismiss = { showCompletionDialog = false }
+////                )
+////            }
+//}
+//
+//@Composable
+//fun formatBlankSentence(
+//    sentence: String,
+//    isRevealed: Boolean,
+//    correctWord: String
+//): androidx.compose.ui.text.AnnotatedString {
+//    return buildAnnotatedString {
+//        if (!isRevealed) {
+//            append(sentence)
+//        } else {
+//            val parts = sentence.split("________")
+//            if (parts.size >= 2) {
+//                append(parts[0])
+//
+//                withStyle(
+//                    SpanStyle(
+//                        brush = MainGradient,
+//                        fontWeight = FontWeight.Bold
+//                    )
+//                ) {
+//                    append(correctWord)
+//                }
+//
+//                append(parts.getOrNull(1) ?: "")
+//            } else {
+//                append(sentence)
+//            }
+//        }
+//    }
 }

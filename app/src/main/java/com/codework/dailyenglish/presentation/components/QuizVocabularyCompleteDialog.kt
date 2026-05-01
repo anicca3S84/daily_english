@@ -19,8 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.codework.dailyenglish.presentation.theme.BluePrimary
-import com.codework.dailyenglish.presentation.theme.MainGradient
+import com.codework.dailyenglish.presentation.theme.AppColors
 
 @Composable
 fun QuizVocabularyCompleteDialog(
@@ -92,7 +91,7 @@ fun QuizVocabularyCompleteDialog(
                     text = titleMsg,
                     fontSize = 26.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = BluePrimary,
+                    color = AppColors.BluePrimary,
                     textAlign = TextAlign.Center
                 )
 
@@ -138,7 +137,7 @@ fun QuizVocabularyCompleteDialog(
                         Text(
                             text = "$score / $total",
                             style = TextStyle(
-                                brush = MainGradient,
+                                brush = AppColors.MainGradient,
                                 fontWeight = FontWeight.Black,
                                 fontSize = 22.sp
                             )
@@ -167,7 +166,7 @@ fun QuizVocabularyCompleteDialog(
                         Text(
                             text = "${percentValue}%",
                             style = TextStyle(
-                                brush = MainGradient,
+                                brush = AppColors.MainGradient,
                                 fontWeight = FontWeight.Black,
                                 fontSize = 22.sp
                             )

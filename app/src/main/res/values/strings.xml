@@ -54,6 +54,29 @@
     <string name="label_exp">Exp</string>
     <string name="label_lessons">Lessons</string>
     <string name="label_continue_learning">Continue Learning</string>
+    <plurals name="label_lessons_count">
+        <item quantity="one">%d lesson</item>
+        <item quantity="other">%d lessons</item>
+    </plurals>
+    <string name="label_lesson">Lesson</string>
+    <string name="label_duration">Duration</string>
+    <string name="label_level">Level</string>
+    <string name="label_hours">hours</string>
+    <string name="label_basic">Basic</string>
+    <string name="label_intermediate">Intermediate</string>
+    <string name="label_advanced">Advanced</string>
+    <string name="label_course_details">Course Details</string>
+    <string name="label_course_introduction">Course Introduction</string>
+    <string name="label_course_content">Course Content</string>
+    <string name="label_continue">Continue</string>
+    <string name="label_lesson_tag">Lesson %1$d</string>
+    <string name="label_xp_reward">+%1$d XP</string>
+    <string name="label_what_will_you_learn">What will you learn?</string>
+    <string name="action_start_learning">Start Learning</string>
+    <string name="label_tap_to_flip">Tap to flip</string>
+    <string name="label_save_word">Save word</string>
+    <string name="label_course_progress">Course Progress</string>
+
     <!--skill-->
     <string name="label_listen">Listen</string>
     <string name="label_vocab">Vocab</string>
@@ -89,6 +112,8 @@
     <string name="noti_coming_soon">Coming soon</string>
     <string name="noti_course_looked">This course is locked!</string>
     <string name="noti_lesson_looked">This lesson is locked!</string>
+    <string name="noti_correct">Great! That\'s the correct answer.</string>
+    <string name="noti_incorrect">Oops! That\'s not quite right.</string>
 
     <!--Format-->
     <string name="exp_format">%1$d Exp</string>
@@ -97,7 +122,6 @@
     <!--Message-->
     <string name="msg_no_lesson_available">No lessons available</string>
     <string name="msg_study_to_keep_streak">Study at least 5 mins a day to keep your\nstreak alive!</string>
-
 
 
 </resources>

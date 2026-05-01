@@ -23,14 +23,12 @@ import com.codework.dailyenglish.presentation.components.AppTopBar
 import com.codework.dailyenglish.presentation.components.StateWrapper
 import com.codework.dailyenglish.presentation.screen.translate.mvi.TranslateEvent
 import com.codework.dailyenglish.presentation.screen.translate.mvi.TranslateState
-import com.codework.dailyenglish.presentation.theme.AppBackground
 import com.codework.dailyenglish.presentation.screen.translate.components.InputCard
 import com.codework.dailyenglish.presentation.screen.translate.components.LanguageSwitchBar
 import com.codework.dailyenglish.presentation.screen.translate.components.ResultCard
-import com.codework.dailyenglish.presentation.theme.BluePrimary
 import com.codework.dailyenglish.R
 import com.codework.dailyenglish.presentation.screen.translate.components.AnimatedHistoryItem
-import com.codework.dailyenglish.presentation.theme.Colors
+import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.Spaces
 
 @Composable
@@ -43,7 +41,7 @@ fun TranslateScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
-        containerColor = AppBackground,
+        containerColor = AppColors.AppBackground,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppTopBar(
@@ -53,7 +51,7 @@ fun TranslateScreen(
                         text = stringResource(R.string.title_translate),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Colors.TitleColor
+                        color = AppColors.TitleColor
                     )
                 }
             )
@@ -63,7 +61,7 @@ fun TranslateScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(AppBackground),
+                .background(AppColors.AppBackground),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
@@ -132,7 +130,7 @@ fun TranslateScreen(
                             text = stringResource(R.string.label_recent_history),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Colors.TitleColor
+                            color = AppColors.TitleColor
                         )
                     }
 
@@ -141,7 +139,7 @@ fun TranslateScreen(
                     ) {
                         Text(
                             text = stringResource(R.string.label_see_all),
-                            color = BluePrimary,
+                            color = AppColors.BluePrimary,
                             fontWeight = FontWeight.SemiBold
                         )
                     }

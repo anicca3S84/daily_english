@@ -17,7 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.codework.dailyenglish.presentation.theme.BluePrimary
+import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.Spaces
 
 @Composable
@@ -55,7 +55,7 @@ fun LanguageSwitchBar(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.CompareArrows,
                         contentDescription = null,
-                        tint = BluePrimary,
+                        tint = AppColors.BluePrimary,
                         modifier = Modifier.size(Spaces.Space28)
                     )
                 }

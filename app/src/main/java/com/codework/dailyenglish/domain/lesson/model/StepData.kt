@@ -14,18 +14,12 @@ sealed interface StepData {
     ) : StepData
 
     data class Question(
-        val content: String,
+        val id: String,
         val type: String,
-        val options: List<Option>,
+        val content: QuestionContent,
         val selectedOptionId: String? = null,
-        val isChecked: Boolean = false
-    ) : StepData {
-        data class Option(
-            val id: String,
-            val content: String,
-            val isCorrect: Boolean
-        )
-    }
+        val isAnswerEvaluated: Boolean = false
+    ) : StepData
 
     data class Theory(
         val title: String?,
@@ -33,4 +27,21 @@ sealed interface StepData {
     ) : StepData
 
     data object Unknown : StepData
+}
+
+sealed class QuestionContent {
+    data class MultipleChoice(val prompt: String, val options: List<Option>) : QuestionContent() {
+        data class Option(val id: String, val text: String, val isCorrect: Boolean)
+    }
+    data class SentenceBuilder(val prompt: String, val correctSentence: String, val jumbledWords: List<String>, val extraWords: List<String>) : QuestionContent()
+    data class Matching(val prompt: String, val pairs: List<PairData>) : QuestionContent() {
+        data class PairData(val left: String, val right: String)
+    }
+
+    data class FillBlank(val prompt: String, val sentenceWithBlank: String, val correctAnswer: String, val options: List<String>) : QuestionContent()
+
+    data class Dictation(val prompt: String, val targetWord: String, val hint: String, val correctAnswer: String, val acceptedAnswers: List<String>) : QuestionContent()
+
+    data class Speaking(val prompt: String, val targetText: String, val phonetic: String, val translation: String) : QuestionContent()
+    object Unknown : QuestionContent()
 }

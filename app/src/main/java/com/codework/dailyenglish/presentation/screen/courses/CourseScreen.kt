@@ -22,17 +22,14 @@ import androidx.compose.ui.res.stringResource
 import com.codework.dailyenglish.R
 import com.codework.dailyenglish.presentation.components.CurvedHeaderWrapper
 import com.codework.dailyenglish.presentation.components.HeaderStatItem
-import com.codework.dailyenglish.presentation.components.GridBackground
 import com.codework.dailyenglish.presentation.components.LoadingType
 import com.codework.dailyenglish.presentation.components.StateWrapper
 import com.codework.dailyenglish.presentation.screen.courses.components.CourseCard
 import com.codework.dailyenglish.presentation.screen.courses.mvi.CourseEvent
 import com.codework.dailyenglish.presentation.screen.courses.mvi.CourseState
-import com.codework.dailyenglish.presentation.theme.BluePrimary
-import com.codework.dailyenglish.presentation.theme.Colors
-import com.codework.dailyenglish.presentation.theme.IndigoPurple
+import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.Spaces
-import com.codework.dailyenglish.presentation.theme.TextSizes
+import com.codework.dailyenglish.presentation.theme.AppTextSizes
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalFoundationApi::class)
@@ -45,13 +42,13 @@ fun CourseScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackBar) },
-        containerColor = Color.Transparent
+        containerColor = AppColors.AppBackground
     ) { _ ->
     Box(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            GridBackground()
+//            GridBackground()
             StateWrapper(
                 uiState = state.dashboardState,
                 modifier = Modifier.fillMaxSize(),
@@ -105,9 +102,9 @@ fun CourseScreen(
                                         ) {
                                             val streakValue = state.streakValue.toString()
                                             val textFontSize = when (streakValue.length) {
-                                                1, 2 -> TextSizes.TextSizeHeader
-                                                3 -> TextSizes.TextSizeTitle
-                                                else -> TextSizes.TextSizeBody
+                                                1, 2 -> AppTextSizes.TextSizeHeader
+                                                3 -> AppTextSizes.TextSizeTitle
+                                                else -> AppTextSizes.TextSizeBody
                                             }
 
                                             Surface(
@@ -120,7 +117,7 @@ fun CourseScreen(
                                                     horizontalAlignment = Alignment.CenterHorizontally,
                                                     verticalArrangement = Arrangement.Center
                                                 ) {
-                                                    Text("🔥", fontSize = TextSizes.TextSizeTitle)
+                                                    Text("🔥", fontSize = AppTextSizes.TextSizeTitle)
                                                     Text(
                                                         text = streakValue,
                                                         color = Color.White,
@@ -135,7 +132,7 @@ fun CourseScreen(
                                                     .align(Alignment.BottomCenter)
                                                     .offset(y = Spaces.Space24),
                                                 shape = RoundedCornerShape(Spaces.Space50),
-                                                color = Colors.ExpBgColor,
+                                                color = AppColors.ExpBgColor,
                                                 shadowElevation = Spaces.Space4
                                             ) {
                                                 Text(
@@ -143,7 +140,7 @@ fun CourseScreen(
                                                     modifier = Modifier.padding(horizontal = Spaces.Space10, vertical = Spaces.Space4),
                                                     color = Color.White,
                                                     fontWeight = FontWeight.Bold,
-                                                    fontSize = TextSizes.TextSizeLabel
+                                                    fontSize = AppTextSizes.TextSizeLabel
                                                 )
                                             }
                                         }
@@ -155,7 +152,7 @@ fun CourseScreen(
                                     value = state.lessonsDone.toString(),
                                     label = stringResource(R.string.label_lessons_done),
                                     icon = Icons.Default.CheckCircle,
-                                    iconColor = BluePrimary
+                                    iconColor = AppColors.BluePrimary
                                 )
                                 Divider(
                                     modifier = Modifier.height(Spaces.Space40).width(Spaces.Space1),
@@ -165,7 +162,7 @@ fun CourseScreen(
                                     value = state.wordsLearned.toString(),
                                     label = stringResource(R.string.word_learned),
                                     icon = Icons.Default.PieChart,
-                                    iconColor = IndigoPurple
+                                    iconColor = AppColors.IndigoPurple
                                 )
                             }
                         )

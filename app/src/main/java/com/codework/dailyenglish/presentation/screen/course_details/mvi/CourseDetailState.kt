@@ -8,6 +8,9 @@ import com.codework.dailyenglish.presentation.theme.provider.CourseThemeProvider
 
 data class CourseDetailState(
     val courseTitle: String = "",
+    val duration: String = "",
+    val cefr: String = "",
+    val introduction: String = "",
     val overallProgress: Float = 0f,
     val totalLessons: Int = 0,
     val completedLessons: Int = 0,

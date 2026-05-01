@@ -30,11 +30,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import com.codework.dailyenglish.R
 import com.codework.dailyenglish.presentation.components.AppCircleButton
-import com.codework.dailyenglish.presentation.theme.BluePrimary
 import androidx.compose.ui.platform.LocalClipboardManager
-import com.codework.dailyenglish.presentation.theme.BorderStrokeColor
+import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.Spaces
-import com.codework.dailyenglish.presentation.theme.TextSizes
+import com.codework.dailyenglish.presentation.theme.AppTextSizes
 
 @Composable
 fun ResultCard(text: String, isTranslating: Boolean) {
@@ -44,7 +43,7 @@ fun ResultCard(text: String, isTranslating: Boolean) {
         shape = RoundedCornerShape(Spaces.Space24),
         elevation = CardDefaults.cardElevation(defaultElevation = Spaces.Space4),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(Spaces.Space1, BorderStrokeColor),
+        border = BorderStroke(Spaces.Space1, AppColors.BorderStrokeColor),
         modifier = Modifier
             .fillMaxWidth()
             .height(Spaces.Space200)
@@ -64,7 +63,7 @@ fun ResultCard(text: String, isTranslating: Boolean) {
                         Column {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(Spaces.Space30),
-                                color = BluePrimary
+                                color = AppColors.BluePrimary
                             )
                             Spacer(modifier = Modifier.height(Spaces.Space8))
                             Text(
@@ -76,10 +75,10 @@ fun ResultCard(text: String, isTranslating: Boolean) {
                         Text(
                             text = text,
                             style = TextStyle(
-                                fontSize = TextSizes.TextSizeHeader,
+                                fontSize = AppTextSizes.TextSizeHeader,
                                 fontWeight = FontWeight.Medium,
                                 color = Color(0xFF1F2937),
-                                lineHeight = TextSizes.TextSize32
+                                lineHeight = AppTextSizes.TextSize32
                             )
                         )
                     }

@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import com.codework.dailyenglish.R
-import com.codework.dailyenglish.presentation.theme.BluePrimary
+import com.codework.dailyenglish.presentation.theme.AppColors
 
 @Composable
 fun VocabularyCompleteDialog(
@@ -44,7 +44,7 @@ fun VocabularyCompleteDialog(
                 modifier = Modifier
                     .size(70.dp)
                     .clip(CircleShape)
-                    .background(BluePrimary.copy(alpha = 0.1f)),
+                    .background(AppColors.BluePrimary.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
                 Image(
@@ -64,7 +64,7 @@ fun VocabularyCompleteDialog(
                     text = "Well Done! 🎉",
                     fontSize = 26.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = BluePrimary,
+                    color = AppColors.BluePrimary,
                     textAlign = TextAlign.Center
                 )
             }

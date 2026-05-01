@@ -25,10 +25,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import com.codework.dailyenglish.presentation.theme.BluePrimary
-import com.codework.dailyenglish.presentation.theme.MainGradient
+import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.Spaces
-import com.codework.dailyenglish.presentation.theme.TextSizes
+import com.codework.dailyenglish.presentation.theme.AppTextSizes
 
 @Composable
 fun LanguageChip(
@@ -54,8 +53,8 @@ fun LanguageChip(
             Text(
                 text = text,
                 fontWeight = FontWeight.SemiBold,
-                style = if (isTarget) TextStyle(brush = MainGradient, fontSize = TextSizes.TextSizeMain)
-                else TextStyle(color = Color.Gray, fontSize = TextSizes.TextSizeMain),
+                style = if (isTarget) TextStyle(brush = AppColors.MainGradient, fontSize = AppTextSizes.TextSizeMain)
+                else TextStyle(color = Color.Gray, fontSize = AppTextSizes.TextSizeMain),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
@@ -66,7 +65,7 @@ fun LanguageChip(
             Icon(
                 imageVector = Icons.Default.ArrowDropDown,
                 contentDescription = null,
-                tint = if (isTarget) BluePrimary else Color.Gray,
+                tint = if (isTarget) AppColors.BluePrimary else Color.Gray,
                 modifier = Modifier.size(Spaces.Space20)
             )
         }

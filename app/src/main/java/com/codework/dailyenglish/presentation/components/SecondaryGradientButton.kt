@@ -15,7 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codework.dailyenglish.presentation.theme.MainGradient
+import com.codework.dailyenglish.presentation.theme.AppColors
 
 @Composable
 fun SecondaryGradientButton(text: String, onClick: () -> Unit) {
@@ -25,7 +25,7 @@ fun SecondaryGradientButton(text: String, onClick: () -> Unit) {
             .height(50.dp)
             .border(
                 width = 1.5.dp,
-                brush = MainGradient,
+                brush = AppColors.MainGradient,
                 shape = RoundedCornerShape(25.dp)
             )
             .clip(RoundedCornerShape(25.dp))
@@ -35,7 +35,7 @@ fun SecondaryGradientButton(text: String, onClick: () -> Unit) {
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium.copy(
-                brush = MainGradient,
+                brush = AppColors.MainGradient,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 letterSpacing = 1.sp

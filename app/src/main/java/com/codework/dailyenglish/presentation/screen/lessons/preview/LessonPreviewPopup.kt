@@ -1,4 +1,4 @@
-package com.codework.dailyenglish.presentation.screen.lessons.lesson_preview
+package com.codework.dailyenglish.presentation.screen.lessons.preview
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -7,8 +7,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.codework.dailyenglish.core.navigation.CollectEffect
 import com.codework.dailyenglish.presentation.components.AppBottomSheet
-import com.codework.dailyenglish.presentation.screen.lessons.lesson_preview.mvi.LessonPreviewEffect
-import com.codework.dailyenglish.presentation.screen.lessons.lesson_preview.mvi.LessonPreviewEvent
+import com.codework.dailyenglish.presentation.screen.lessons.preview.mvi.LessonPreviewEffect
+import com.codework.dailyenglish.presentation.screen.lessons.preview.mvi.LessonPreviewEvent
 import com.codework.dailyenglish.presentation.theme.CourseTheme
 
 @Composable
@@ -42,13 +42,13 @@ fun LessonPreviewPopup(
     AppBottomSheet(
         visible = visible,
         onDismiss = onDismiss,
-        maxHeight = 0.66f,
         enableDrag = true
-    ) {
+    ) { animateClose ->
         LessonPreviewSheet(
             state = state,
             onEvent = viewModel::onEvent,
             theme = courseTheme,
+            onClose = animateClose,
         )
     }
 }

@@ -24,16 +24,12 @@ fun WeeklyProgressCard(weeklyStats: List<DailyStudyTime>) {
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // ... (Phần Title giữ nguyên) ...
-
             Spacer(modifier = Modifier.height(16.dp))
-
             val maxMinutes = weeklyStats.maxOfOrNull { it.minutes } ?: 1
 
-            // Row tổng chứa các cột
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(), // BỎ height(120.dp) ở đây để nó tự co giãn theo nội dung
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Bottom
             ) {
@@ -51,33 +47,29 @@ fun WeeklyProgressCard(weeklyStats: List<DailyStudyTime>) {
 
 @Composable
 fun BarItem(day: DailyStudyTime, max: Int, modifier: Modifier = Modifier) {
-    // Định nghĩa chiều cao tối đa CHỈ DÀNH CHO THANH BAR (trừ hao chỗ cho chữ)
     val maxBarHeight = 100.dp
 
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 1. Text số phút (Top)
         Text(
-            text = if (day.minutes > 0) "${day.minutes}" else "", // Luôn giữ chỗ kể cả khi rỗng để cột không bị nhảy
+            text = if (day.minutes > 0) "${day.minutes}" else "",
             style = MaterialTheme.typography.labelSmall,
             fontSize = 10.sp,
             color = if (day.isToday) MaterialTheme.colorScheme.primary else Color.Gray,
-            modifier = Modifier.height(14.dp) // Cố định chiều cao text
+            modifier = Modifier.height(14.dp)
         )
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // 2. Cột Bar (Middle)
-        // Tính chiều cao cụ thể theo dp thay vì fillMaxHeight
         val barHeight = if (max > 0) (day.minutes.toFloat() / max.toFloat()) else 0f
         val actualHeight = maxBarHeight * barHeight
 
         Box(
             modifier = Modifier
                 .width(12.dp)
-                .height(actualHeight.coerceAtLeast(4.dp)) // Dùng .height() thay vì .fillMaxHeight()
+                .height(actualHeight.coerceAtLeast(4.dp))
                 .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
                 .background(
                     if (day.isToday) MaterialTheme.colorScheme.primary
@@ -87,7 +79,6 @@ fun BarItem(day: DailyStudyTime, max: Int, modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // 3. Text Thứ (Bottom)
         Text(
             text = day.dayName,
             style = MaterialTheme.typography.labelSmall,

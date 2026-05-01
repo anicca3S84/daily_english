@@ -23,10 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.codework.dailyenglish.presentation.theme.AppSurface
-import com.codework.dailyenglish.presentation.theme.GrayText
-import com.codework.dailyenglish.presentation.theme.SuccessGreen
-import com.codework.dailyenglish.presentation.theme.TextPrimary
+import com.codework.dailyenglish.presentation.theme.AppColors
 
 @Composable
 fun QuizOption(
@@ -40,22 +37,22 @@ fun QuizOption(
     val isSelected = selectedIndex == index
 
     val bgColor = when {
-        !isAnswered -> AppSurface
+        !isAnswered -> AppColors.AppSurface
         index == correctIndex -> Color(0xFFECFDF5)
         isSelected && index != correctIndex -> Color(0xFFFEF2F2)
-        else -> AppSurface
+        else -> AppColors.AppSurface
     }
     val borderColor = when {
         !isAnswered -> Color(0xFFE5E7EB)
-        index == correctIndex -> SuccessGreen
+        index == correctIndex -> AppColors.SuccessGreen
         isSelected && index != correctIndex -> Color(0xFFEF4444)
         else -> Color(0xFFE5E7EB)
     }
     val textColor = when {
-        !isAnswered -> TextPrimary
-        index == correctIndex -> SuccessGreen
+        !isAnswered -> AppColors.TextPrimary
+        index == correctIndex -> AppColors.SuccessGreen
         isSelected && index != correctIndex -> Color(0xFFEF4444)
-        else -> GrayText
+        else -> AppColors.GrayText
     }
 
     Surface(
@@ -78,7 +75,7 @@ fun QuizOption(
             )
             if (isAnswered) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopEnd) {
-                    if (index == correctIndex) Icon(Icons.Default.CheckCircle, null, tint = SuccessGreen, modifier = Modifier.size(16.dp))
+                    if (index == correctIndex) Icon(Icons.Default.CheckCircle, null, tint = AppColors.SuccessGreen, modifier = Modifier.size(16.dp))
                     else if (isSelected) Icon(Icons.Default.Cancel, null, tint = Color(0xFFEF4444), modifier = Modifier.size(16.dp))
                 }
             }

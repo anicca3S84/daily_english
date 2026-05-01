@@ -7,8 +7,10 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.codework.dailyenglish.domain.lesson.model.StepData
 import com.codework.dailyenglish.presentation.components.GridBackground
 import com.codework.dailyenglish.presentation.components.StateWrapper
@@ -17,6 +19,8 @@ import com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi.LessonEv
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi.LessonState
 import com.codework.dailyenglish.presentation.components.AppProgressTopBar
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.components.LessonBottomBar
+import com.codework.dailyenglish.presentation.theme.AppColors
+import com.codework.dailyenglish.presentation.theme.Spaces
 
 @Composable
 fun LessonScreen(
@@ -27,63 +31,70 @@ fun LessonScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackBar) },
-        containerColor = Color.Transparent
+        containerColor = AppColors.AppBackground
     ) { _ ->
         Box(modifier = Modifier.fillMaxSize()) {
-            GridBackground()
-
             StateWrapper(
                 uiState = state,
                 modifier = Modifier.fillMaxSize(),
                 snackbarHostState = snackBar,
-                onRetry = { /* TODO: Bạn có thể truyền event Reload vào đây */ }
+                onRetry = { /* TODO */ }
             ) { config ->
                 val data = config ?: return@StateWrapper
 
-                Column(modifier = Modifier.fillMaxSize()) {
-                    AppProgressTopBar(
-                        progress = data.progressPercent,
-                        progressText = data.progressText,
-                        onBackClick = { onEvent(LessonEvent.OnQuitClicked) },
-                        onCloseClick = { onEvent(LessonEvent.OnQuitClicked) }
-                    )
+                Box(modifier = Modifier.fillMaxSize()) {
 
-                    AnimatedContent(
-                        targetState = data.currentIndex,
-                        modifier = Modifier.weight(1f),
-                        transitionSpec = {
-                            (slideInHorizontally { it } + fadeIn()).togetherWith(
-                                slideOutHorizontally { -it } + fadeOut()
-                            )
-                        },
-                        label = "LessonStepAnimation"
-                    ) { index ->
-                        val step = data.steps.getOrNull(index)
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        AppProgressTopBar(
+                            progress = data.progressPercent,
+                            progressText = data.progressText,
+                            onBackClick = { onEvent(LessonEvent.OnPreviousStep) },
+                            onCloseClick = { onEvent(LessonEvent.OnQuitClicked) }
+                        )
 
-                        if (step != null) {
-                            LessonStepRenderer(
-                                step = step,
-                                onOptionSelected = { optionId ->
-                                    onEvent(LessonEvent.OnOptionSelected(optionId))
-                                },
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        } else {
-                            Box(modifier = Modifier.fillMaxSize())
+                        AnimatedContent(
+                            targetState = data.currentIndex,
+                            modifier = Modifier.weight(1f),
+                            transitionSpec = {
+                                (slideInHorizontally { it } + fadeIn()).togetherWith(
+                                    slideOutHorizontally { -it } + fadeOut()
+                                )
+                            },
+                            label = "LessonStepAnimation"
+                        ) { index ->
+                            val step = data.steps.getOrNull(index)
+
+                            if (step != null) {
+                                LessonStepRenderer(
+                                    step = step,
+                                    onOptionSelected = { optionId ->
+                                        onEvent(LessonEvent.OnOptionSelected(optionId))
+                                    },
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
                         }
                     }
 
                     LessonBottomBar(
                         currentStep = data.currentStep,
-                        onBackClick = { onEvent(LessonEvent.OnPreviousStep) },
                         onNextClick = {
                             val stepData = data.currentStep?.data
-                            if (stepData is StepData.Question && !stepData.isChecked) {
-                                onEvent(LessonEvent.OnCheckAnswerClicked)
+                            if (stepData is StepData.Question) {
+                                if (stepData.isAnswerEvaluated) {
+                                    onEvent(LessonEvent.OnNextStep)
+                                } else {
+                                    if (stepData.selectedOptionId != null) {
+                                        onEvent(LessonEvent.OnCheckAnswerClicked)
+                                    }
+                                }
                             } else {
                                 onEvent(LessonEvent.OnNextStep)
                             }
-                        }
+                        },
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(horizontal = Spaces.Space16, vertical = Spaces.Space38)
                     )
                 }
             }

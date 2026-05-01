@@ -3,36 +3,54 @@ package com.codework.dailyenglish.presentation.theme
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
-object Colors {
+object AppColors {
     val TrackColorProgress = Color(0xFFEEEEEE)
     val TitleColor = Color(0xFF111827)
     val ExpBgColor = Color(0xFFFF9800)
     val CompleteExpColor = Color(0xFF4CAF50)
     val LoginButtonColor = Color(0xFFDADCE0)
+    val TextMain = Color(0xFF1E293B)
+    val TextSub = Color(0xFF64748B)
+    val BlueMain = Color(0xFF3B82F6)
+    val OrangeMain = Color(0xFFF97316)
+    val PurpleMain = Color(0xFFA855F7)
+    val GreenMain = Color(0xFF22C55E)
+    val GrayBorder = Color(0xFFF1F5F9)
+    val Indigo50 = Color(0xFFEEF2FF)
+    val Indigo500 = Color(0xFF6366F1)
+    val Indigo600 = Color(0xFF4F46E5)
+
+    val Slate50 = Color(0xFFF8FAFC)
+    val Slate100 = Color(0xFFF1F5F9)
+    val Slate300 = Color(0xFFCBD5E1)
+    val Slate400 = Color(0xFF94A3B8)
+    val Slate500 = Color(0xFF64748B)
+    val Slate700 = Color(0xFF334155)
+    val Slate800 = Color(0xFF1E293B)
+    val Slate900 = Color(0xFF0F172A)
+    val Slate200 = Color(0xFFE2E8F0)
+    val Emerald50 = Color(0xFFECFDF5)
+    val Emerald500 = Color(0xFF10B981)
+    val Emerald600 = Color(0xFF059669)
+    val Rose50 = Color(0xFFFFF1F2)
+    val Rose500 = Color(0xFFF43F5E)
+    val Rose600 = Color(0xFFE11D48)
+    val AppBackground = Color(0xFFF8FAFC)
+    val GrayText = Color(0xFF6B7280)
+    val AppSurface = Color(0xFFFFFFFF)
+    val TextPrimary = Color(0xFF1F1F1F)
+    val BluePrimary = Color(0xFF2196F3)
+    val IndigoPurple = Color(0xFF7384E8)
+    val MainGradient = Brush.linearGradient(
+        colors = listOf(BluePrimary, IndigoPurple)
+    )
+    val BorderStrokeColor = Color(0xFFE5E7EB)
+    val SuccessGreen = Color(0xFF10B981)
+    val DisableBtn = Color(0xFFE3E3E7)
+
+    val USRed = Color(0xFFEF4444)
+    val HintBackGround = Color(0xFFE5F2FD)
 }
-//val AppBackground = Color(0xFFF8FAFC)
-val AppBackground = Color(0xFFF8F9FA)
-//val AppBackground = Color(0xFFFDF2F8)
-
-val AppSurface = Color(0xFFFFFFFF)
-val TextPrimary = Color(0xFF1F1F1F)
-
-val BluePrimary = Color(0xFF2196F3)
-val IndigoPurple = Color(0xFF7384E8)
-val MainGradient = Brush.linearGradient(
-    colors = listOf(BluePrimary, IndigoPurple)
-)
-val AppBottomNavigation = Color(0xFFFAF8FF)
-
-val BorderStrokeColor = Color(0xFFE5E7EB)
-val SuccessGreen = Color(0xFF10B981)
-val GrayText = Color(0xFF6B7280)
-val DisableBtn = Color(0xFFE3E3E7)
-
-val USRed = Color(0xFFEF4444)
-val HintBg = Color(0xFFFFF7ED)
-val HintText = Color(0xFFC2410C)
-val HintBackGround = Color(0xFFE5F2FD)
 
 // Rookie
 val RookiePrimary = Color(0xFF4CAF50)

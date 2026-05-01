@@ -67,7 +67,10 @@ class CourseDetailViewModel @Inject constructor(
                             modulesState = state.modulesState.copy(
                                 isLoading = false,
                                 data = result.modules.toUiModels()
-                            )
+                            ),
+                            cefr = result.cefr,
+                            duration = result.duration,
+                            introduction = result.introduction
                         )
                     }
                 }

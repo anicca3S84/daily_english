@@ -13,7 +13,6 @@ fun LessonPlayResponseDto.toDomain(): LessonPlay {
 }
 
 fun LessonStepDto.toDomain(): LessonStep {
-    // 1. Map StepType (String -> Enum)
     val domainStepType = when(this.stepType) {
         "VOCAB" -> StepType.VOCAB
         "QUESTION" -> StepType.QUESTION
@@ -21,7 +20,6 @@ fun LessonStepDto.toDomain(): LessonStep {
         else -> StepType.UNKNOWN
     }
 
-    // 2. Map StepData (DTO Polymorphic -> Domain Sealed Class)
     val domainData: StepData = when (val dtoData = this.data) {
         is VocabDto -> StepData.Vocab(
             word = dtoData.word.orEmpty(),
@@ -34,18 +32,69 @@ fun LessonStepDto.toDomain(): LessonStep {
             examples = dtoData.examples,
             suggests = dtoData.suggests
         )
-        is QuestionDto -> StepData.Question(
-            content = dtoData.content.orEmpty(),
-            selectedOptionId = dtoData.selectedOptionId,
-            type = dtoData.type.orEmpty(),
-            options = dtoData.options?.map {
-                StepData.Question.Option(
-                    id = it.id.orEmpty(),
-                    content = it.content.orEmpty(),
-                    isCorrect = it.isCorrect ?: false
+        is QuestionDto -> {
+            val domainContent = when (val dtoContent = dtoData.content) {
+                is QuestionContentDto.MultipleChoice -> QuestionContent.MultipleChoice(
+                    prompt = dtoContent.prompt.orEmpty(),
+                    options = dtoContent.options?.map {
+                        QuestionContent.MultipleChoice.Option(
+                            id = it.id.orEmpty(),
+                            text = it.text.orEmpty(),
+                            isCorrect = it.isCorrect ?: false
+                        )
+                    } ?: emptyList()
                 )
-            } ?: emptyList()
-        )
+
+                is QuestionContentDto.SentenceBuilder -> QuestionContent.SentenceBuilder(
+                    prompt = dtoContent.prompt.orEmpty(),
+                    correctSentence = dtoContent.correctSentence.orEmpty(),
+                    jumbledWords = dtoContent.jumbledWords ?: emptyList(),
+                    extraWords = dtoContent.extraWords ?: emptyList()
+                )
+
+                is QuestionContentDto.Matching -> QuestionContent.Matching(
+                    prompt = dtoContent.prompt.orEmpty(),
+                    pairs = dtoContent.pairs?.map {
+                        QuestionContent.Matching.PairData(
+                            left = it.left.orEmpty(),
+                            right = it.right.orEmpty()
+                        )
+                    } ?: emptyList()
+                )
+
+                is QuestionContentDto.FillBlank -> QuestionContent.FillBlank(
+                    prompt = dtoContent.prompt.orEmpty(),
+                    sentenceWithBlank = dtoContent.sentenceWithBlank.orEmpty(),
+                    correctAnswer = dtoContent.correctAnswer.orEmpty(),
+                    options = dtoContent.options ?: emptyList()
+                )
+
+                is QuestionContentDto.Dictation -> QuestionContent.Dictation(
+                    prompt = dtoContent.prompt.orEmpty(),
+                    targetWord = dtoContent.targetWord.orEmpty(),
+                    hint = dtoContent.hint.orEmpty(),
+                    correctAnswer = dtoContent.correctAnswer.orEmpty(),
+                    acceptedAnswers = dtoContent.acceptedAnswers ?: emptyList()
+                )
+
+                is QuestionContentDto.Speaking -> QuestionContent.Speaking(
+                    prompt = dtoContent.prompt.orEmpty(),
+                    targetText = dtoContent.targetText.orEmpty(),
+                    phonetic = dtoContent.phonetic.orEmpty(),
+                    translation = dtoContent.translation.orEmpty()
+                )
+
+                else -> QuestionContent.Unknown
+            }
+
+            StepData.Question(
+                id = dtoData.id.orEmpty(),
+                type = dtoData.type.orEmpty(),
+                content = domainContent,
+                selectedOptionId = dtoData.selectedOptionId,
+                isAnswerEvaluated = dtoData.selectedOptionId != null
+            )
+        }
         is TheoryDto -> StepData.Theory(
             title = dtoData.title,
             content = dtoData.content.orEmpty()

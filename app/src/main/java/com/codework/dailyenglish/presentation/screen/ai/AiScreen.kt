@@ -33,9 +33,7 @@ import com.codework.dailyenglish.presentation.screen.ai.model.ChatMessage
 import com.codework.dailyenglish.presentation.screen.ai.model.ChatSession
 import com.codework.dailyenglish.presentation.screen.ai.mvi.AiEvent
 import com.codework.dailyenglish.presentation.screen.ai.mvi.AiState
-import com.codework.dailyenglish.presentation.theme.AppBackground
-import com.codework.dailyenglish.presentation.theme.BluePrimary
-import com.codework.dailyenglish.presentation.theme.MainGradient
+import com.codework.dailyenglish.presentation.theme.AppColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -94,7 +92,7 @@ fun AiScreen(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Surface(shape = CircleShape, color = Color.Transparent, modifier = Modifier.size(36.dp)) {
-                                Box(modifier = Modifier.fillMaxSize().background(brush = MainGradient), contentAlignment = Alignment.Center) {
+                                Box(modifier = Modifier.fillMaxSize().background(brush = AppColors.MainGradient), contentAlignment = Alignment.Center) {
                                     Text("A", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 18.sp)
                                 }
                             }
@@ -138,7 +136,7 @@ fun AiScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(AppBackground)
+                    .background(AppColors.AppBackground)
                     .padding(bottom = innerPadding.calculateBottomPadding())
             ) {
 
@@ -210,13 +208,13 @@ fun SuggestionRowWithAutoScroll(items: List<String>, reverseLayout: Boolean = fa
                 onClick = { onClick(item) },
                 shape = CircleShape,
                 color = Color.White,
-                border = BorderStroke(1.dp, BluePrimary.copy(alpha = 0.5f))
+                border = BorderStroke(1.dp, AppColors.BluePrimary.copy(alpha = 0.5f))
             ) {
                 Text(
                     text = item,
                     modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
                     fontWeight = FontWeight.Medium,
-                    style = TextStyle(brush = MainGradient, fontSize = 13.sp),
+                    style = TextStyle(brush = AppColors.MainGradient, fontSize = 13.sp),
                     maxLines = 1
                 )
             }
@@ -282,7 +280,7 @@ fun ModernInputBar(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(brush = if (isTyping) MainGradient else Brush.linearGradient(listOf(Color(0xFF212121), Color(0xFF212121))))
+                .background(brush = if (isTyping) AppColors.MainGradient else Brush.linearGradient(listOf(Color(0xFF212121), Color(0xFF212121))))
                 .clickable(enabled = isEnabled, onClick = { if (isTyping) onSend() else onMicClick() }),
             contentAlignment = Alignment.Center
         ) {
@@ -300,11 +298,11 @@ fun ModernInputBar(
 @Composable
 fun EmptyChatPlaceholder() {
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.padding(32.dp)) {
-        Box(modifier = Modifier.size(120.dp).background(brush = MainGradient, shape = CircleShape, alpha = 0.1f), contentAlignment = Alignment.Center) {
-            Icon(Icons.Rounded.AutoAwesome, null, modifier = Modifier.size(70.dp), tint = BluePrimary)
+        Box(modifier = Modifier.size(120.dp).background(brush = AppColors.MainGradient, shape = CircleShape, alpha = 0.1f), contentAlignment = Alignment.Center) {
+            Icon(Icons.Rounded.AutoAwesome, null, modifier = Modifier.size(70.dp), tint = AppColors.BluePrimary)
         }
         Spacer(modifier = Modifier.height(24.dp))
-        Text(text = "Anicca English Tutor", style = MaterialTheme.typography.headlineSmall.copy(brush = MainGradient, fontWeight = FontWeight.ExtraBold, fontSize = 24.sp, textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth())
+        Text(text = "Anicca English Tutor", style = MaterialTheme.typography.headlineSmall.copy(brush = AppColors.MainGradient, fontWeight = FontWeight.ExtraBold, fontSize = 24.sp, textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(12.dp))
         Text(text = "Your intelligent assistant for everything.\nAsk me anything, from learning languages to solving complex problems!", style = MaterialTheme.typography.bodyLarge, color = Color.Gray, textAlign = TextAlign.Center, lineHeight = 22.sp)
     }
@@ -315,7 +313,7 @@ fun EnhancedMessageBubble(message: ChatMessage) {
     val isUser = message.isUser
     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = if (isUser) Alignment.End else Alignment.Start) {
         Surface(shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = if (isUser) 20.dp else 4.dp, bottomEnd = if (isUser) 4.dp else 20.dp), color = Color.Transparent, shadowElevation = if (isUser) 4.dp else 1.dp) {
-            Box(modifier = Modifier.background(brush = if (isUser) MainGradient else Brush.linearGradient(listOf(Color.White, Color.White)))) {
+            Box(modifier = Modifier.background(brush = if (isUser) AppColors.MainGradient else Brush.linearGradient(listOf(Color.White, Color.White)))) {
                 Text(text = message.text, modifier = Modifier.padding(12.dp), color = if (isUser) Color.White else Color(0xFF333333), style = MaterialTheme.typography.bodyMedium)
             }
         }
@@ -325,7 +323,7 @@ fun EnhancedMessageBubble(message: ChatMessage) {
 @Composable
 fun ModernTypingIndicator() {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 4.dp)) {
-        CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 2.dp, color = BluePrimary)
+        CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 2.dp, color = AppColors.BluePrimary)
         Spacer(modifier = Modifier.width(8.dp))
         Text("Typing...", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
     }
@@ -333,11 +331,11 @@ fun ModernTypingIndicator() {
 
 @Composable
 fun HistoryDrawerContent(sessions: List<ChatSession>, onNewChatClick: () -> Unit, onSessionClick: (String) -> Unit) {
-    ModalDrawerSheet(drawerContainerColor = AppBackground) {
+    ModalDrawerSheet(drawerContainerColor = AppColors.AppBackground) {
         Column(modifier = Modifier.padding(20.dp).fillMaxHeight()) {
             Text("Chat History", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = Color(0xFF263238))
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onNewChatClick, modifier = Modifier.fillMaxWidth().background(brush = MainGradient, shape = RoundedCornerShape(12.dp)), colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), contentPadding = PaddingValues(0.dp)) {
+            Button(onClick = onNewChatClick, modifier = Modifier.fillMaxWidth().background(brush = AppColors.MainGradient, shape = RoundedCornerShape(12.dp)), colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), contentPadding = PaddingValues(0.dp)) {
                 Row(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Add, null, tint = Color.White)
                     Text("New Conversation", modifier = Modifier.padding(start = 8.dp), color = Color.White)

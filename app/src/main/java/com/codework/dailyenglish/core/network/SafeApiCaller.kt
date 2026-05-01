@@ -46,8 +46,8 @@ fun <T> AppResult<BaseResponse<T>>.unwrap(): AppResult<T> {
                 AppResult.Success(body.data)
             } else {
                 AppResult.Error(
-                    error = AppError.Validation(body.message ?: "Lỗi xác thực từ Server"),
-                    message = body.message ?: "Lỗi dữ liệu Server"
+                    error = AppError.Validation(body.message ?: "Authentication error from the Server"),
+                    message = body.message ?: "Server data error"
                 )
             }
         }

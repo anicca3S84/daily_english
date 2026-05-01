@@ -357,9 +357,7 @@ fun NavGraph(
         composableScreen<Route.CourseDetailScreen, CourseDetailViewModel, CourseDetailState, CourseDetailEvent, CourseDetailEffect>(
             onNavigate = { effect ->
                 when (effect) {
-                    // Nếu bạn vẫn muốn xử lý một số Effect khác từ ViewModel CourseDetail
-                    // Nhưng riêng ShowLessonPreview thì giờ ta xử lý trực tiếp tại UI của Screen
-                    else -> { /* Xử lý các điều hướng khác nếu có */ }
+                    else -> {  }
                 }
             }
         ) { state, onEvent ->

@@ -1,6 +1,5 @@
 package com.codework.dailyenglish.data.lesson.remote.dto
 
-import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 
 data class LessonPlayResponseDto(
@@ -33,19 +32,68 @@ data class VocabDto(
 ) : StepDataDto
 
 data class QuestionDto(
-    @SerializedName("content") val content: String?,
-    @SerializedName("type") val type: String?,
-    @SerializedName("selectedOptionId") val selectedOptionId: String?,
-    @SerializedName("options") val options: List<OptionDto>?
+    val id: String?,
+    val type: String?,
+    val content: QuestionContentDto?,
+    @SerializedName("selectedOptionId") val selectedOptionId: String?
 ) : StepDataDto
 
-data class OptionDto(
-    @SerializedName("id") val id: String?,
-    @SerializedName("content") val content: String?,
-    @SerializedName("correct") val isCorrect: Boolean?
-)
 
 data class TheoryDto(
     @SerializedName("title") val title: String?,
     @SerializedName("content") val content: String?
 ) : StepDataDto
+
+
+sealed class QuestionContentDto {
+    data class MultipleChoice(
+        val prompt: String?,
+        val options: List<OptionDto>?
+    ) : QuestionContentDto() {
+        data class OptionDto(
+            val id: String?,
+            val text: String?,
+            @SerializedName("isCorrect") val isCorrect: Boolean?
+        )
+    }
+
+    data class SentenceBuilder(
+        val prompt: String?,
+        @SerializedName("correctSentence") val correctSentence: String?,
+        @SerializedName("jumbledWords") val jumbledWords: List<String>?,
+        @SerializedName("extraWords") val extraWords: List<String>?
+    ) : QuestionContentDto()
+
+
+    data class Matching(
+        val prompt: String?,
+        val pairs: List<PairDto>?
+    ) : QuestionContentDto() {
+        data class PairDto(
+            val left: String?,
+            val right: String?
+        )
+    }
+
+    data class FillBlank(
+        val prompt: String?,
+        val sentenceWithBlank: String?,
+        val correctAnswer: String?,
+        val options: List<String>?
+    ) : QuestionContentDto()
+
+    data class Dictation(
+        val prompt: String?,
+        val targetWord: String?,
+        val hint: String?,
+        val correctAnswer: String?,
+        val acceptedAnswers: List<String>?
+    ) : QuestionContentDto()
+
+    data class Speaking(
+        val prompt: String?,
+        val targetText: String?,
+        val phonetic: String?,
+        val translation: String?
+    ) : QuestionContentDto()
+}

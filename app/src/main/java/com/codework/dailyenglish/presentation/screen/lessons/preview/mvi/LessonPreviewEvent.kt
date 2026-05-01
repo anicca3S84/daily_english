@@ -1,4 +1,4 @@
-package com.codework.dailyenglish.presentation.screen.lessons.lesson_preview.mvi
+package com.codework.dailyenglish.presentation.screen.lessons.preview.mvi
 
 sealed interface LessonPreviewEvent {
     data class OnLoadPreview(val lessonId: String) : LessonPreviewEvent

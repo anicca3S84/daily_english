@@ -23,13 +23,13 @@ import com.codework.dailyenglish.R
 import com.codework.dailyenglish.core.utils.GoogleAuthHelper
 import com.codework.dailyenglish.presentation.components.LoadingType
 import com.codework.dailyenglish.presentation.components.StateWrapper
-import com.codework.dailyenglish.presentation.theme.BluePrimary
 import com.codework.dailyenglish.presentation.screen.auth.login.components.SocialLoginButton
 import com.codework.dailyenglish.presentation.screen.auth.login.mvi.LoginEvent
 import com.codework.dailyenglish.presentation.screen.auth.login.mvi.LoginState
-import com.codework.dailyenglish.presentation.theme.IconSizeLarge
+import com.codework.dailyenglish.presentation.theme.AppColors
+import com.codework.dailyenglish.presentation.theme.AppIcons
 import com.codework.dailyenglish.presentation.theme.Spaces
-import com.codework.dailyenglish.presentation.theme.TextSizes
+import com.codework.dailyenglish.presentation.theme.AppTextSizes
 import kotlinx.coroutines.launch
 
 @Composable
@@ -60,7 +60,7 @@ fun LoginScreen(
             ) {
                 Text(
                     text = stringResource(R.string.label_back),
-                    fontSize = TextSizes.TextSizeMain,
+                    fontSize = AppTextSizes.TextSizeMain,
                     color = Color.Black,
                     modifier = Modifier
                         .clickable { onEvent(LoginEvent.OnCancelClick) }
@@ -81,7 +81,7 @@ fun LoginScreen(
 
             Text(
                 text = stringResource(R.string.login_description),
-                fontSize = TextSizes.TextSizeMain,
+                fontSize = AppTextSizes.TextSizeMain,
                 color = Color.Gray,
                 textAlign = TextAlign.Center
             )
@@ -92,14 +92,14 @@ fun LoginScreen(
                 modifier = Modifier
                     .size(Spaces.Space100)
                     .clip(CircleShape)
-                    .background(BluePrimary.copy(alpha = 0.2f)),
+                    .background(AppColors.BluePrimary.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Rounded.MenuBook,
                     contentDescription = "Logo",
-                    modifier = Modifier.size(IconSizeLarge),
-                    tint = BluePrimary
+                    modifier = Modifier.size(AppIcons.IconSizeLarge),
+                    tint = AppColors.BluePrimary
                 )
             }
 
@@ -146,12 +146,12 @@ fun LoginScreen(
                 Text(
                     text = stringResource(R.string.login_no_account_full),
                     color = Color.Gray,
-                    fontSize = TextSizes.TextSizeMain
+                    fontSize = AppTextSizes.TextSizeMain
                 )
                 Text(
                     text = stringResource(R.string.login_sign_up),
-                    color = BluePrimary,
-                    fontSize = TextSizes.TextSizeMain,
+                    color = AppColors.BluePrimary,
+                    fontSize = AppTextSizes.TextSizeMain,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .clickable { onEvent(LoginEvent.OnSignUpClick) }

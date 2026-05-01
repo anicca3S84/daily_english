@@ -28,8 +28,7 @@ import com.codework.dailyenglish.presentation.components.PhoneticGroup
 import com.codework.dailyenglish.presentation.screen.dictionary.model.Word
 import com.codework.dailyenglish.presentation.screen.dictionary.mvi.DictionaryEvent
 import com.codework.dailyenglish.presentation.screen.dictionary.mvi.DictionaryState
-import com.codework.dailyenglish.presentation.theme.AppBackground
-import com.codework.dailyenglish.presentation.theme.BluePrimary
+import com.codework.dailyenglish.presentation.theme.AppColors
 
 @Composable
 fun DictionaryScreen(
@@ -38,7 +37,7 @@ fun DictionaryScreen(
     onBackClick: () -> Unit
 ) {
     Scaffold(
-        containerColor = AppBackground,
+        containerColor = AppColors.AppBackground,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             AppTopBar(
@@ -59,7 +58,7 @@ fun DictionaryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(AppBackground)
+                .background(AppColors.AppBackground)
         ) {
 
                 Column(modifier = Modifier.fillMaxSize()) {
@@ -248,7 +247,7 @@ fun DictionaryScreen(
                             Text(
                                 text = "DAILY INSPIRATION",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = BluePrimary,
+                                color = AppColors.BluePrimary,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.sp
                             )
@@ -270,7 +269,7 @@ fun DictionaryScreen(
                         Icon(
                             imageVector = Icons.Rounded.FormatQuote,
                             contentDescription = null,
-                            tint = BluePrimary.copy(alpha = 0.3f),
+                            tint = AppColors.BluePrimary.copy(alpha = 0.3f),
                             modifier = Modifier.size(48.dp)
                         )
                     }
@@ -361,7 +360,7 @@ fun DictionaryScreen(
                         Spacer(modifier = Modifier.width(10.dp))
 
                         Surface(
-                            color = BluePrimary,
+                            color = AppColors.BluePrimary,
                             shape = RoundedCornerShape(6.dp),
                         ) {
                             Box(
@@ -435,7 +434,7 @@ fun DictionaryScreen(
                                     .width(3.dp)
                                     .fillMaxHeight() // Chiếm hết chiều cao của Text bên cạnh
                                     .padding(vertical = 2.dp) // Thụt vào 1 xíu ở 2 đầu cho tinh tế
-                                    .background(BluePrimary.copy(alpha = 0.5f), CircleShape)
+                                    .background(AppColors.BluePrimary.copy(alpha = 0.5f), CircleShape)
                             )
 
                             Spacer(modifier = Modifier.width(10.dp))
@@ -445,7 +444,7 @@ fun DictionaryScreen(
                                     text = "Example",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
-                                    color = BluePrimary,
+                                    color = AppColors.BluePrimary,
                                     fontSize = 11.sp
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
@@ -468,7 +467,7 @@ fun DictionaryScreen(
                             Icon(
                                 imageVector = if (word.isSaved) Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder,
                                 contentDescription = null,
-                                tint = if (word.isSaved) BluePrimary else Color(0xFF94A3B8),
+                                tint = if (word.isSaved) AppColors.BluePrimary else Color(0xFF94A3B8),
                                 modifier = Modifier.size(24.dp)
                             )
                         }

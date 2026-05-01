@@ -21,8 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import com.codework.dailyenglish.presentation.theme.BluePrimary
-import com.codework.dailyenglish.presentation.theme.BorderStrokeColor
+import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.Spaces
 
 
@@ -32,7 +31,7 @@ fun HistoryItem(source: String, target: String, onClick: () -> Unit) {
         onClick = onClick,
         shape = RoundedCornerShape(Spaces.Space16),
         color = Color.White,
-        border = BorderStroke(Spaces.Space1, BorderStrokeColor),
+        border = BorderStroke(Spaces.Space1, AppColors.BorderStrokeColor),
         shadowElevation = Spaces.Space1_5,
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -55,7 +54,7 @@ fun HistoryItem(source: String, target: String, onClick: () -> Unit) {
                 Text(
                     text = target,
                     style = MaterialTheme.typography.bodySmall,
-                    color = BluePrimary,
+                    color = AppColors.BluePrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )

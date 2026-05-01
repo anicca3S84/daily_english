@@ -9,7 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.codework.dailyenglish.presentation.theme.BluePrimary
+import com.codework.dailyenglish.presentation.theme.AppColors
 
 @Composable
 fun SeeAllHeader(
@@ -39,12 +39,12 @@ fun SeeAllHeader(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "See all",
-                        style = MaterialTheme.typography.labelLarge, color = BluePrimary
+                        style = MaterialTheme.typography.labelLarge, color = AppColors.BluePrimary
                     )
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = null,
-                        tint = BluePrimary,
+                        tint = AppColors.BluePrimary,
                         modifier = Modifier.size(20.dp)
                     )
                 }

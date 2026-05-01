@@ -18,9 +18,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.codework.dailyenglish.presentation.theme.AppBackground
-import com.codework.dailyenglish.presentation.theme.GrayText
-import com.codework.dailyenglish.presentation.theme.MainGradient
+import com.codework.dailyenglish.presentation.theme.AppColors
+import com.codework.dailyenglish.presentation.theme.AppIcons
+import com.codework.dailyenglish.presentation.theme.AppTextSizes
+import com.codework.dailyenglish.presentation.theme.Spaces
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,72 +32,59 @@ fun AppProgressTopBar(
     onBackClick: () -> Unit,
     onCloseClick: (() -> Unit)? = null
 ) {
-    val animatedProgress by animateFloatAsState(
-        targetValue = progress,
-        label = "progressAnimation"
-    )
-
     Surface(
-        color = AppBackground,
+        color = AppColors.AppBackground,
         modifier = Modifier.fillMaxWidth(),
-        shadowElevation = 0.dp
+        shadowElevation = Spaces.Space0
     ) {
         Row(
             modifier = Modifier
                 .statusBarsPadding()
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = Spaces.Space16, vertical = Spaces.Space12),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Nút Back tròn trịa phong cách Pro
             Surface(
                 onClick = onBackClick,
                 shape = CircleShape,
                 color = Color.White,
-                border = BorderStroke(1.dp, Color(0xFFE5E7EB)),
-                modifier = Modifier.size(40.dp)
+                border = BorderStroke(Spaces.Space1, Color(0xFFE5E7EB)),
+                modifier = Modifier.size(Spaces.Space40)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
                         tint = Color(0xFF374151),
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(AppIcons.IconSizeSmall)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(Spaces.Space12))
 
-            // Thanh Progress Bar tùy chỉnh
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(10.dp) // Chỉnh lại độ cao cho thanh thoát
-                    .clip(RoundedCornerShape(5.dp))
-                    .background(Color(0xFFE5E7EB))
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(animatedProgress) // Dùng giá trị đã animate
-                        .fillMaxHeight()
-                        .background(MainGradient) // Sử dụng Gradient xịn của bạn
-                        .clip(RoundedCornerShape(5.dp))
-                )
-            }
+            AppProgressBar(
+                progress = progress,
+                modifier = Modifier.weight(1f)
+            )
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(Spaces.Space12))
 
-            // Hiển thị nút Close hoặc Text tiến độ
             if (onCloseClick != null) {
-                IconButton(onClick = onCloseClick, modifier = Modifier.size(24.dp)) {
-                    Icon(Icons.Default.Close, null, tint = GrayText)
+                IconButton(onClick = onCloseClick, modifier = Modifier.size(AppIcons.IconSizeMedium)) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = null,
+                        tint = AppColors.GrayText
+                    )
                 }
             } else {
                 Text(
-                    text = progressText, // Dùng text truyền từ State
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = GrayText,
+                    text = progressText,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize = AppTextSizes.TextSizeBody
+                    ),
+                    color = AppColors.GrayText,
                     fontWeight = FontWeight.Bold
                 )
             }

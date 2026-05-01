@@ -33,10 +33,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import com.codework.dailyenglish.R
 import com.codework.dailyenglish.presentation.components.AppCircleButton
-import com.codework.dailyenglish.presentation.theme.BluePrimary
-import com.codework.dailyenglish.presentation.theme.BorderStrokeColor
+import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.Spaces
-import com.codework.dailyenglish.presentation.theme.TextSizes
+import com.codework.dailyenglish.presentation.theme.AppTextSizes
 
 @Composable
 fun InputCard(
@@ -53,7 +52,7 @@ fun InputCard(
         shape = RoundedCornerShape(Spaces.Space24),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = Spaces.Space4),
-        border = BorderStroke(Spaces.Space1, BorderStrokeColor),
+        border = BorderStroke(Spaces.Space1, AppColors.BorderStrokeColor),
         modifier = Modifier
             .fillMaxWidth()
             .height(Spaces.Space200)
@@ -69,14 +68,14 @@ fun InputCard(
                     Text(
                         text = hint,
                         color = Color.LightGray,
-                        fontSize = TextSizes.TextSize20
+                        fontSize = AppTextSizes.TextSize20
                     )
                 }
 
                 BasicTextField(
                     value = text,
                     onValueChange = onValueChange,
-                    textStyle = TextStyle(fontSize = TextSizes.TextSize20, color = Color.Black),
+                    textStyle = TextStyle(fontSize = AppTextSizes.TextSize20, color = Color.Black),
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(end = Spaces.Space50)
@@ -115,7 +114,7 @@ fun InputCard(
                 Box(
                     modifier = Modifier
                         .height(Spaces.Space44)
-                        .background(BluePrimary, shape = RoundedCornerShape(Spaces.Space8))
+                        .background(AppColors.BluePrimary, shape = RoundedCornerShape(Spaces.Space8))
                         .clip(RoundedCornerShape(Spaces.Space8))
                         .clickable { onTranslate() }
                         .padding(horizontal = Spaces.Space24),
