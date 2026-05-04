@@ -1,14 +1,14 @@
 package com.codework.dailyenglish.data.lesson
 
 import com.codework.dailyenglish.data.lesson.remote.dto.LessonPlayResponseDto
+import com.codework.dailyenglish.data.lesson.remote.dto.LessonResultResponseDto
 import com.codework.dailyenglish.data.lesson.remote.dto.UpdateProgressRequestDto
 import com.codework.dailyenglish.data.remote.response.BaseResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.PATCH
+import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
-import retrofit2.http.Query
 
 interface LessonApi {
     @GET("lessons/{lessonId}/play")
@@ -21,4 +21,9 @@ interface LessonApi {
         @Path("lessonId") lessonId: String,
         @Body request: UpdateProgressRequestDto
     ): BaseResponse<Any>
+
+    @POST("lessons/{lessonPublicId}/complete")
+    suspend fun completeLesson(
+        @Path("lessonPublicId") lessonPublicId: String
+    ): BaseResponse<LessonResultResponseDto>
 }

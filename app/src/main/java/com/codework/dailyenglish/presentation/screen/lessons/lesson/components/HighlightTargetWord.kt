@@ -1,16 +1,25 @@
 package com.codework.dailyenglish.presentation.screen.lessons.lesson.components
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import com.codework.dailyenglish.presentation.theme.AppColors
+import com.codework.dailyenglish.presentation.theme.AppTextSizes
+import com.codework.dailyenglish.presentation.theme.Spaces
 
 @Composable
-fun HighlightTargetWord(example: String, targetWord: String): androidx.compose.ui.text.AnnotatedString {
-    return buildAnnotatedString {
+fun HighlightTargetWord(
+    example: String,
+    targetWord: String,
+    modifier: Modifier = Modifier
+) {
+    val annotatedString = buildAnnotatedString {
         val lowerExample = example.lowercase()
         val lowerTarget = targetWord.lowercase()
         val startIndex = lowerExample.indexOf(lowerTarget)
@@ -20,8 +29,7 @@ fun HighlightTargetWord(example: String, targetWord: String): androidx.compose.u
             withStyle(
                 style = SpanStyle(
                     fontWeight = FontWeight.Bold,
-                    textDecoration = TextDecoration.Underline,
-                    color = AppColors.Slate900
+                    color = Color.Black,
                 )
             ) {
                 append(example.substring(startIndex, startIndex + targetWord.length))
@@ -31,4 +39,12 @@ fun HighlightTargetWord(example: String, targetWord: String): androidx.compose.u
             append(example)
         }
     }
+
+    Text(
+        text = annotatedString,
+        fontSize = AppTextSizes.TextSizeMain,
+        color = AppColors.GrayText,
+        lineHeight = AppTextSizes.TextSize24,
+        modifier = modifier
+    )
 }

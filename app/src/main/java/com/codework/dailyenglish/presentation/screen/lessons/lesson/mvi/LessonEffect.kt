@@ -4,6 +4,5 @@ import com.codework.dailyenglish.core.base.BaseEffect
 
 sealed interface LessonEffect : BaseEffect {
     data object NavigateBack : LessonEffect
-    data class NavigateToResult(val lessonId: String) : LessonEffect
-    data class ShowQuitDialog(val currentProgress: Float) : LessonEffect
+    data class NavigateToResult(val scorePercentage: Int, val starsEarned: Int, val lessonId: String) : LessonEffect
 }

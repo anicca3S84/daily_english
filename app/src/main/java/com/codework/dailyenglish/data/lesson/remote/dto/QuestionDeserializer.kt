@@ -17,6 +17,12 @@ class QuestionDeserializer : JsonDeserializer<QuestionDto> {
         val type = jsonObject.get("type")?.asString
         val selectedOptionId = jsonObject.get("selectedOptionId")?.takeUnless { it.isJsonNull }?.asString
         val contentElement = jsonObject.get("content")
+        val userAnswer = jsonObject.get("userAnswer")?.takeUnless { it.isJsonNull }?.asString
+        val isCorrect = jsonObject.get("isCorrect")?.takeUnless { it.isJsonNull }?.asBoolean
+        val selectedIndices = jsonObject.get("selectedIndices")?.takeUnless { it.isJsonNull }?.asJsonArray?.map {
+            it.asInt
+        }
+
 
         val parsedContent: QuestionContentDto? = if (contentElement != null && !contentElement.isJsonNull) {
             when (type) {
@@ -36,7 +42,10 @@ class QuestionDeserializer : JsonDeserializer<QuestionDto> {
             id = id,
             type = type,
             content = parsedContent,
-            selectedOptionId = selectedOptionId
+            selectedOptionId = selectedOptionId,
+            userAnswer = userAnswer,
+            selectedIndices = selectedIndices,
+            isCorrect = isCorrect
         )
     }
 }

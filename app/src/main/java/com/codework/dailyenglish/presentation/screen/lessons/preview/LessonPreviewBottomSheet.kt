@@ -2,7 +2,6 @@ package com.codework.dailyenglish.presentation.screen.lessons.preview
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -14,7 +13,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +30,7 @@ import com.codework.dailyenglish.presentation.theme.AppTextSizes
 import com.codework.dailyenglish.presentation.theme.CourseTheme
 import com.codework.dailyenglish.presentation.theme.Spaces
 import com.codework.dailyenglish.R
+import com.codework.dailyenglish.presentation.screen.lessons.preview.components.StatTag
 import com.codework.dailyenglish.presentation.theme.AppColors
 
 @Composable
@@ -105,27 +104,31 @@ private fun LessonPreviewMainContent(
 ) {
     val scrollState = rememberScrollState()
 
-    Box(
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth()
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
         ) {
             Column(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
+                    .align(Alignment.Center)
                     .verticalScroll(scrollState)
-                    .padding(horizontal = Spaces.Space24),
-                verticalArrangement = Arrangement.Center,
+                    .padding(horizontal = Spaces.Space24, vertical = Spaces.Space16),
+                verticalArrangement = Arrangement.spacedBy(Spaces.Space24),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+
                 Box(
                     modifier = Modifier
-                        .padding(top = Spaces.Space8, bottom = Spaces.Space24)
-                        .size(Spaces.Space80 + Spaces.Space16)
-                        .background(Color(0xFFDBEAFE), RoundedCornerShape(AppRadius.RadiusExtraLarge)),
+                        .size(Spaces.Space96)
+                        .background(
+                            Color(0xFFDBEAFE),
+                            RoundedCornerShape(AppRadius.RadiusExtraLarge)
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -134,71 +137,50 @@ private fun LessonPreviewMainContent(
                     )
                 }
 
-                Text(
-                    text = preview.title,
-                    color = Color(0xFF1F2937),
-                    fontWeight = FontWeight.Black,
-                    fontSize = AppTextSizes.TextSize26,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(Spaces.Space16))
-
-                Text(
-                    text = preview.subtitle,
-                    color = Color(0xFF4B5563),
-                    textAlign = TextAlign.Center,
-                    fontSize = AppTextSizes.TextSizeTitle,
-                    lineHeight = Spaces.Space24.value.sp,
-                    modifier = Modifier.padding(horizontal = Spaces.Space16)
-                )
-
-                Row(
-                    modifier = Modifier.padding(top = Spaces.Space16, bottom = Spaces.Space24),
-                    horizontalArrangement = Arrangement.spacedBy(Spaces.Space8)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(Spaces.Space8)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .background(Color(0xFFF3F4F6), RoundedCornerShape(AppRadius.RadiusMedium))
-                            .padding(horizontal = Spaces.Space12, vertical = Spaces.Space6),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Schedule,
-                            contentDescription = null,
-                            modifier = Modifier.size(AppIcons.IconSizeExtraSmall),
-                            tint = Color(0xFF4B5563)
-                        )
-                        Spacer(modifier = Modifier.width(Spaces.Space6))
-                        Text(
-                            text = preview.duration,
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF4B5563)
-                        )
-                    }
+                    Text(
+                        text = preview.title,
+                        color = Color(0xFF1F2937),
+                        fontWeight = FontWeight.Black,
+                        fontSize = AppTextSizes.TextSize26,
+                        textAlign = TextAlign.Center
+                    )
 
-                    Row(
-                        modifier = Modifier
-                            .background(Color(0xFFFEFCE8), RoundedCornerShape(AppRadius.RadiusMedium))
-                            .padding(horizontal = Spaces.Space12, vertical = Spaces.Space6),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.EmojiEvents,
-                            contentDescription = null,
-                            modifier = Modifier.size(AppIcons.IconSizeExtraSmall),
-                            tint = Color(0xFFEAB308)
-                        )
-                        Spacer(modifier = Modifier.width(Spaces.Space6))
-                        Text(
-                            text = stringResource(R.string.label_xp_reward, preview.xpReward),                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFCA8A04)
-                        )
-                    }
+                    Spacer(Modifier.width(Spaces.Space3))
+
+                    Text(
+                        text = preview.subtitle,
+                        color = Color(0xFF4B5563),
+                        textAlign = TextAlign.Center,
+                        fontSize = AppTextSizes.TextSizeTitle,
+                        lineHeight = 24.sp
+                    )
                 }
 
+                // ⏱ + XP
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(Spaces.Space8),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    StatTag(
+                        icon = Icons.Rounded.Schedule,
+                        text = preview.duration,
+                        containerColor = Color(0xFFF3F4F6),
+                        contentColor = Color(0xFF4B5563)
+                    )
+
+                    StatTag(
+                        icon = Icons.Rounded.EmojiEvents,
+                        text = stringResource(R.string.label_xp_reward, preview.xpReward),
+                        containerColor = Color(0xFFFEFCE8),
+                        contentColor = Color(0xFFCA8A04)
+                    )
+                }
+
+                // 📖 DESCRIPTION
                 Text(
                     text = preview.content,
                     color = AppColors.GrayText,
@@ -206,88 +188,87 @@ private fun LessonPreviewMainContent(
                     textAlign = TextAlign.Center
                 )
 
-                Box(
-                    modifier = Modifier
-                        .padding(top = Spaces.Space16, bottom = Spaces.Space100)
-                        .fillMaxWidth()
-                        .background(Color(0xFFEFF6FF), RoundedCornerShape(Spaces.Space20))
-                        .border(Spaces.Space1, Color(0xFFDBEAFE), RoundedCornerShape(Spaces.Space20))
-                        .padding(Spaces.Space20)
+                // 🎯 OBJECTIVES
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(Spaces.Space16),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(bottom = Spaces.Space8)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Star,
-                                contentDescription = null,
-                                tint = AppColors.BluePrimary,
-                                modifier = Modifier.size(AppIcons.IconSizeSmall)
-                            )
-                            Spacer(modifier = Modifier.width(Spaces.Space8))
-                            Text(
-                                text = stringResource(R.string.label_what_will_you_learn),
-                                fontWeight = FontWeight.Bold,
-                                color = AppColors.GrayText,
-                                fontSize = AppTextSizes.TextSizeMain
-                            )
-                        }
 
-                        Column(verticalArrangement = Arrangement.spacedBy(Spaces.Space14)) {
-                            for (i in 0 until preview.outcomes.size){
-                                ObjectiveItem(preview.outcomes[i])
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Rounded.Star,
+                            null,
+                            tint = AppColors.BluePrimary,
+                            modifier = Modifier.size(AppIcons.IconSizeSmall)
+                        )
+
+                        Spacer(Modifier.width(Spaces.Space8))
+
+                        Text(
+                            text = stringResource(R.string.label_what_will_you_learn),
+                            fontWeight = FontWeight.Bold,
+                            color = AppColors.TitleColor,
+                            fontSize = AppTextSizes.TextSizeMain
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                Color(0xFFEFF6FF),
+                                RoundedCornerShape(Spaces.Space20)
+                            )
+                            .border(
+                                Spaces.Space1,
+                                Color(0xFFDBEAFE),
+                                RoundedCornerShape(Spaces.Space20)
+                            )
+                            .padding(Spaces.Space20)
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(Spaces.Space14)
+                        ) {
+                            preview.outcomes.forEach { outcome ->
+                                ObjectiveItem(outcome)
                             }
                         }
-
-
-
                     }
                 }
             }
         }
 
-        Box(
+        // 👇 BUTTON (fixed bottom)
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(Spaces.Space24)
-                .align(Alignment.BottomCenter),
+                .padding(Spaces.Space24),
+            color = Color.Transparent
         ) {
-            Box(
+            Button(
+                onClick = { onStartClick(preview.id) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(Spaces.Space64)
-                    .clip(RoundedCornerShape(Spaces.Space16))
-                    .clickable { onStartClick(preview.id) }
+                    .height(Spaces.Space56),
+                shape = RoundedCornerShape(Spaces.Space16),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF3B82F6)
+                )
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(bottom = Spaces.Space6)
-                        .background(Color(0xFF3B82F6), RoundedCornerShape(Spaces.Space16)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.PlayCircle,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(AppIcons.IconSizeMedium)
-                        )
-                        Spacer(modifier = Modifier.width(Spaces.Space8))
-                        Text(
-                            text = stringResource(R.string.action_start_learning),
-                            color = Color.White,
-                            fontWeight = FontWeight.Black,
-                            fontSize = AppTextSizes.TextSizeTitle,
-                            letterSpacing = Spaces.Space1.value.sp
-                        )
-                    }
-                }
+                Icon(Icons.Rounded.PlayCircle, null, tint = Color.White)
+
+                Spacer(Modifier.width(Spaces.Space8))
+
+                Text(
+                    text = stringResource(R.string.action_start_learning),
+                    color = Color.White,
+                    fontWeight = FontWeight.W700,
+                    fontSize = AppTextSizes.TextSizeTitle
+                )
             }
         }
     }
 }
+

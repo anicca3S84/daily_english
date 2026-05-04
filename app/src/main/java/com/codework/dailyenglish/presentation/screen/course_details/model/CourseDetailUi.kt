@@ -24,6 +24,7 @@ enum class SkillType(
 data class LessonUi(
     val id: String,
     val title: String,
+    val subTitle: String,
     val description: String,
     val status: LessonStatus,
     val progress: Float = 0f,

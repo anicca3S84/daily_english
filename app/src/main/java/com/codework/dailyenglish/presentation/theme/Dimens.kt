@@ -36,16 +36,23 @@ object Spaces {
     val Space44 = 44.dp
     val Space48 = 48.dp
     val Space50 = 50.dp
+    val Space52 = 52.dp
     val Space56 = 56.dp
     val Space60 = 60.dp
     val Space64 = 64.dp
     val Space68 = 68.dp
     val Space75 = 75.dp
     val Space80 = 80.dp
+    val Space96 = 96.dp
     val Space100 = 100.dp
     val Space165 = 165.dp
     val Space200 = 200.dp
+    val Space250 = 250.dp
     val Space300 = 300.dp
+    val Space400 = 400.dp
+    val Space450 = 450.dp
+    val Space475 = 475.dp
+    val Space500 = 500.dp
 }
 
 /**
@@ -61,6 +68,7 @@ object AppTextSizes {
     val TextSizeHeadline = 28.sp
     val TextSizeDisplay = 36.sp
 
+    val TextSize11 = 11.sp
     val TextSize13 = 13.sp
     val TextSize15 = 15.sp
     val TextSize20 = 20.sp
@@ -79,7 +87,8 @@ object AppRadius{
     val RadiusLarge = 16.dp
     val RadiusExtraLarge = 24.dp
     val RadiusFull = 100.dp
-    val Radius32 = 100.dp
+    val Radius32 = 32.dp
+    val Radius20 = 20.dp
 }
 
 object AppIcons{

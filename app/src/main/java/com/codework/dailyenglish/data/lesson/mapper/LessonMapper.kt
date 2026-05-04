@@ -2,6 +2,15 @@ package com.codework.dailyenglish.data.lesson.mapper
 
 import com.codework.dailyenglish.data.lesson.remote.dto.*
 import com.codework.dailyenglish.domain.lesson.model.*
+import kotlin.Boolean
+
+fun LessonResultResponseDto.toResultDomain(): LessonResult {
+    return LessonResult(
+        scorePercentage = this.scorePercentage ?: 0,
+        starsEarned = this.starsEarned ?: 0,
+        xpEarned = this.xpEarned ?: 0
+    )
+}
 
 fun LessonPlayResponseDto.toDomain(): LessonPlay {
     return LessonPlay(
@@ -11,6 +20,7 @@ fun LessonPlayResponseDto.toDomain(): LessonPlay {
         steps = this.steps?.map { it.toDomain() } ?: emptyList()
     )
 }
+
 
 fun LessonStepDto.toDomain(): LessonStep {
     val domainStepType = when(this.stepType) {
@@ -30,17 +40,19 @@ fun LessonStepDto.toDomain(): LessonStep {
             ukAudioUrl = dtoData.ukAudioUrl,
             usAudioUrl = dtoData.usAudioUrl,
             examples = dtoData.examples,
-            suggests = dtoData.suggests
+            relatedWords = dtoData.relatedWords
         )
         is QuestionDto -> {
             val domainContent = when (val dtoContent = dtoData.content) {
                 is QuestionContentDto.MultipleChoice -> QuestionContent.MultipleChoice(
                     prompt = dtoContent.prompt.orEmpty(),
+                    audioUrl = dtoContent.audioUrl,
+                    translation = dtoContent.translation,
                     options = dtoContent.options?.map {
                         QuestionContent.MultipleChoice.Option(
                             id = it.id.orEmpty(),
                             text = it.text.orEmpty(),
-                            isCorrect = it.isCorrect ?: false
+                            isCorrect = it.isCorrect ?: false,
                         )
                     } ?: emptyList()
                 )
@@ -48,8 +60,7 @@ fun LessonStepDto.toDomain(): LessonStep {
                 is QuestionContentDto.SentenceBuilder -> QuestionContent.SentenceBuilder(
                     prompt = dtoContent.prompt.orEmpty(),
                     correctSentence = dtoContent.correctSentence.orEmpty(),
-                    jumbledWords = dtoContent.jumbledWords ?: emptyList(),
-                    extraWords = dtoContent.extraWords ?: emptyList()
+                    words = dtoContent.words ?: emptyList(),
                 )
 
                 is QuestionContentDto.Matching -> QuestionContent.Matching(
@@ -66,7 +77,8 @@ fun LessonStepDto.toDomain(): LessonStep {
                     prompt = dtoContent.prompt.orEmpty(),
                     sentenceWithBlank = dtoContent.sentenceWithBlank.orEmpty(),
                     correctAnswer = dtoContent.correctAnswer.orEmpty(),
-                    options = dtoContent.options ?: emptyList()
+                    options = dtoContent.options ?: emptyList(),
+                    hintMask = dtoContent.hintMask ?: emptyList()
                 )
 
                 is QuestionContentDto.Dictation -> QuestionContent.Dictation(
@@ -92,7 +104,10 @@ fun LessonStepDto.toDomain(): LessonStep {
                 type = dtoData.type.orEmpty(),
                 content = domainContent,
                 selectedOptionId = dtoData.selectedOptionId,
-                isAnswerEvaluated = dtoData.selectedOptionId != null
+                isAnswerEvaluated = dtoData.selectedOptionId != null,
+                userAnswer = dtoData.userAnswer.orEmpty(),
+                selectedIndices = dtoData.selectedIndices ?: emptyList(),
+                isCorrect = dtoData.isCorrect,
             )
         }
         is TheoryDto -> StepData.Theory(

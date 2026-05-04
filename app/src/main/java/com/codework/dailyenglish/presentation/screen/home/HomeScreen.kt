@@ -182,12 +182,10 @@ fun HomeContent(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // SỬA Ở ĐÂY: Dùng mockCourses thay vì data.continueLearningList
                         items(mockCourses) { course ->
                             CourseCard(
-                                course = course, // Truyền đúng kiểu dữ liệu CourseItem
+                                course = course,
                                 onClick = {
-                                    // Chưa có logic click thì để trống hoặc log ra
                                     println("Clicked course: ${course.title}")
                                 }
                             )

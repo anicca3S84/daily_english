@@ -28,14 +28,17 @@ data class VocabDto(
     @SerializedName("ukAudioUrl") val ukAudioUrl: String?,
     @SerializedName("usAudioUrl") val usAudioUrl: String?,
     @SerializedName("examples") val examples: List<String>?,
-    @SerializedName("suggests") val suggests: List<String>?
+    @SerializedName("relatedWords") val relatedWords: List<String>?
 ) : StepDataDto
 
 data class QuestionDto(
     val id: String?,
     val type: String?,
     val content: QuestionContentDto?,
-    @SerializedName("selectedOptionId") val selectedOptionId: String?
+    @SerializedName("selectedOptionId") val selectedOptionId: String?,
+    @SerializedName("userAnswer") val userAnswer: String?,
+    @SerializedName("selectedIndices") val selectedIndices: List<Int>?,
+    @SerializedName("isCorrect") val isCorrect: Boolean?
 ) : StepDataDto
 
 
@@ -48,6 +51,8 @@ data class TheoryDto(
 sealed class QuestionContentDto {
     data class MultipleChoice(
         val prompt: String?,
+        val audioUrl: String?,
+        val translation: String?,
         val options: List<OptionDto>?
     ) : QuestionContentDto() {
         data class OptionDto(
@@ -58,10 +63,9 @@ sealed class QuestionContentDto {
     }
 
     data class SentenceBuilder(
-        val prompt: String?,
+        @SerializedName("prompt") val prompt: String?,
         @SerializedName("correctSentence") val correctSentence: String?,
-        @SerializedName("jumbledWords") val jumbledWords: List<String>?,
-        @SerializedName("extraWords") val extraWords: List<String>?
+        @SerializedName("words") val words: List<String>?
     ) : QuestionContentDto()
 
 
@@ -79,7 +83,8 @@ sealed class QuestionContentDto {
         val prompt: String?,
         val sentenceWithBlank: String?,
         val correctAnswer: String?,
-        val options: List<String>?
+        val options: List<String>?,
+        val hintMask: List<String>?
     ) : QuestionContentDto()
 
     data class Dictation(

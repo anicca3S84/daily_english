@@ -1,146 +1,101 @@
 package com.codework.dailyenglish.presentation.screen.lessons.lesson.components.vocab
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.TouchApp
-import androidx.compose.material.icons.outlined.StarBorder
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import com.codework.dailyenglish.R
+import androidx.compose.ui.unit.sp
 import com.codework.dailyenglish.domain.lesson.model.StepData
-import com.codework.dailyenglish.presentation.theme.AppColors
-import com.codework.dailyenglish.presentation.theme.AppIcons
-import com.codework.dailyenglish.presentation.theme.AppTextSizes
 import com.codework.dailyenglish.presentation.theme.Spaces
-
+import com.codework.dailyenglish.R
 @Composable
 fun VocabCardFront(
     data: StepData.Vocab,
     isFavorite: Boolean,
     onToggleFavorite: () -> Unit,
-    onPlayAudio: (String, Float) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(Spaces.Space20),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = Spaces.Space10),
-            horizontalArrangement = Arrangement.Absolute.Right,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = { onToggleFavorite() },
-                modifier = Modifier.size(AppIcons.IconSizeLarge)
-            ) {
-                Icon(
-                    imageVector = if (isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder,
-                    contentDescription = "",
-                    tint = if (isFavorite) Color(0xFFFFC107) else AppColors.Slate300,
-                    modifier = Modifier.size(Spaces.Space28)
-                )
-            }
-        }
+    // Hiệu ứng nhấp nháy cho text "Chạm để lật"
+    val infiniteTransition = rememberInfiniteTransition(label = "pulseTransition")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(800),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseAlpha"
+    )
 
-        Spacer(modifier = Modifier.height(Spaces.Space16))
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(Spaces.Space300)
-                .padding(horizontal = Spaces.Space18)
-                .clip(RoundedCornerShape(Spaces.Space20))
-                .background(AppColors.Slate50),
-            contentAlignment = Alignment.Center
-        ) {
-            if (data.imageUrl.isNullOrEmpty()) {
-                Icon(
-                    imageVector = Icons.Default.Image,
-                    contentDescription = null,
-                    tint = AppColors.Slate100,
-                    modifier = Modifier.size(AppIcons.IconSizeExtraLarge)
-                )
-            } else {
-                // TODO: Sử dụng AsyncImage ở đây
-                Box(modifier = Modifier.fillMaxSize().background(AppColors.Indigo50))
-            }
-        }
-
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
+                .fillMaxSize()
+                .padding(Spaces.Space24),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Spacer(modifier = Modifier.height(Spaces.Space32))
+            Text(
+                text = "🚀",
+                fontSize = 80.sp,
+                modifier = Modifier.padding(bottom = Spaces.Space32)
+            )
+
             Text(
                 text = data.word,
-                fontSize = AppTextSizes.TextSize32,
-                fontWeight = FontWeight.W500,
-                color = Color.Black,
+                fontSize = 36.sp,
+                fontWeight = FontWeight.Black,
+                color = Color(0xFF4B4B4B),
                 textAlign = TextAlign.Center,
             )
 
-            Spacer(modifier = Modifier.height(Spaces.Space10))
+            Spacer(modifier = Modifier.height(Spaces.Space8))
 
             if (!data.usPhonetic.isNullOrEmpty()) {
                 Text(
-                    text = data.usPhonetic,
-                    fontSize = AppTextSizes.TextSizeTitle,
-                    color = AppColors.Slate500,
-                    fontWeight = FontWeight.Medium
+                    text = "${data.usPhonetic} (adj)",
+                    fontSize = 20.sp,
+                    color = Color.Gray,
+                    fontWeight = FontWeight.Bold
                 )
             }
-
-            Spacer(modifier = Modifier.height(Spaces.Space20))
         }
 
-        Row(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            verticalAlignment = Alignment.CenterVertically
+        // Hint lật thẻ
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = Spaces.Space24),
+            contentAlignment = Alignment.BottomCenter
         ) {
-            Icon(
-                imageVector = Icons.Default.TouchApp,
-                contentDescription = null,
-                tint = AppColors.Slate400,
-                modifier = Modifier.size(Spaces.Space14)
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.alpha(pulseAlpha) // Áp dụng animation nhấp nháy
+            ) {
+                Icon(
+                    imageVector = Icons.Default.TouchApp,
+                    contentDescription = null,
+                    tint = Color.Gray,
+                    modifier = Modifier.size(Spaces.Space20)
+                )
 
-            Spacer(modifier = Modifier.width(Spaces.Space6))
+                Spacer(modifier = Modifier.width(Spaces.Space8))
 
-            Text(
-                text = stringResource(R.string.label_tap_to_flip),
-                fontSize = AppTextSizes.TextSizeLabel,
-                color = AppColors.Slate400
-            )
+                Text(
+                    text = stringResource(R.string.label_tap_to_flip),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Gray
+                )
+            }
         }
     }
 }

@@ -1,20 +1,18 @@
 package com.codework.dailyenglish.presentation.screen.lessons.lesson.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowForward
-import androidx.compose.material.icons.rounded.ArrowForward
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,12 +24,13 @@ import androidx.compose.ui.unit.sp
 import com.codework.dailyenglish.R
 import com.codework.dailyenglish.domain.lesson.model.LessonStep
 import com.codework.dailyenglish.domain.lesson.model.StepData
-import com.codework.dailyenglish.presentation.theme.AppColors
-import com.codework.dailyenglish.presentation.theme.AppIcons
-import com.codework.dailyenglish.presentation.theme.AppRadius
-import com.codework.dailyenglish.presentation.theme.ButtonHeightLarge
-import com.codework.dailyenglish.presentation.theme.Spaces
-import com.codework.dailyenglish.presentation.theme.AppTextSizes
+
+private val BluePrimary = Color(0xFF2196F3)
+private val BlueShadow = Color(0xFF1565C0)
+
+private val GrayDisabled = Color(0xFFE5E5E5)
+private val GrayShadow = Color(0xFFCECECE)
+private val GrayText = Color(0xFFAFAFAF)
 
 @Composable
 fun LessonBottomBar(
@@ -40,61 +39,84 @@ fun LessonBottomBar(
     modifier: Modifier = Modifier
 ) {
     val isEnabled = when (val data = currentStep?.data) {
-        is StepData.Question -> data.selectedOptionId != null
+        is StepData.Question -> data.isUserAnswered || data.isAnswerEvaluated
         else -> true
     }
 
-    val topColor = if (isEnabled) Color(0xFF3B82F6) else Color(0xFFE5E7EB)
-    val bottomColor = if (isEnabled) Color(0xFF2563EB) else Color(0xFF9CA3AF)
-    val contentColor = if (isEnabled) Color.White else Color(0xFF9CA3AF)
+    val buttonText = when (val data = currentStep?.data) {
+        is StepData.Vocab -> "TIẾP TỤC"
+        is StepData.Question -> if (data.isAnswerEvaluated) "TIẾP TỤC" else "KIỂM TRA"
+        else -> "TIẾP TỤC"
+    }
+
+    val topColor by animateColorAsState(
+        targetValue = if (isEnabled) BluePrimary else GrayDisabled,
+        label = "topColor"
+    )
+
+    val bottomColor by animateColorAsState(
+        targetValue = if (isEnabled) BlueShadow else GrayShadow,
+        label = "bottomColor"
+    )
+
+    val textColor by animateColorAsState(
+        targetValue = if (isEnabled) Color.White else GrayText,
+        label = "textColor"
+    )
 
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = Color.Transparent // Hoặc Color.White tùy design của bạn
+        color = Color.Transparent
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .navigationBarsPadding(),
-            contentAlignment = Alignment.Center // <--- CHỐT HẠ: Đưa cái nút ra chính giữa
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 24.dp),
+            contentAlignment = Alignment.Center
         ) {
+            val interactionSource = remember { MutableInteractionSource() }
+            val isPressed by interactionSource.collectIsPressedAsState()
+            val topOffset by animateDpAsState(
+                targetValue = if (isPressed && isEnabled) 4.dp else 0.dp,
+                animationSpec = tween(100), label = "3D_Offset"
+            )
+
             Box(
                 modifier = Modifier
-                    .wrapContentWidth() // <--- Nút sẽ co dãn theo nội dung bên trong
-                    .height(Spaces.Space64)
-                    .background(bottomColor, RoundedCornerShape(Spaces.Space16))
-                    .clip(RoundedCornerShape(Spaces.Space16))
-                    .then(if (isEnabled) Modifier.clickable { onNextClick() } else Modifier)
+                    .fillMaxWidth()
+                    .height(56.dp)
             ) {
                 Box(
                     modifier = Modifier
-                        .wrapContentWidth() // <--- Đồng bộ độ rộng
-                        .fillMaxHeight()
-                        .padding(bottom = if (isEnabled) Spaces.Space6 else 0.dp)
-                        .background(topColor, RoundedCornerShape(Spaces.Space16)),
+                        .fillMaxWidth()
+                        .height(52.dp)
+                        .align(Alignment.BottomCenter)
+                        .background(bottomColor, RoundedCornerShape(16.dp))
+                )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                        .offset(y = topOffset)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(topColor)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null,
+                            enabled = isEnabled,
+                            onClick = onNextClick
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = Spaces.Space32), // <--- Tạo khoảng trống 2 bên chữ cho đẹp
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.ArrowForward,
-                            contentDescription = null,
-                            tint = contentColor,
-                            modifier = Modifier.size(AppIcons.IconSizeMedium)
-                        )
-                        Spacer(modifier = Modifier.width(Spaces.Space8))
-                        Text(
-                            text = stringResource(R.string.label_continue).uppercase(),
-                            color = contentColor,
-                            fontWeight = FontWeight.Black,
-                            fontSize = AppTextSizes.TextSizeTitle,
-                            letterSpacing = Spaces.Space1.value.sp,
-                            maxLines = 1 // Đảm bảo chữ không bị xuống dòng
-                        )
-                    }
+                    Text(
+                        text = buttonText.uppercase(),
+                        color = textColor,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 16.sp,
+                        letterSpacing = 1.sp
+                    )
                 }
             }
         }

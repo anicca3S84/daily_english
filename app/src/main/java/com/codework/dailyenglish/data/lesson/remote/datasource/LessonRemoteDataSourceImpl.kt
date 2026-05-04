@@ -6,6 +6,7 @@ import com.codework.dailyenglish.core.network.unwrap
 import com.codework.dailyenglish.core.network.map
 import com.codework.dailyenglish.data.lesson.LessonApi
 import com.codework.dailyenglish.data.lesson.remote.dto.LessonPlayResponseDto
+import com.codework.dailyenglish.data.lesson.remote.dto.LessonResultResponseDto
 import com.codework.dailyenglish.data.lesson.remote.dto.UpdateProgressRequestDto
 import javax.inject.Inject
 
@@ -24,6 +25,8 @@ class LessonRemoteDataSourceImpl @Inject constructor(
         cursor: Int,
         questionId: String?,
         optionId: String?,
+        userAnswer: String?,
+        selectedIndices: List<Int>?,
         isCorrect: Boolean?
     ): AppResult<Unit> {
         return safeApiCall {
@@ -31,9 +34,17 @@ class LessonRemoteDataSourceImpl @Inject constructor(
                 resumeCursor = cursor,
                 questionId = questionId,
                 selectedOptionId = optionId,
-                isCorrect = isCorrect
+                isCorrect = isCorrect,
+                userAnswer = userAnswer,
+                selectedIndices = selectedIndices
             )
             api.updateLessonProgress(lessonId, request)
         }.unwrap().map { Unit }
+    }
+
+    override suspend fun completeLesson(lessonPublicId: String): AppResult<LessonResultResponseDto> {
+        return safeApiCall {
+            api.completeLesson(lessonPublicId)
+        }.unwrap()
     }
 }

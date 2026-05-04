@@ -15,23 +15,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.AppTextSizes
 import com.codework.dailyenglish.presentation.theme.Spaces
 
 @Composable
 fun ObjectiveItem(text: String) {
     Row(
-        verticalAlignment = Alignment.Top,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Icon(
             imageVector = Icons.Rounded.CheckCircle,
             contentDescription = null,
-            tint = Color(0xFF22C55E),
+            tint = AppColors.GreenMain,
             modifier = Modifier
-                .size(Spaces.Space22)
+                .size(Spaces.Space20)
                 .padding(top = Spaces.Space2)
         )
 
@@ -40,10 +41,13 @@ fun ObjectiveItem(text: String) {
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium.copy(
-                fontSize = AppTextSizes.TextSize15
+                fontSize = AppTextSizes.TextSize15,
+                lineHeight = 22.sp,
+                platformStyle = PlatformTextStyle(
+                    includeFontPadding = false
+                )
             ),
             color = Color(0xFF374151),
-            lineHeight = Spaces.Space22.value.sp,
             fontWeight = FontWeight.Medium
         )
     }

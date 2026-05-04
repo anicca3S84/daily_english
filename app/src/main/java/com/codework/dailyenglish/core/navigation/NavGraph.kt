@@ -2,11 +2,17 @@ package com.codework.dailyenglish.core.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.codework.dailyenglish.presentation.screen.lessons.review.model.QuizType
+import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
+import com.codework.dailyenglish.presentation.components.AppCongratulationsScreen
 import com.codework.dailyenglish.presentation.screen.ai.*
 import com.codework.dailyenglish.presentation.screen.ai.mvi.AiEffect
 import com.codework.dailyenglish.presentation.screen.ai.mvi.AiEvent
@@ -133,19 +139,39 @@ fun NavGraph(
                     is LessonEffect.NavigateBack -> navController.popBackStack()
                     is LessonEffect.NavigateToResult -> {
                         navController.navigate(
-                            Route.LessonScreen(
+                            Route.LessonResultScreen(
+                                scorePercentage = effect.scorePercentage,
+                                starsEarned = effect.starsEarned,
                                 lessonId = effect.lessonId
                             )
                         ) {
                             popUpTo<Route.LessonScreen> { inclusive = true }
                         }
                     }
-                    is LessonEffect.ShowQuitDialog -> {
-                    }
                 }
             }
         ) { state, onEvent ->
             LessonScreen(state = state, onEvent = onEvent)
+        }
+
+        composable<Route.LessonResultScreen> { backStackEntry ->
+            val route = backStackEntry.toRoute<Route.LessonResultScreen>()
+            AppCongratulationsScreen(
+                scorePercentage = route.scorePercentage,
+                starsEarned = route.starsEarned,
+                onPrimaryClick = {
+                    try {
+                        navController.getBackStackEntry<Route.CourseDetailScreen>()
+                            .savedStateHandle["should_refresh"] = true
+                    } catch (_: IllegalArgumentException) {
+                    }
+
+                    navController.popBackStack<Route.CourseDetailScreen>(inclusive = false)
+                },
+                onSecondaryClick = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         composableScreen<Route.PracticeScreen, PracticeViewModel, PracticeState, PracticeEvent, PracticeEffect>(
@@ -361,6 +387,20 @@ fun NavGraph(
                 }
             }
         ) { state, onEvent ->
+            val currentEntry = navController.currentBackStackEntry
+            val detailBackStackEntry = remember(currentEntry) {
+                navController.getBackStackEntry<Route.CourseDetailScreen>()
+            }
+            val refreshSignal by detailBackStackEntry.savedStateHandle
+                .getStateFlow("should_refresh", false)
+                .collectAsStateWithLifecycle()
+
+            LaunchedEffect(refreshSignal) {
+                if (refreshSignal) {
+                    onEvent(CourseDetailEvent.OnRefresh)
+                    detailBackStackEntry.savedStateHandle["should_refresh"] = false
+                }
+            }
             CourseDetailsScreen(
                 state = state,
                 onEvent = onEvent,

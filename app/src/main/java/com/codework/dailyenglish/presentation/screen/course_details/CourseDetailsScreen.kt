@@ -31,7 +31,6 @@ import com.codework.dailyenglish.presentation.screen.course_details.mvi.CourseDe
 import com.codework.dailyenglish.presentation.screen.course_details.mvi.CourseDetailState
 import com.codework.dailyenglish.presentation.screen.lessons.preview.LessonPreviewPopup
 import com.codework.dailyenglish.presentation.theme.AppColors
-import com.codework.dailyenglish.presentation.theme.AppRadius
 import com.codework.dailyenglish.presentation.theme.Spaces
 import com.codework.dailyenglish.presentation.theme.AppTextSizes
 import androidx.compose.ui.text.TextStyle

@@ -9,10 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.codework.dailyenglish.domain.lesson.model.StepData
-import com.codework.dailyenglish.presentation.components.GridBackground
+import com.codework.dailyenglish.presentation.components.AppConfirmDialog
 import com.codework.dailyenglish.presentation.components.StateWrapper
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.components.LessonStepRenderer
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi.LessonEvent
@@ -21,6 +20,9 @@ import com.codework.dailyenglish.presentation.components.AppProgressTopBar
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.components.LessonBottomBar
 import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.Spaces
+import com.codework.dailyenglish.R
+import com.codework.dailyenglish.domain.lesson.model.QuestionContent
+import com.codework.dailyenglish.presentation.components.AnswerBottomSheet
 
 @Composable
 fun LessonScreen(
@@ -49,7 +51,7 @@ fun LessonScreen(
                             progress = data.progressPercent,
                             progressText = data.progressText,
                             onBackClick = { onEvent(LessonEvent.OnPreviousStep) },
-                            onCloseClick = { onEvent(LessonEvent.OnQuitClicked) }
+                            onCloseClick = { onEvent(LessonEvent.OnQuitClick) }
                         )
 
                         AnimatedContent(
@@ -67,14 +69,21 @@ fun LessonScreen(
                             if (step != null) {
                                 LessonStepRenderer(
                                     step = step,
-                                    onOptionSelected = { optionId ->
-                                        onEvent(LessonEvent.OnOptionSelected(optionId))
+                                    onAnswerInput = { answer, indices ->
+                                        onEvent(LessonEvent.OnAnswerInput(answer = answer, indices = indices))
                                     },
-                                    modifier = Modifier.fillMaxSize()
+                                    onPlayAudio = { url, word, speed ->
+                                        onEvent(LessonEvent.OnPlayAudio(url, word, speed))
+                                    },
+                                    modifier = Modifier.fillMaxSize(),
                                 )
                             }
                         }
                     }
+                    val currentStepData = data.currentStep?.data as? StepData.Question
+
+                    val shouldShowSheet = data.showResultStepIndex == data.currentIndex
+                    val isCorrect = currentStepData?.isCorrect == true
 
                     LessonBottomBar(
                         currentStep = data.currentStep,
@@ -84,7 +93,7 @@ fun LessonScreen(
                                 if (stepData.isAnswerEvaluated) {
                                     onEvent(LessonEvent.OnNextStep)
                                 } else {
-                                    if (stepData.selectedOptionId != null) {
+                                    if (stepData.isUserAnswered) {
                                         onEvent(LessonEvent.OnCheckAnswerClicked)
                                     }
                                 }
@@ -94,10 +103,41 @@ fun LessonScreen(
                         },
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
-                            .padding(horizontal = Spaces.Space16, vertical = Spaces.Space38)
+                            .padding(horizontal = Spaces.Space16)
                     )
+
+                    if (shouldShowSheet && currentStepData != null) {
+                        val correctAnswerText = when (val content = currentStepData.content) {
+                            is QuestionContent.MultipleChoice -> content.options.find { it.isCorrect }?.text
+                            is QuestionContent.SentenceBuilder -> content.correctSentence
+                            is QuestionContent.FillBlank -> content.correctAnswer
+                            is QuestionContent.Dictation -> content.correctAnswer
+                            is QuestionContent.Speaking -> content.targetText
+                            else -> null
+                        }
+                        AnswerBottomSheet(
+                            isCorrect = isCorrect,
+                            correctAnswer = correctAnswerText,
+                            onNextClicked = { onEvent(LessonEvent.OnNextStep) }
+                        )
+                    }
                 }
             }
+        }
+
+        if (state.data?.isQuitDialogVisible == true) {
+            AppConfirmDialog(
+                title = stringResource(R.string.msg_exit_lesson),
+                message = stringResource(R.string.msg_quit_lesson),
+                confirmText = stringResource(R.string.label_exit),
+                cancelText = stringResource(R.string.label_cancel),
+                onConfirm = {
+                    onEvent(LessonEvent.OnConfirmQuit)
+                },
+                onDismiss = {
+                    onEvent(LessonEvent.OnDismissQuitDialog)
+                }
+            )
         }
     }
 }

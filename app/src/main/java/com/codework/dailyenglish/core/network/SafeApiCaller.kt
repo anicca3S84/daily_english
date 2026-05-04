@@ -1,5 +1,6 @@
 package com.codework.dailyenglish.core.network
 
+import com.codework.dailyenglish.data.lesson.remote.dto.LessonPlayResponseDto
 import com.codework.dailyenglish.data.remote.response.BaseResponse
 import com.google.gson.JsonSyntaxException
 import retrofit2.HttpException

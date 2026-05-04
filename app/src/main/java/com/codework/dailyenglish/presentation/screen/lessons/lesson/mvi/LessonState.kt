@@ -7,7 +7,9 @@ import kotlin.collections.getOrNull
 data class LessonConfigUi(
     val lessonId: String,
     val steps: List<LessonStep>,
-    val currentIndex: Int
+    val currentIndex: Int,
+    val isQuitDialogVisible: Boolean = false,
+    val showResultStepIndex: Int? = null
 ) {
     val currentStep: LessonStep?
         get() = steps.getOrNull(currentIndex)

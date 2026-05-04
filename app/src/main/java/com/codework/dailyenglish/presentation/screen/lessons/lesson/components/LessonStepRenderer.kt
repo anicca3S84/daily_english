@@ -7,17 +7,24 @@ import com.codework.dailyenglish.domain.lesson.model.QuestionContent
 import com.codework.dailyenglish.domain.lesson.model.StepData
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.components.question.FillBlankQuestion
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.components.question.MultipleChoiceQuestion
+import com.codework.dailyenglish.presentation.screen.lessons.lesson.components.question.SentenceBuilderQuestion
+import com.codework.dailyenglish.presentation.screen.lessons.lesson.components.question.SpeakingQuestion
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.components.vocab.VocabCard
 
 @Composable
 fun LessonStepRenderer(
+    modifier: Modifier = Modifier,
     step: LessonStep,
-    onOptionSelected: (String) -> Unit,
-    modifier: Modifier = Modifier
+    onAnswerInput: (String, List<Int>) -> Unit,
+    onPlayAudio: (String?, String, Float) -> Unit = { _, _, _ -> },
 ) {
     when (val stepData = step.data) {
         is StepData.Vocab -> {
-            VocabCard(data = stepData, modifier = modifier)
+            VocabCard(
+                data = stepData,
+                modifier = modifier,
+                onPlayAudio = onPlayAudio
+            )
         }
 
         is StepData.Question -> {
@@ -25,7 +32,10 @@ fun LessonStepRenderer(
                 is QuestionContent.MultipleChoice -> {
                     MultipleChoiceQuestion(
                         data = stepData,
-                        onOptionSelected = onOptionSelected,
+                        onPlayAudio = onPlayAudio,
+                        onOptionSelected = { optionId ->
+                            onAnswerInput(optionId, emptyList())
+                        },
                         modifier = modifier
                     )
                 }
@@ -34,23 +44,49 @@ fun LessonStepRenderer(
                     FillBlankQuestion(
                         prompt = content.prompt,
                         sentenceWithBlank = content.sentenceWithBlank,
-                        options = content.options,
-                        initialAnswer = stepData.selectedOptionId,
-                        onAnswerSelected = onOptionSelected
+                        hintMask = content.hintMask,
+                        initialAnswer = stepData.userAnswer,
+                        onAnswerSelected = { answer ->
+                            onAnswerInput(answer, emptyList())
+                        }
                     )
                 }
 
                 is QuestionContent.SentenceBuilder -> {
-                    // TODO: UI cho SentenceBuilder
+                    SentenceBuilderQuestion(
+                        prompt = content.prompt,
+                        words = content.words,
+                        correctSentence = content.correctSentence,
+                        selectedIndices = stepData.selectedIndices,
+                        isEvaluated = stepData.isAnswerEvaluated,
+                        isCorrect = stepData.isCorrect,
+                        onAnswerSelected = { indices, text ->
+                            onAnswerInput(text, indices)
+                        }
+                    )
+                }
+
+                is QuestionContent.Speaking -> {
+                    SpeakingQuestion(
+                        prompt = content.prompt,
+                        targetText = content.targetText,
+                        phonetic = content.phonetic,
+                        translation = content.translation,
+                        initialAnswer = stepData.userAnswer,
+                        onAnswerSelected = { text ->
+                            onAnswerInput(text, emptyList())
+                        },
+                        onPlayAudio = {
+                            onPlayAudio(null, content.targetText, 1.0f)
+                        }
+                    )
                 }
 
                 is QuestionContent.Dictation -> {
                     // TODO: UI cho Dictation
                 }
 
-                is QuestionContent.Speaking -> {
-                    // TODO: UI cho Speaking
-                }
+
 
                 is QuestionContent.Matching -> {
                     // TODO: UI cho Matching

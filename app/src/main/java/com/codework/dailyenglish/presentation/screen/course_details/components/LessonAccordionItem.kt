@@ -74,7 +74,7 @@ fun LessonAccordionItem(
                 color = if (isLocked) AppColors.TextSub.copy(alpha = 0.6f) else AppColors.TextMain
             )
             Text(
-                text = lesson.description,
+                text = lesson.subTitle,
                 fontSize = AppTextSizes.TextSizeLabel,
                 color = AppColors.TextSub,
                 fontWeight = FontWeight.Medium,
@@ -95,9 +95,9 @@ fun LessonAccordionItem(
                     tint = Color.LightGray,
                     modifier = Modifier.size(Spaces.Space18)
                 )
-            } else {
-                val activeStars = if (isCompleted) 3 else 0
-
+            } else if (isCompleted) {
+                // TODO(get point from lesson)
+                val activeStars =  3
                 repeat(3) { index ->
                     Icon(
                         imageVector = Icons.Default.Star,

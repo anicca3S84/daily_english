@@ -1,242 +1,360 @@
 package com.codework.dailyenglish.presentation.screen.lessons.lesson.components.question
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.VolumeUp
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.draw.drawBehind
 
+// === BẢNG MÀU UI 3D ===
+private val ColorText = Color(0xFF4B4B4B)
+private val ColorGrayBorder = Color(0xFFE5E5E5)
+private val ColorGrayBg = Color(0xFFF3F4F6)
+
+private val ColorBlueMain = Color(0xFF1CB0F6)
+private val ColorBlueBg = Color(0xFFDDF4FF)
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FillBlankQuestion(
     prompt: String,
     sentenceWithBlank: String,
-    options: List<String>,
+    hintMask: List<String?>,
     initialAnswer: String? = null,
     onAnswerSelected: (String) -> Unit
 ) {
-    var currentAnswer by remember { mutableStateOf(initialAnswer ?: "") }
     val focusManager = LocalFocusManager.current
+    val focusRequester = remember { FocusRequester() }
+
+    // Tổng số ô vuông
+    val totalBoxes = hintMask.size
+
+    var userInput by remember(hintMask) {
+        mutableStateOf(initialAnswer?.take(totalBoxes) ?: "")
+    }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = 16.dp, vertical = 30.dp)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { focusManager.clearFocus() }
     ) {
         Text(
-            text = prompt,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF1F2937),
-            modifier = Modifier.padding(bottom = 32.dp)
+            text = "Điền vào chỗ trống",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = ColorText,
+            modifier = Modifier.padding(bottom = 24.dp)
         )
 
-        SentenceDisplay(
-            sentenceWithBlank = sentenceWithBlank,
-            currentAnswer = currentAnswer
-        )
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        if (options.isNotEmpty()) {
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                maxItemsInEachRow = 3
+        // 1. KHỐI MASCOT & BONG BÓNG CHAT
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 40.dp),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Mascot
+            Box(
+                modifier = Modifier
+                    .size(60.dp)
+                    .clip(CircleShape)
+                    .background(ColorGrayBg)
+                    .border(2.dp, ColorGrayBorder, CircleShape),
+                contentAlignment = Alignment.Center
             ) {
-                options.forEach { option ->
-                    val isSelected = option == currentAnswer
-                    OptionChip(
-                        text = option,
-                        isSelected = isSelected,
-                        onClick = {
-                            currentAnswer = if (isSelected) "" else option
-                            onAnswerSelected(currentAnswer)
-                        }
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                }
+                Text(text = "🐻", fontSize = 36.sp)
             }
-        } else {
-            OutlinedTextField(
-                value = currentAnswer,
-                onValueChange = { newValue ->
-                    currentAnswer = newValue
-                    onAnswerSelected(newValue)
-                },
-                placeholder = { Text("Gõ câu trả lời của bạn...") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF3B82F6),
-                    unfocusedBorderColor = Color(0xFFE5E7EB),
-                    focusedContainerColor = Color(0xFFEFF6FF),
-                    unfocusedContainerColor = Color(0xFFF9FAFB)
+
+            // Speech Bubble
+            Surface(
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(
+                    topStart = 4.dp, // Góc nhọn chỉ về phía con gấu
+                    topEnd = 24.dp,
+                    bottomEnd = 24.dp,
+                    bottomStart = 24.dp
                 ),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(
-                    onDone = { focusManager.clearFocus() }
-                ),
-                singleLine = true,
-                textStyle = LocalTextStyle.current.copy(
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            )
-        }
-    }
-}
-
-@Composable
-private fun SentenceDisplay(
-    sentenceWithBlank: String,
-    currentAnswer: String
-) {
-    val parts = sentenceWithBlank.split("____")
-
-    FlowRow(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.Center,
-        horizontalArrangement = Arrangement.Start
-    ) {
-        parts.forEachIndexed { index, textPart ->
-            Text(
-                text = textPart,
-                fontSize = 22.sp,
-                lineHeight = 34.sp,
-                color = Color(0xFF374151),
-                modifier = Modifier.align(Alignment.CenterVertically)
-            )
-
-            if (index < parts.size - 1) {
-                Box(
-                    modifier = Modifier
-                        .padding(horizontal = 4.dp)
-                        .align(Alignment.CenterVertically)
+                color = Color.White,
+                border = BorderStroke(2.dp, ColorGrayBorder)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    if (currentAnswer.isNotEmpty()) {
+                    // Nút Loa (Icon)
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = ColorBlueBg,
+                        modifier = Modifier.size(44.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Rounded.VolumeUp,
+                                contentDescription = "Nghe",
+                                tint = ColorBlueMain,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+
+                    // Nội dung hội thoại
+                    Text(
+                        text = prompt,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = ColorText,
+                        lineHeight = 26.sp
+                    )
+
+                    if (sentenceWithBlank.isNotBlank()) {
                         Text(
-                            text = currentAnswer,
-                            fontSize = 22.sp,
+                            text = sentenceWithBlank,
+                            fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF2563EB),
-                            modifier = Modifier
-                                .padding(horizontal = 2.dp)
-                                .drawBottomLine(Color(0xFF2563EB))
-                        )
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .width(60.dp)
-                                .height(2.dp)
-                                .offset(y = 12.dp)
-                                .background(Color(0xFF9CA3AF))
+                            color = ColorText,
+                            lineHeight = 26.sp
                         )
                     }
                 }
             }
         }
+
+        // 2. VÙNG Ô TRỐNG (Blank Boxes) & INPUT ẨN
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) {
+                    focusRequester.requestFocus()
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            // Trường nhập liệu vô hình (Bắt bàn phím hệ thống)
+            BasicTextField(
+                value = userInput,
+                onValueChange = { newValue ->
+                    // Lọc chỉ lấy chữ cái và số
+                    val filtered = newValue.replace(Regex("[^a-zA-Z0-9]"), "")
+                    if (filtered.length <= totalBoxes) {
+                        userInput = filtered
+                        onAnswerSelected(filtered)
+                    }
+                },
+                modifier = Modifier
+                    .focusRequester(focusRequester)
+                    .fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { focusManager.clearFocus() }
+                ),
+                decorationBox = { innerTextField ->
+                    Box(contentAlignment = Alignment.Center) {
+                        // Ẩn view gõ thực tế
+                        Box(modifier = Modifier.alpha(0f).size(0.dp)) {
+                            innerTextField()
+                        }
+
+                        // Vẽ các ô 3D trực quan
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            for (index in 0 until totalBoxes) {
+                                val isTyped = index < userInput.length
+                                val isFocused = index == userInput.length
+
+                                val charToShow = if (isTyped) {
+                                    userInput[index].toString().uppercase()
+                                } else {
+                                    hintMask[index]?.uppercase() ?: ""
+                                }
+
+                                BlankBox3D(
+                                    char = charToShow,
+                                    isFocused = isFocused,
+                                    isFilled = isTyped,
+                                    isHint = !isTyped && charToShow.isNotEmpty()
+                                )
+                            }
+                        }
+                    }
+                }
+            )
+        }
+
+        Text(
+            text = "Chạm vào ô để gõ bàn phím",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = ColorBlueMain.copy(alpha = 0.8f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 32.dp),
+            textAlign = TextAlign.Center
+        )
     }
 }
 
 @Composable
-private fun OptionChip(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
+fun BlankBox3D(
+    char: String,
+    isFocused: Boolean,
+    isFilled: Boolean,
+    isHint: Boolean
 ) {
-    val backgroundColor = if (isSelected) Color(0xFFDBEAFE) else Color.White
-    val borderColor = if (isSelected) Color(0xFF3B82F6) else Color(0xFFE5E7EB)
-    val textColor = if (isSelected) Color(0xFF1D4ED8) else Color(0xFF4B5563)
-    val elevation = if (isSelected) 0.dp else 2.dp
-    val shadowOffset = if (isSelected) 0.dp else 4.dp
+    // Logic đổi màu dựa trên trạng thái (Tập trung / Đã điền / Trống)
+    val bgColor = when {
+        isFocused -> ColorBlueBg
+        isFilled -> Color.White
+        else -> ColorGrayBg
+    }
+
+    val borderColor = when {
+        isFocused -> ColorBlueMain
+        else -> ColorGrayBorder
+    }
+
+    val textColor = when {
+        isHint -> Color.Gray
+        isFocused -> ColorBlueMain
+        else -> ColorText
+    }
+
+    // Animation cho con trỏ nhấp nháy
+    val infiniteTransition = rememberInfiniteTransition()
+    val cursorAlpha by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = keyframes {
+                durationMillis = 1000
+                0f at 0
+                1f at 500
+                0f at 1000
+            }
+        ), label = "cursorBlink"
+    )
 
     Box(
-        modifier = Modifier
-            .padding(vertical = 4.dp)
-            .height(50.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick)
+        modifier = Modifier.size(width = 52.dp, height = 64.dp)
     ) {
+        // Lớp Đáy 3D (Đổ bóng / Viền đáy)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+                .align(Alignment.BottomCenter)
+                .background(borderColor, RoundedCornerShape(12.dp))
+        )
+
+        // Lớp Nổi trên cùng
         Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+                .align(Alignment.TopCenter),
             shape = RoundedCornerShape(12.dp),
-            color = backgroundColor,
-            border = BorderStroke(2.dp, borderColor),
-            shadowElevation = elevation,
-            modifier = Modifier.fillMaxSize()
+            color = bgColor,
+            border = BorderStroke(2.dp, borderColor)
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.padding(horizontal = 20.dp)
-            ) {
-                Text(
-                    text = text,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = textColor,
-                    textAlign = TextAlign.Center
-                )
+            Box(contentAlignment = Alignment.Center) {
+                if (isFocused && char.isEmpty()) {
+                    // Con trỏ nhấp nháy
+                    Box(
+                        modifier = Modifier
+                            .width(2.dp)
+                            .height(24.dp)
+                            .alpha(cursorAlpha)
+                            .background(ColorBlueMain)
+                    )
+                } else {
+                    // Ký tự
+                    Text(
+                        text = char,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = textColor
+                    )
+                }
             }
         }
     }
 }
 
-private fun Modifier.drawBottomLine(color: Color) = this.run {
-    drawBehind {
-        val strokeWidth = 2.dp.toPx()
-        val y = size.height - strokeWidth / 2
-        drawLine(
-            color = color,
-            start = Offset(0f, y),
-            end = Offset(size.width, y),
-            strokeWidth = strokeWidth
-        )
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, name = "1. Có Options (Dạng Chọn)")
+@Preview(showBackground = true, name = "Trạng thái ban đầu (Chưa gõ)")
 @Composable
-fun FillBlankQuestionPreview_WithOptions() {
+fun PreviewFillBlankQuestion_Empty() {
     MaterialTheme {
-        Box(modifier = Modifier.padding(vertical = 24.dp)) {
+        Box(
+            modifier = Modifier
+                .background(Color.White)
+                .fillMaxSize()
+        ) {
             FillBlankQuestion(
-                prompt = "Điền từ thích hợp vào chỗ trống:",
-                sentenceWithBlank = "I eat an ____ every morning.",
-                options = listOf("apple", "banana", "orange", "grape"),
-                initialAnswer = "",
+                prompt = "Mom: \"It's late. Go to sleep.\"",
+                sentenceWithBlank = "Tommy: \"Good ________, Mom.\"",
+                hintMask = listOf("n", null, null, null, null),
+                initialAnswer = null,
                 onAnswerSelected = {}
             )
         }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, name = "2. Không có Options (Dạng Gõ)")
+@Preview(showBackground = true, name = "Đang gõ dở")
 @Composable
-fun FillBlankQuestionPreview_Typing() {
+fun PreviewFillBlankQuestion_Typing() {
     MaterialTheme {
-        Box(modifier = Modifier.padding(vertical = 24.dp)) {
+        Box(
+            modifier = Modifier
+                .background(Color.White)
+                .fillMaxSize()
+        ) {
             FillBlankQuestion(
-                prompt = "Nghe và viết lại từ bạn nghe được:",
-                sentenceWithBlank = "Nice to ____ you.",
-                options = emptyList(),
-                initialAnswer = "meet",
+                prompt = "Mom: \"It's late. Go to sleep.\"",
+                sentenceWithBlank = "Tommy: \"Good ________, Mom.\"",
+                hintMask = listOf("n", null, null, null, null),
+                initialAnswer = "nig", // User đã gõ 'nig'
                 onAnswerSelected = {}
             )
         }

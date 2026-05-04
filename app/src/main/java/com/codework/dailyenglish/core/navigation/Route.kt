@@ -55,6 +55,7 @@ sealed interface Route {
         val courseId: String,
         val courseCode: String
     ) : Route
+
     @Serializable
-    data class LessonPreviewRoute(val lessonId: String) : Route
+    data class LessonResultScreen(val scorePercentage: Int, val starsEarned: Int, val lessonId: String)
 }

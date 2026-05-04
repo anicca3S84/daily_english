@@ -23,7 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CourseDetailViewModel @Inject constructor(
     private val getCourseDetailUseCase: GetCourseDetailUseCase,
-    savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle
 ) : BaseViewModel<CourseDetailState, CourseDetailEvent, CourseDetailEffect>(
     initialState = CourseDetailState(
         courseTheme = CourseThemeProvider.getThemeByCode(

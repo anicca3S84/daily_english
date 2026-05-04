@@ -37,6 +37,7 @@ fun LessonDto.toDomain(): LessonDomain {
     return LessonDomain(
         id = this.id ?: Constants.NO_ID,
         title = this.title.orEmpty(),
+        subTitle = this.subTitle.orEmpty(),
         description = this.description.orEmpty(),
         status = statusEnum,
         progress = this.progress ?: 0f,

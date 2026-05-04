@@ -6,5 +6,7 @@ data class UpdateProgressRequestDto(
     @SerializedName("resumeCursor") val resumeCursor: Int,
     @SerializedName("questionId") val questionId: String? = null,
     @SerializedName("selectedOptionId") val selectedOptionId: String? = null,
-    @SerializedName("isCorrect") val isCorrect: Boolean? = null
+    @SerializedName("isCorrect") val isCorrect: Boolean? = null,
+    @SerializedName("userAnswer") val userAnswer: String? = null,
+    @SerializedName("selectedIndices") val selectedIndices: List<Int>? = null
 )

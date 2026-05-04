@@ -6,6 +6,8 @@ import com.codework.dailyenglish.data.lesson.mapper.toDomain
 import com.codework.dailyenglish.data.lesson.remote.datasource.LessonRemoteDataSource
 import com.codework.dailyenglish.domain.lesson.model.LessonPlay
 import com.codework.dailyenglish.domain.lesson.repository.LessonRepository
+import com.codework.dailyenglish.data.lesson.mapper.toResultDomain
+import com.codework.dailyenglish.domain.lesson.model.LessonResult
 import javax.inject.Inject
 
 class LessonRepositoryImpl @Inject constructor(
@@ -23,10 +25,18 @@ class LessonRepositoryImpl @Inject constructor(
         cursor: Int,
         questionId: String?,
         optionId: String?,
+        userAnswer: String?,
+        selectedIndices: List<Int>?,
         isCorrect: Boolean?
     ): AppResult<Unit> {
         return remoteDataSource.updateLessonProgress(
-            lessonId, cursor, questionId, optionId, isCorrect
+            lessonId, cursor, questionId, optionId,userAnswer, selectedIndices,isCorrect
         )
+    }
+
+    override suspend fun completeLesson(lessonPublicId: String): AppResult<LessonResult> {
+        return remoteDataSource.completeLesson(lessonPublicId).map { dto ->
+            dto.toResultDomain()
+        }
     }
 }

@@ -5,6 +5,7 @@ import com.codework.dailyenglish.presentation.screen.course_details.model.Lesson
 data class LessonDomain(
     val id: String,
     val title: String,
+    val subTitle: String,
     val description: String,
     val status: LessonStatus,
     val progress: Float,

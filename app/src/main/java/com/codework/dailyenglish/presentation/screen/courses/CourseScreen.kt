@@ -48,7 +48,6 @@ fun CourseScreen(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-//            GridBackground()
             StateWrapper(
                 uiState = state.dashboardState,
                 modifier = Modifier.fillMaxSize(),

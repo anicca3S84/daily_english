@@ -12,10 +12,12 @@ class UpdateLessonProgressUseCase @Inject constructor(
         cursor: Int,
         questionId: String? = null,
         optionId: String? = null,
+        userAnswer: String? = null,
+        selectedIndices: List<Int>? = null,
         isCorrect: Boolean? = null
     ): AppResult<Unit> {
         return repository.updateLessonProgress(
-            lessonId, cursor, questionId, optionId, isCorrect
+            lessonId, cursor, questionId, optionId, userAnswer, selectedIndices, isCorrect
         )
     }
 }
