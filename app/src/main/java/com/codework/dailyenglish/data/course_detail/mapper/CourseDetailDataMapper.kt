@@ -42,6 +42,7 @@ fun LessonDto.toDomain(): LessonDomain {
         status = statusEnum,
         progress = this.progress ?: 0f,
         expReward = this.expReward ?: 0,
+        starsEarned = this.starsEarned ?: 0,
         skills = this.skills?.map { it.toDomain() } ?: emptyList()
     )
 }

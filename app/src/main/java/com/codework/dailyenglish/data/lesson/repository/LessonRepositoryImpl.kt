@@ -39,4 +39,10 @@ class LessonRepositoryImpl @Inject constructor(
             dto.toResultDomain()
         }
     }
+
+    override suspend fun reviewLesson(lessonId: String): AppResult<LessonPlay> {
+        return remoteDataSource.reviewLesson(lessonId).map { dto ->
+            dto.toDomain()
+        }
+    }
 }

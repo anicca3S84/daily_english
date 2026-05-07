@@ -30,6 +30,7 @@ data class LessonUi(
     val progress: Float = 0f,
     val skills: List<LessonSkillUi> = emptyList(),
     val expReward: Int = 50,
+    val starsEarned: Int,
 )
 
 data class ModuleUi(

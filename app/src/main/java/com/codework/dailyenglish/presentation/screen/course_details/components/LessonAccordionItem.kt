@@ -32,6 +32,7 @@ fun LessonAccordionItem(
 ) {
     val isLocked = lesson.status == LessonStatus.LOCKED
     val isCompleted = lesson.status == LessonStatus.COMPLETED
+    val starsEarned = lesson.starsEarned
 
     Row(
         modifier = Modifier
@@ -97,7 +98,7 @@ fun LessonAccordionItem(
                 )
             } else if (isCompleted) {
                 // TODO(get point from lesson)
-                val activeStars =  3
+                val activeStars = starsEarned
                 repeat(3) { index ->
                     Icon(
                         imageVector = Icons.Default.Star,

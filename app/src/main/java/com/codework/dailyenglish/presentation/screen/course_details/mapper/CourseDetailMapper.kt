@@ -17,6 +17,7 @@ fun List<ModuleDomain>.toUiModels(): List<ModuleUi> {
                     description = lesson.description,
                     subTitle = lesson.subTitle,
                     status = lesson.status,
+                    starsEarned = lesson.starsEarned,
                     progress = lesson.progress,
                     expReward = lesson.expReward,
                     skills = lesson.skills.map { LessonSkillUi(it.type, it.isDone) }

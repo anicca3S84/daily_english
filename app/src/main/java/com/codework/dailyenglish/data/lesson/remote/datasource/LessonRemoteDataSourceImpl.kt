@@ -47,4 +47,10 @@ class LessonRemoteDataSourceImpl @Inject constructor(
             api.completeLesson(lessonPublicId)
         }.unwrap()
     }
+
+    override suspend fun reviewLesson(lessonId: String): AppResult<LessonPlayResponseDto> {
+        return safeApiCall {
+            api.reviewLesson(lessonId)
+        }.unwrap()
+    }
 }

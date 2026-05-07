@@ -8,5 +8,6 @@ data class LessonDto(
     val status: String?,
     val progress: Float?,
     val expReward: Int?,
+    val starsEarned: Int?,
     val skills: List<LessonSkillDto>?
 )

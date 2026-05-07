@@ -11,6 +11,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.toRoute
 import com.codework.dailyenglish.presentation.components.AppCongratulationsScreen
 import com.codework.dailyenglish.presentation.screen.ai.*
@@ -72,6 +73,8 @@ import com.codework.dailyenglish.presentation.screen.translate.mvi.TranslateStat
 import com.codework.dailyenglish.presentation.screen.course_details.mvi.CourseDetailState
 import com.codework.dailyenglish.presentation.screen.course_details.mvi.CourseDetailEvent
 import com.codework.dailyenglish.presentation.screen.course_details.mvi.CourseDetailEffect
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 
 
 @Composable
@@ -129,6 +132,21 @@ fun NavGraph(
                 }
             }
         ) { state, onEvent ->
+            val currentEntry by navController.currentBackStackEntryAsState()
+
+            LaunchedEffect(currentEntry) {
+                val entry = currentEntry ?: return@LaunchedEffect
+                if (entry.destination.route?.contains("CourseScreen") == true) {
+                    val savedStateHandle = entry.savedStateHandle
+                    val shouldRefresh = savedStateHandle.get<Boolean>("should_refresh") ?: false
+
+                    if (shouldRefresh) {
+                        onEvent(CourseEvent.OnRefreshData)
+                        savedStateHandle["should_refresh"] = false
+                    }
+                }
+            }
+
             CourseScreen(state = state, onEvent = onEvent)
         }
 
@@ -144,9 +162,7 @@ fun NavGraph(
                                 starsEarned = effect.starsEarned,
                                 lessonId = effect.lessonId
                             )
-                        ) {
-                            popUpTo<Route.LessonScreen> { inclusive = true }
-                        }
+                        )
                     }
                 }
             }
@@ -155,22 +171,21 @@ fun NavGraph(
         }
 
         composable<Route.LessonResultScreen> { backStackEntry ->
+
             val route = backStackEntry.toRoute<Route.LessonResultScreen>()
+
+            LaunchedEffect(Unit) {
+                delay(2000)
+                try {
+                    navController.getBackStackEntry<Route.CourseDetailScreen>()
+                        .savedStateHandle["should_refresh"] = true
+                } catch (_: IllegalArgumentException) {
+                }
+                navController.popBackStack<Route.CourseDetailScreen>(inclusive = false)
+            }
             AppCongratulationsScreen(
                 scorePercentage = route.scorePercentage,
-                starsEarned = route.starsEarned,
-                onPrimaryClick = {
-                    try {
-                        navController.getBackStackEntry<Route.CourseDetailScreen>()
-                            .savedStateHandle["should_refresh"] = true
-                    } catch (_: IllegalArgumentException) {
-                    }
-
-                    navController.popBackStack<Route.CourseDetailScreen>(inclusive = false)
-                },
-                onSecondaryClick = {
-                    navController.popBackStack()
-                }
+                starsEarned = route.starsEarned
             )
         }
 
@@ -273,27 +288,6 @@ fun NavGraph(
                 onBackClick = { navController.popBackStack() })
         }
 
-//        composableScreen<Route.VocabularyScreen, VocabularyViewModel, VocabularyState, VocabularyEvent, VocabularyEffect>(
-//            onNavigate = { effect ->
-//                when (effect) {
-//                    is VocabularyEffect.NavigateBack -> navController.popBackStack()
-//                    is VocabularyEffect.NavigateToReview -> {
-//                        // Import QuizType nếu NavGraph chưa có
-//                        navController.navigate(Route.QuizReviewScreen(QuizType.VOCABULARY))
-//                    }
-//
-//                    is VocabularyEffect.PlayAudio -> {
-//                        // TODO: Gọi TextToSpeech/ExoPlayer để phát âm thanh dựa trên effect.region (UK/US)
-//                    }
-//                }
-//            }
-//        ) { state, onEvent ->
-//            VocabularyScreen(
-//                state = state,
-//                onEvent = onEvent,
-//                onBackClick = { navController.popBackStack() })
-//        }
-
         composableScreen<Route.QuizReviewScreen, QuizReviewViewModel, QuizReviewState, QuizReviewEvent, QuizReviewEffect>(
             onNavigate = { effect ->
                 when (effect) {
@@ -309,17 +303,6 @@ fun NavGraph(
                 onBackClick = { navController.popBackStack() })
         }
 
-//        composableScreen<Route.ListeningScreen, ListeningViewModel, ListeningState, ListeningEvent, ListeningEffect>(
-//            onNavigate = { effect ->
-//                when(effect) {
-//                    // TODO: Xử lý ListeningEffect ở đây
-//                    else -> {}
-//                }
-//            }
-//        ) { state, onEvent ->
-//            ListeningScreen(state = state, onEvent = onEvent, onBackClick = { navController.popBackStack() })
-//        }
-
         composableScreen<Route.GrammarScreen, GrammarViewModel, GrammarState, GrammarEvent, GrammarEffect>(
             onNavigate = { effect ->
                 when (effect) {
@@ -331,7 +314,7 @@ fun NavGraph(
                     is GrammarEffect.OpenSearch -> { /* TODO: Mở thanh tìm kiếm */
                     }
 
-                    is GrammarEffect.ShowToast -> { /* Hiện toast */
+                    is GrammarEffect.ShowToast -> {
                     }
                 }
             }
@@ -369,7 +352,7 @@ fun NavGraph(
                     is SpeakingEffect.PlayTtsAudio -> {
                     }
 
-                    is SpeakingEffect.ShowToast -> { /* Hiện toast */
+                    is SpeakingEffect.ShowToast -> {
                     }
                 }
             }
@@ -387,24 +370,26 @@ fun NavGraph(
                 }
             }
         ) { state, onEvent ->
-            val currentEntry = navController.currentBackStackEntry
-            val detailBackStackEntry = remember(currentEntry) {
-                navController.getBackStackEntry<Route.CourseDetailScreen>()
-            }
-            val refreshSignal by detailBackStackEntry.savedStateHandle
-                .getStateFlow("should_refresh", false)
-                .collectAsStateWithLifecycle()
-
-            LaunchedEffect(refreshSignal) {
-                if (refreshSignal) {
-                    onEvent(CourseDetailEvent.OnRefresh)
-                    detailBackStackEntry.savedStateHandle["should_refresh"] = false
+            val currentEntry by navController.currentBackStackEntryAsState()
+            LaunchedEffect(currentEntry) {
+                val entry = currentEntry ?: return@LaunchedEffect
+                if (entry.destination.route?.contains("CourseDetailScreen") == true) {
+                    val savedStateHandle = entry.savedStateHandle
+                    val shouldRefresh = savedStateHandle.get<Boolean>("should_refresh") ?: false
+                    if (shouldRefresh) {
+                        onEvent(CourseDetailEvent.OnRefresh)
+                        savedStateHandle["should_refresh"] = false
+                    }
                 }
             }
+
             CourseDetailsScreen(
                 state = state,
                 onEvent = onEvent,
-                onBackClick = { navController.popBackStack() },
+                onBackClick = {
+                    navController.previousBackStackEntry?.savedStateHandle?.set("should_refresh", true)
+                    navController.popBackStack()
+                },
                 navController = navController
             )
         }

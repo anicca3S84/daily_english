@@ -15,6 +15,7 @@ import com.codework.dailyenglish.presentation.theme.CourseTheme
 fun LessonPreviewPopup(
     lessonId: String,
     visible: Boolean,
+    isCompleted: Boolean,
     onDismiss: () -> Unit,
     onNavigateToLearn: (String) -> Unit,
     courseTheme: CourseTheme,
@@ -49,6 +50,7 @@ fun LessonPreviewPopup(
             onEvent = viewModel::onEvent,
             theme = courseTheme,
             onClose = animateClose,
+            isCompleted = isCompleted,
         )
     }
 }

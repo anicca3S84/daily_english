@@ -1,3 +1,5 @@
+// FILE: app/src/main/java/com/codework.daily_english/presentation/screen/lesson/components/FillBlankQuestion.kt
+
 package com.codework.dailyenglish.presentation.screen.lessons.lesson.components.question
 
 import androidx.compose.animation.core.*
@@ -15,7 +17,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.VolumeUp
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -25,24 +26,20 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// === BẢNG MÀU UI 3D ===
-private val ColorText = Color(0xFF4B4B4B)
-private val ColorGrayBorder = Color(0xFFE5E5E5)
-private val ColorGrayBg = Color(0xFFF3F4F6)
-
-private val ColorBlueMain = Color(0xFF1CB0F6)
-private val ColorBlueBg = Color(0xFFDDF4FF)
-
+/**
+ * Màn hình điền vào chỗ trống với các ô nhập liệu 3D.
+ * Tuân thủ MVI: Dữ liệu luôn lấy từ [initialAnswer] của ViewModel.
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FillBlankQuestion(
@@ -54,13 +51,13 @@ fun FillBlankQuestion(
 ) {
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
-
-    // Tổng số ô vuông
     val totalBoxes = hintMask.size
 
-    var userInput by remember(hintMask) {
-        mutableStateOf(initialAnswer?.take(totalBoxes) ?: "")
-    }
+    // Nguồn chân lý duy nhất (Single Source of Truth)
+    val currentText = initialAnswer ?: ""
+
+    // Trạng thái để kiểm soát con trỏ nhấp nháy chỉ khi bàn phím đang mở
+    var isKeyboardFocused by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -75,7 +72,7 @@ fun FillBlankQuestion(
             text = "Điền vào chỗ trống",
             fontSize = 24.sp,
             fontWeight = FontWeight.ExtraBold,
-            color = ColorText,
+            color = Color(0xFF1F2937), // Màu chữ chính
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
@@ -87,13 +84,13 @@ fun FillBlankQuestion(
             verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Mascot
+            // Mascot (Ví dụ: Gấu trúc/Gấu nâu)
             Box(
                 modifier = Modifier
                     .size(60.dp)
                     .clip(CircleShape)
-                    .background(ColorGrayBg)
-                    .border(2.dp, ColorGrayBorder, CircleShape),
+                    .background(Color(0xFFF3F4F6))
+                    .border(2.dp, Color(0xFFE5E7EB), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(text = "🐻", fontSize = 36.sp)
@@ -103,40 +100,40 @@ fun FillBlankQuestion(
             Surface(
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(
-                    topStart = 4.dp, // Góc nhọn chỉ về phía con gấu
+                    topStart = 4.dp,
                     topEnd = 24.dp,
                     bottomEnd = 24.dp,
                     bottomStart = 24.dp
                 ),
                 color = Color.White,
-                border = BorderStroke(2.dp, ColorGrayBorder)
+                border = BorderStroke(2.dp, Color(0xFFE5E7EB))
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Nút Loa (Icon)
+                    // Nút Loa
                     Surface(
                         shape = RoundedCornerShape(12.dp),
-                        color = ColorBlueBg,
+                        color = Color(0xFFE0F2FE),
                         modifier = Modifier.size(44.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Rounded.VolumeUp,
                                 contentDescription = "Nghe",
-                                tint = ColorBlueMain,
+                                tint = Color(0xFF3B82F6),
                                 modifier = Modifier.size(24.dp)
                             )
                         }
                     }
 
-                    // Nội dung hội thoại
+                    // Nội dung văn bản
                     Text(
                         text = prompt,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorText,
+                        color = Color(0xFF1F2937),
                         lineHeight = 26.sp
                     )
 
@@ -145,7 +142,7 @@ fun FillBlankQuestion(
                             text = sentenceWithBlank,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorText,
+                            color = Color(0xFF1F2937),
                             lineHeight = 26.sp
                         )
                     }
@@ -165,19 +162,19 @@ fun FillBlankQuestion(
                 },
             contentAlignment = Alignment.Center
         ) {
-            // Trường nhập liệu vô hình (Bắt bàn phím hệ thống)
+            // TextField vô hình để hứng sự kiện bàn phím
             BasicTextField(
-                value = userInput,
+                value = currentText,
                 onValueChange = { newValue ->
-                    // Lọc chỉ lấy chữ cái và số
+                    // Lọc chỉ cho phép chữ và số, giới hạn độ dài
                     val filtered = newValue.replace(Regex("[^a-zA-Z0-9]"), "")
                     if (filtered.length <= totalBoxes) {
-                        userInput = filtered
                         onAnswerSelected(filtered)
                     }
                 },
                 modifier = Modifier
                     .focusRequester(focusRequester)
+                    .onFocusChanged { isKeyboardFocused = it.isFocused }
                     .fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
@@ -188,30 +185,31 @@ fun FillBlankQuestion(
                 ),
                 decorationBox = { innerTextField ->
                     Box(contentAlignment = Alignment.Center) {
-                        // Ẩn view gõ thực tế
+                        // Ẩn nội dung TextField thực tế nhưng vẫn giữ nó hoạt động
                         Box(modifier = Modifier.alpha(0f).size(0.dp)) {
                             innerTextField()
                         }
 
-                        // Vẽ các ô 3D trực quan
+                        // Hiển thị các ô 3D trực quan
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             for (index in 0 until totalBoxes) {
-                                val isTyped = index < userInput.length
-                                val isFocused = index == userInput.length
+                                val isTyped = index < currentText.length
+                                // Chỉ hiện cursor ở ô trống tiếp theo khi đang tập trung gõ
+                                val isBoxFocused = isKeyboardFocused && index == currentText.length
 
                                 val charToShow = if (isTyped) {
-                                    userInput[index].toString().uppercase()
+                                    currentText[index].toString().uppercase()
                                 } else {
-                                    hintMask[index]?.uppercase() ?: ""
+                                    hintMask.getOrNull(index)?.uppercase() ?: ""
                                 }
 
                                 BlankBox3D(
                                     char = charToShow,
-                                    isFocused = isFocused,
+                                    isFocused = isBoxFocused,
                                     isFilled = isTyped,
                                     isHint = !isTyped && charToShow.isNotEmpty()
                                 )
@@ -226,7 +224,7 @@ fun FillBlankQuestion(
             text = "Chạm vào ô để gõ bàn phím",
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            color = ColorBlueMain.copy(alpha = 0.8f),
+            color = Color(0xFF3B82F6).copy(alpha = 0.8f),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 32.dp),
@@ -242,26 +240,32 @@ fun BlankBox3D(
     isFilled: Boolean,
     isHint: Boolean
 ) {
-    // Logic đổi màu dựa trên trạng thái (Tập trung / Đã điền / Trống)
+    // Định nghĩa palette màu cục bộ
+    val colorBlueMain = Color(0xFF3B82F6)
+    val colorBlueBg = Color(0xFFE0F2FE)
+    val colorGrayBg = Color(0xFFF3F4F6)
+    val colorGrayBorder = Color(0xFFE5E7EB)
+    val colorText = Color(0xFF1F2937)
+
     val bgColor = when {
-        isFocused -> ColorBlueBg
+        isFocused -> colorBlueBg
         isFilled -> Color.White
-        else -> ColorGrayBg
+        else -> colorGrayBg
     }
 
     val borderColor = when {
-        isFocused -> ColorBlueMain
-        else -> ColorGrayBorder
+        isFocused -> colorBlueMain
+        else -> colorGrayBorder
     }
 
     val textColor = when {
         isHint -> Color.Gray
-        isFocused -> ColorBlueMain
-        else -> ColorText
+        isFocused -> colorBlueMain
+        else -> colorText
     }
 
-    // Animation cho con trỏ nhấp nháy
-    val infiniteTransition = rememberInfiniteTransition()
+    // Hiệu ứng nhấp nháy cho con trỏ
+    val infiniteTransition = rememberInfiniteTransition(label = "cursor")
     val cursorAlpha by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
@@ -272,13 +276,13 @@ fun BlankBox3D(
                 1f at 500
                 0f at 1000
             }
-        ), label = "cursorBlink"
+        ), label = "alpha"
     )
 
     Box(
         modifier = Modifier.size(width = 52.dp, height = 64.dp)
     ) {
-        // Lớp Đáy 3D (Đổ bóng / Viền đáy)
+        // Lớp Đáy 3D (Viền dưới tạo độ sâu)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -287,7 +291,7 @@ fun BlankBox3D(
                 .background(borderColor, RoundedCornerShape(12.dp))
         )
 
-        // Lớp Nổi trên cùng
+        // Lớp Bề mặt (Phần nút bấm nổi lên)
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
@@ -299,16 +303,15 @@ fun BlankBox3D(
         ) {
             Box(contentAlignment = Alignment.Center) {
                 if (isFocused && char.isEmpty()) {
-                    // Con trỏ nhấp nháy
+                    // Thanh Cursor nhấp nháy
                     Box(
                         modifier = Modifier
                             .width(2.dp)
                             .height(24.dp)
                             .alpha(cursorAlpha)
-                            .background(ColorBlueMain)
+                            .background(colorBlueMain)
                     )
                 } else {
-                    // Ký tự
                     Text(
                         text = char,
                         fontSize = 24.sp,
@@ -317,46 +320,6 @@ fun BlankBox3D(
                     )
                 }
             }
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Trạng thái ban đầu (Chưa gõ)")
-@Composable
-fun PreviewFillBlankQuestion_Empty() {
-    MaterialTheme {
-        Box(
-            modifier = Modifier
-                .background(Color.White)
-                .fillMaxSize()
-        ) {
-            FillBlankQuestion(
-                prompt = "Mom: \"It's late. Go to sleep.\"",
-                sentenceWithBlank = "Tommy: \"Good ________, Mom.\"",
-                hintMask = listOf("n", null, null, null, null),
-                initialAnswer = null,
-                onAnswerSelected = {}
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Đang gõ dở")
-@Composable
-fun PreviewFillBlankQuestion_Typing() {
-    MaterialTheme {
-        Box(
-            modifier = Modifier
-                .background(Color.White)
-                .fillMaxSize()
-        ) {
-            FillBlankQuestion(
-                prompt = "Mom: \"It's late. Go to sleep.\"",
-                sentenceWithBlank = "Tommy: \"Good ________, Mom.\"",
-                hintMask = listOf("n", null, null, null, null),
-                initialAnswer = "nig", // User đã gõ 'nig'
-                onAnswerSelected = {}
-            )
         }
     }
 }

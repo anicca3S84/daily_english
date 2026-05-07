@@ -233,14 +233,21 @@ fun CourseDetailsScreen(
                     }
                 }
                 val currentLesson = modules?.flatMap { it.lessons }?.find { it.id == selectedLessonId }
+                val isCompleted = (currentLesson?.status == LessonStatus.COMPLETED)
                 if (showPreview && currentLesson != null) {
                     LessonPreviewPopup(
                         lessonId = selectedLessonId,
                         visible = true,
+                        isCompleted = isCompleted,
                         onDismiss = { showPreview = false },
                         onNavigateToLearn = { lessonId ->
                             showPreview = false
-                            navController.navigate(Route.LessonScreen(lessonId = lessonId))
+                            navController.navigate(
+                                Route.LessonScreen(
+                                    lessonId = lessonId,
+                                    isCompleted = isCompleted
+                                )
+                            )
                         },
                         courseTheme = state.courseTheme
                     )

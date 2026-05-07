@@ -24,6 +24,11 @@ interface LessonApi {
 
     @POST("lessons/{lessonPublicId}/complete")
     suspend fun completeLesson(
-        @Path("lessonPublicId") lessonPublicId: String
+        @Path("lessonPublicId") lessonId: String
     ): BaseResponse<LessonResultResponseDto>
+
+    @POST("lessons/{lessonId}/review-lesson")
+    suspend fun reviewLesson(
+        @Path("lessonId") lessonId: String
+    ): BaseResponse<LessonPlayResponseDto>
 }

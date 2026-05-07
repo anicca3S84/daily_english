@@ -11,6 +11,7 @@ import com.codework.dailyenglish.domain.lesson.model.QuestionContent
 import com.codework.dailyenglish.domain.lesson.model.StepData
 import com.codework.dailyenglish.domain.lesson.usecase.CompleteLessonUseCase
 import com.codework.dailyenglish.domain.lesson.usecase.GetLessonPlayDataUseCase
+import com.codework.dailyenglish.domain.lesson.usecase.ReviewLessonUseCase
 import com.codework.dailyenglish.domain.lesson.usecase.UpdateLessonProgressUseCase
 import com.codework.dailyenglish.presentation.manager.TextToSpeechManager
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi.LessonConfigUi
@@ -28,6 +29,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LessonViewModel @Inject constructor(
     private val getLessonPlayDataUseCase: GetLessonPlayDataUseCase,
+    private val reviewLessonUseCase: ReviewLessonUseCase,
     private val updateLessonProgressUseCase: UpdateLessonProgressUseCase,
     private val completeLessonUseCase: CompleteLessonUseCase,
     private val ttsManager: TextToSpeechManager,
@@ -36,6 +38,7 @@ class LessonViewModel @Inject constructor(
     initialState = BaseUiState(isLoading = true)
 ) {
     private val lessonId: String = checkNotNull(savedStateHandle["lessonId"])
+    private val isCompleted: Boolean = checkNotNull(savedStateHandle["isCompleted"])
     private var mediaPlayer: MediaPlayer? = null
 
     init {
@@ -74,54 +77,53 @@ class LessonViewModel @Inject constructor(
             val questionData = currentStep.data as? StepData.Question ?: return@update state
 
             val qData = questionData
-            val oId = qData.selectedOptionId ?: qData.userAnswer
 
-            // 1. CHẤM ĐIỂM NGAY LÚC NÀY (Đưa logic từ nextStep lên đây)
             var isCorrect = false
-            var correctAnswerText: String? = null // Lưu đáp án đúng dưới dạng Text
+            var correctAnswerText: String? = null
 
             when (val content = qData.content) {
                 is QuestionContent.MultipleChoice -> {
-                    isCorrect = content.options.find { it.id == oId }?.isCorrect == true
-                    // Lấy text của option đúng để hiện
+                    val selectedId = qData.selectedOptionId
+                    isCorrect = content.options.find { it.id == selectedId }?.isCorrect == true
                     correctAnswerText = content.options.find { it.isCorrect }?.text
                 }
                 is QuestionContent.SentenceBuilder -> {
-                    val userSentence = oId.trim().replace(Regex("\\s+"), " ")
+                    // Đọc từ userAnswer (Hoặc fallback OptionId nếu data cũ dính)
+                    val userSentence = (qData.userAnswer ?: qData.selectedOptionId ?: "").trim().replace(Regex("\\s+"), " ")
                     val correctSentence = content.correctSentence.trim().replace(Regex("\\s+"), " ")
                     isCorrect = userSentence.equals(correctSentence, ignoreCase = true)
-                    correctAnswerText = content.correctSentence // Hiện cả câu đúng
+                    correctAnswerText = content.correctSentence
                 }
                 is QuestionContent.FillBlank -> {
-                    isCorrect = oId.trim().equals(content.correctAnswer.trim(), ignoreCase = true)
+                    // Đọc thẳng text do user gõ
+                    val answerText = (qData.userAnswer ?: "").trim()
+                    isCorrect = answerText.equals(content.correctAnswer.trim(), ignoreCase = true)
                     correctAnswerText = content.correctAnswer
                 }
                 is QuestionContent.Dictation -> {
-                    val userAnswer = oId.trim()
+                    val userAnswer = (qData.userAnswer ?: "").trim()
                     isCorrect = userAnswer.equals(content.targetWord.trim(), ignoreCase = true) ||
                             userAnswer.equals(content.correctAnswer.trim(), ignoreCase = true) ||
                             content.acceptedAnswers.any { it.trim().equals(userAnswer, ignoreCase = true) }
                     correctAnswerText = content.correctAnswer
                 }
                 is QuestionContent.Speaking -> {
-                    isCorrect = oId.trim().equals(content.targetText.trim(), ignoreCase = true) || oId == "PASSED"
+                    val userAnswer = (qData.userAnswer ?: "").trim()
+                    isCorrect = userAnswer.equals(content.targetText.trim(), ignoreCase = true) || userAnswer == "PASSED"
                     correctAnswerText = content.targetText
                 }
                 is QuestionContent.Matching -> {
-                    isCorrect = oId == "CORRECT" || oId == "PASSED"
+                    val userAnswer = qData.selectedOptionId ?: qData.userAnswer ?: ""
+                    isCorrect = userAnswer == "CORRECT" || userAnswer == "PASSED"
                 }
                 else -> {
                     isCorrect = false
                 }
             }
 
-            // 2. CẬP NHẬT STATE: Báo là đã chấm + Kết quả đúng/sai + Text đáp án
             val updatedQuestionData = questionData.copy(
                 isAnswerEvaluated = true,
                 isCorrect = isCorrect
-                // Ghi chú: Nếu trong StepData.Question của bạn có thêm trường `correctAnswerText`,
-                // bạn có thể truyền thẳng correctAnswerText vào đây.
-                // Nếu chưa có, bạn có thể truyền qua UI theo cách ở Bước 2.
             )
 
             val updatedSteps = currentData.steps.toMutableList()
@@ -138,13 +140,12 @@ class LessonViewModel @Inject constructor(
             val currentData = state.data ?: return@update state
             val currentStep = currentData.steps[currentData.currentIndex]
             val questionData = currentStep.data as? StepData.Question ?: return@update state
-
+            val isMultipleChoice = questionData.content is QuestionContent.MultipleChoice
             val updatedQuestionData = questionData.copy(
-                userAnswer = answer,
-                selectedOptionId = answer.ifEmpty { null },
+                selectedOptionId = if (isMultipleChoice) answer.ifEmpty { null } else null,
+                userAnswer = if (!isMultipleChoice) answer else "",
                 selectedIndices = indices
             )
-
             val updatedSteps = currentData.steps.toMutableList()
             updatedSteps[currentData.currentIndex] = currentStep.copy(data = updatedQuestionData)
             state.copy(data = currentData.copy(steps = updatedSteps))
@@ -211,14 +212,18 @@ class LessonViewModel @Inject constructor(
         _state.update { it.copy(isLoading = true, error = null) }
 
         viewModelScope.launch {
-            getLessonPlayDataUseCase(lessonId)
-                .onSuccess { playData ->
+            val result = if (isCompleted) {
+                reviewLessonUseCase(lessonId)
+            } else {
+                getLessonPlayDataUseCase(lessonId)
+            }
+            result.onSuccess { playData ->
                     _state.update { it.copy(
                         isLoading = false,
                         data = LessonConfigUi(
                             lessonId = playData.lessonId,
                             steps = playData.steps,
-                            currentIndex = playData.resumeCursor
+                            currentIndex = playData.resumeCursor,
                         )
                     )}
                 }
@@ -255,27 +260,6 @@ class LessonViewModel @Inject constructor(
         }
     }
 
-
-
-    private fun optionSelected(optionId: String) {
-        _state.update { state ->
-            val currentData = state.data ?: return@update state
-            val currentStep = currentData.steps[currentData.currentIndex]
-            val questionData = currentStep.data as? StepData.Question ?: return@update state
-            if (questionData.isAnswerEvaluated) return@update state
-            val shouldCheckImmediately = questionData.content is QuestionContent.MultipleChoice
-            val updatedQuestionData = questionData.copy(
-                selectedOptionId = optionId,
-                isAnswerEvaluated = shouldCheckImmediately
-            )
-            val updatedSteps = currentData.steps.toMutableList()
-            updatedSteps[currentData.currentIndex] = currentStep.copy(data = updatedQuestionData)
-            state.copy(data = currentData.copy(steps = updatedSteps))
-        }
-    }
-
-
-
     private fun nextStep() {
         val currentData = _state.value.data ?: return
         val currentIndex = currentData.currentIndex
@@ -291,17 +275,15 @@ class LessonViewModel @Inject constructor(
         if (currentStep.data is StepData.Question) {
             val qData = currentStep.data
             qId = currentStep.refId
-
             oId = qData.selectedOptionId
-
             uAnswer = qData.userAnswer
-
             sIndices = qData.selectedIndices
-
             isCorrect = qData.isCorrect
         }
 
-        viewModelScope.launch(Dispatchers.IO) {
+        // GOM TẤT CẢ VÀO 1 COROUTINE ĐỂ CHẠY ĐỒNG BỘ (TUẦN TỰ)
+        viewModelScope.launch {
+            // Bước 1: Gọi API lưu tiến độ và ĐỢI nó chạy xong (suspend)
             updateLessonProgressUseCase(
                 lessonId = lessonId,
                 cursor = if (nextIndex < currentData.steps.size) nextIndex else currentIndex,
@@ -311,21 +293,27 @@ class LessonViewModel @Inject constructor(
                 selectedIndices = sIndices,
                 isCorrect = isCorrect
             )
-        }
-        _state.update {
-            it.copy(data = currentData.copy(showResultStepIndex = null))
-        }
-        if (nextIndex < currentData.steps.size) {
+
+            // Bước 2: Chỉ khi Backend đã lưu xong, mới thay đổi State UI
             _state.update {
-                it.copy(data = it.data?.copy(currentIndex = nextIndex))
+                it.copy(data = currentData.copy(showResultStepIndex = null))
             }
 
-            val newlyRevealedStep = currentData.steps[nextIndex]
-            if (newlyRevealedStep.data is StepData.Vocab) {
-                playAudio(newlyRevealedStep.data.usAudioUrl, newlyRevealedStep.data.word, 1f)
+            // Bước 3: Kiểm tra xem còn câu hỏi không
+            if (nextIndex < currentData.steps.size) {
+                _state.update {
+                    it.copy(data = it.data?.copy(currentIndex = nextIndex))
+                }
+
+                val newlyRevealedStep = currentData.steps[nextIndex]
+                if (newlyRevealedStep.data is StepData.Vocab) {
+                    playAudio(newlyRevealedStep.data.usAudioUrl, newlyRevealedStep.data.word, 1f)
+                }
+            } else {
+                // Gọi submitLesson ở đây đảm bảo câu cuối cùng (Câu 5)
+                // CHẮC CHẮN đã được Backend ghi nhận vào Database.
+                submitLesson()
             }
-        } else {
-            submitLesson()
         }
     }
 

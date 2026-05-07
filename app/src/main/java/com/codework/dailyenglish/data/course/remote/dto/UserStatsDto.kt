@@ -5,10 +5,10 @@ import com.google.gson.annotations.SerializedName
 data class UserStatsDto(
     @SerializedName("streak")
     val streak: Int?,
-    @SerializedName("total_exp")
+    @SerializedName("totalExp")
     val totalExp: Int?,
-    @SerializedName("lessons_done")
+    @SerializedName("lessonsDone")
     val lessonsDone: Int?,
-    @SerializedName("words_learned")
+    @SerializedName("wordsLearned")
     val wordsLearned: Int?
 )

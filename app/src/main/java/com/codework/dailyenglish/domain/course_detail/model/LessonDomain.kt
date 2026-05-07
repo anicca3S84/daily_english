@@ -10,5 +10,6 @@ data class LessonDomain(
     val status: LessonStatus,
     val progress: Float,
     val expReward: Int,
+    val starsEarned: Int,
     val skills: List<LessonSkillDomain>
 )

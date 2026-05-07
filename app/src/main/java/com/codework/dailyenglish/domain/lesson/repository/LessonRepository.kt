@@ -7,6 +7,7 @@ import com.codework.dailyenglish.domain.lesson.model.LessonResult
 
 interface LessonRepository {
     suspend fun getLessonPlayData(lessonId: String): AppResult<LessonPlay>
+    suspend fun reviewLesson(lessonId: String): AppResult<LessonPlay>
     suspend fun updateLessonProgress(
         lessonId: String,
         cursor: Int,

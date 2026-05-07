@@ -37,6 +37,7 @@ import com.codework.dailyenglish.presentation.theme.AppColors
 fun LessonPreviewSheet(
     state: LessonPreviewState,
     theme: CourseTheme,
+    isCompleted: Boolean,
     onEvent: (LessonPreviewEvent) -> Unit,
     onClose: () -> Unit
 ) {
@@ -83,6 +84,7 @@ fun LessonPreviewSheet(
                 LessonPreviewMainContent(
                     preview = data,
                     theme = theme,
+                    isCompleted = isCompleted,
                     state = state,
                     onStartClick = { id ->
                         onEvent(LessonPreviewEvent.OnStartLearningClick(id))
@@ -100,6 +102,7 @@ private fun LessonPreviewMainContent(
     preview: LessonPreview,
     theme: CourseTheme,
     state: LessonPreviewState,
+    isCompleted: Boolean,
     onStartClick: (String) -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -262,7 +265,10 @@ private fun LessonPreviewMainContent(
                 Spacer(Modifier.width(Spaces.Space8))
 
                 Text(
-                    text = stringResource(R.string.action_start_learning),
+                    text = stringResource(
+                        if (!isCompleted) R.string.action_start_learning
+                        else R.string.label_review
+                    ),
                     color = Color.White,
                     fontWeight = FontWeight.W700,
                     fontSize = AppTextSizes.TextSizeTitle

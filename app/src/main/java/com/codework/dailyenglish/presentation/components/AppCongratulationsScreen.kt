@@ -29,10 +29,6 @@ fun AppCongratulationsScreen(
     scorePercentage: Int,
     starsEarned: Int,
     feedbackMessage: String = "Great job, keep going \uD83E\uDD73",
-    primaryButtonText: String = "Continue",
-    secondaryButtonText: String = "Review",
-    onPrimaryClick: () -> Unit,
-    onSecondaryClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -42,7 +38,6 @@ fun AppCongratulationsScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        // Phần thân chứa hình ảnh và nội dung (chiếm không gian giữa)
         Column(
             modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -56,13 +51,11 @@ fun AppCongratulationsScreen(
             ) {
                 ConfettiBackground(modifier = Modifier.fillMaxSize())
 
-                // 3 Ngôi sao
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.Bottom,
                     modifier = Modifier.padding(top = Spaces.Space32)
                 ) {
-                    // Sao 1 (Trái)
                     Icon(
                         imageVector = Icons.Rounded.Star,
                         contentDescription = "Star 1",
@@ -71,7 +64,6 @@ fun AppCongratulationsScreen(
                             .size(64.dp)
                             .offset(x = 16.dp, y = (-16).dp)
                     )
-                    // Sao 2 (Giữa - To nhất)
                     Icon(
                         imageVector = Icons.Rounded.Star,
                         contentDescription = "Star 2",
@@ -95,7 +87,6 @@ fun AppCongratulationsScreen(
 
             Spacer(modifier = Modifier.height(Spaces.Space32))
 
-            // Tiêu đề
             Text(
                 text = "Congratulations",
                 fontSize = AppTextSizes.TextSize24, // Hoặc 28sp tùy theme
@@ -105,7 +96,6 @@ fun AppCongratulationsScreen(
 
             Spacer(modifier = Modifier.height(Spaces.Space24))
 
-            // Row hiển thị % và số sao
             Row(
                 horizontalArrangement = Arrangement.spacedBy(Spaces.Space32),
                 verticalAlignment = Alignment.CenterVertically
@@ -127,7 +117,6 @@ fun AppCongratulationsScreen(
                     )
                 }
 
-                // Số sao đạt được
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Rounded.Star,
@@ -147,7 +136,6 @@ fun AppCongratulationsScreen(
 
             Spacer(modifier = Modifier.height(Spaces.Space32))
 
-            // Chip Feedback ("Great job...")
             Surface(
                 shape = RoundedCornerShape(AppRadius.RadiusFull),
                 color = AppColors.Slate50, // Hoặc Color(0xFFF8FAFC)
@@ -165,55 +153,9 @@ fun AppCongratulationsScreen(
                 )
             }
         }
-
-        // Phần 2 nút bấm ở cuối màn hình
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(Spaces.Space16)
-        ) {
-            Button(
-                onClick = onSecondaryClick,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(Spaces.Space52),
-                shape = RoundedCornerShape(AppRadius.RadiusLarge),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = AppColors.Slate100, // Light Gray
-                    contentColor = AppColors.Slate800
-                )
-            ) {
-                Text(
-                    text = secondaryButtonText,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = AppTextSizes.TextSizeMain
-                )
-            }
-            // Nút Primary (Continue)
-            Button(
-                onClick = onPrimaryClick,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(Spaces.Space52),
-                shape = RoundedCornerShape(AppRadius.RadiusLarge),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = AppColors.BluePrimary // Blue Color từ mẫu
-                )
-            ) {
-                Text(
-                    text = primaryButtonText,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = AppTextSizes.TextSizeMain
-                )
-            }
-
-            // Nút Secondary (Review)
-
-        }
     }
 }
 
-// Custom vẽ Pháo giấy bay lơ lửng không cần ảnh
 @Composable
 private fun ConfettiBackground(modifier: Modifier = Modifier) {
     Canvas(modifier = modifier) {
@@ -245,9 +187,8 @@ private fun ConfettiBackground(modifier: Modifier = Modifier) {
             }
         }
 
-        // Vẽ vài mảnh pháo giấy theo tọa độ giả lập giống ảnh mẫu
-        drawConfetti(0.2f, 0.1f, 30f, 0, false) // Vàng trái trên
-        drawConfetti(0.1f, 0.3f, -45f, 1, false) // Hồng trái
+        drawConfetti(0.2f, 0.1f, 30f, 0, false)
+        drawConfetti(0.1f, 0.3f, -45f, 1, false)
         drawConfetti(0.25f, 0.5f, 20f, 2, false) // Xanh lá trái dưới
         drawConfetti(0.15f, 0.65f, -30f, 4, false) // Cam trái dưới
 
@@ -267,7 +208,5 @@ fun AppCongratulationsScreenPreview() {
     AppCongratulationsScreen(
         scorePercentage = 100,
         starsEarned = 3,
-        onPrimaryClick = {},
-        onSecondaryClick = {}
     )
 }

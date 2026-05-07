@@ -83,6 +83,7 @@
     <string name="label_cancel">Cancel</string>
     <string name="label_exit">Exit</string>
     <string name="label_check">Check</string>
+    <string name="label_review">Review</string>
 
     <!--skill-->
     <string name="label_listen">Listen</string>
