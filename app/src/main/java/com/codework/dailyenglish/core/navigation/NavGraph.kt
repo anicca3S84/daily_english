@@ -73,6 +73,11 @@ import com.codework.dailyenglish.presentation.screen.translate.mvi.TranslateStat
 import com.codework.dailyenglish.presentation.screen.course_details.mvi.CourseDetailState
 import com.codework.dailyenglish.presentation.screen.course_details.mvi.CourseDetailEvent
 import com.codework.dailyenglish.presentation.screen.course_details.mvi.CourseDetailEffect
+import com.codework.dailyenglish.presentation.screen.saved_word.SavedWordsScreen
+import com.codework.dailyenglish.presentation.screen.saved_word.SavedWordsViewModel
+import com.codework.dailyenglish.presentation.screen.saved_word.mvi.SavedWordsEffect
+import com.codework.dailyenglish.presentation.screen.saved_word.mvi.SavedWordsEvent
+import com.codework.dailyenglish.presentation.screen.saved_word.mvi.SavedWordsState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -254,14 +259,8 @@ fun NavGraph(
                     is DictionaryEffect.PlayAudio -> {
                     }
 
-                    is DictionaryEffect.NavigateToFeature -> {
-                        when (effect.feature) {
-                            "Saved" -> { /* navController.navigate(Route.SavedWords) */
-                            }
-
-                            "Flashcards" -> navController.navigate(Route.VocabularyScreen)
-                            // ... các mục khác
-                        }
+                    is DictionaryEffect.NavigateToSavedWord -> {
+                        navController.navigate(Route.SavedWordsScreen)
                     }
 
                     is DictionaryEffect.ShowToast -> { /* Hiện toast */
@@ -279,6 +278,8 @@ fun NavGraph(
             onNavigate = { effect ->
                 when (effect) {
                     TranslateEffect.NavigateToHistory -> TODO()
+                    TranslateEffect.NavigateToCameraScanner -> TODO()
+                    else -> {}
                 }
             }
         ) { state, onEvent ->
@@ -393,5 +394,23 @@ fun NavGraph(
                 navController = navController
             )
         }
+
+        composableScreen<Route.SavedWordsScreen, SavedWordsViewModel, SavedWordsState, SavedWordsEvent, SavedWordsEffect>(
+            onNavigate = { effect ->
+                when (effect) {
+                    is SavedWordsEffect.NavigateToFlashCard -> navController.navigate(Route.FlashcardScreen) // Sang màn học
+                    else -> {}
+                }
+            }
+        ) { state, onEvent ->
+            SavedWordsScreen(
+                state = state,
+                onEvent = onEvent,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
     }
+
+
 }

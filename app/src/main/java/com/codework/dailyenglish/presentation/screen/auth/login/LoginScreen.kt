@@ -3,7 +3,9 @@ package com.codework.dailyenglish.presentation.screen.auth.login
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MenuBook
 import androidx.compose.material3.*
@@ -39,6 +41,7 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
 
     StateWrapper(
         uiState = state,
@@ -48,16 +51,16 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White)
-                .padding(horizontal = Spaces.Space24)
                 .systemBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = Spaces.Space24)
                     .padding(top = Spaces.Space16),
                 contentAlignment = Alignment.CenterStart
-            ) {
+            ){
                 Text(
                     text = stringResource(R.string.label_back),
                     fontSize = AppTextSizes.TextSizeMain,
@@ -68,95 +71,114 @@ fun LoginScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(Spaces.Space80))
-
-            Text(
-                text = stringResource(R.string.login_sign_in_title),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
-
-            Spacer(modifier = Modifier.height(Spaces.Space20))
-
-            Text(
-                text = stringResource(R.string.login_description),
-                fontSize = AppTextSizes.TextSizeMain,
-                color = Color.Gray,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(Spaces.Space50))
-
-            Box(
+            Column(
                 modifier = Modifier
-                    .size(Spaces.Space100)
-                    .clip(CircleShape)
-                    .background(AppColors.BluePrimary.copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(scrollState)
+                    .padding(horizontal = Spaces.Space24),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.MenuBook,
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(AppIcons.IconSizeLarge),
-                    tint = AppColors.BluePrimary
+                Spacer(modifier = Modifier.height(Spaces.Space40))
+
+                Text(
+                    text = stringResource(R.string.login_sign_in_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 )
+
+                Spacer(modifier = Modifier.height(Spaces.Space16))
+
+                Text(
+                    text = stringResource(R.string.login_description),
+                    fontSize = AppTextSizes.TextSizeMain,
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(Spaces.Space40))
+
+                Box(
+                    modifier = Modifier
+                        .size(Spaces.Space100)
+                        .clip(CircleShape)
+                        .background(AppColors.BluePrimary.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.MenuBook,
+                        contentDescription = "Logo",
+                        modifier = Modifier.size(AppIcons.IconSizeLarge),
+                        tint = AppColors.BluePrimary
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(Spaces.Space40))
+
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(Spaces.Space14)
+                ) {
+                    SocialLoginButton(
+                        text = stringResource(R.string.login_google),
+                        icon = R.drawable.ic_google,
+                        onClick = {
+                            coroutineScope.launch {
+                                val idToken = GoogleAuthHelper.signIn(
+                                    context = context,
+                                    serverClientId = BuildConfig.WEB_CLIENT_ID
+                                )
+                                if (idToken != null) {
+                                    onEvent(LoginEvent.LoginWithGoogle(idToken))
+                                }
+                            }
+                        }
+                    )
+
+                    SocialLoginButton(
+                        text = stringResource(R.string.login_apple),
+                        icon = R.drawable.ic_group,
+                        onClick = { onEvent(LoginEvent.OnAppleLoginClick) }
+                    )
+
+                    SocialLoginButton(
+                        text = stringResource(R.string.login_email),
+                        icon = R.drawable.ic_gmail,
+                        onClick = { onEvent(LoginEvent.OnEmailLoginClick) }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(Spaces.Space40))
             }
 
-            Spacer(modifier = Modifier.height(Spaces.Space50))
-
-            SocialLoginButton(
-                text = stringResource(R.string.login_google),
-                icon = R.drawable.ic_google,
-                onClick = {
-                    coroutineScope.launch {
-                        val idToken = GoogleAuthHelper.signIn(
-                            context = context,
-                            serverClientId = BuildConfig.WEB_CLIENT_ID
-                        )
-                        if (idToken != null) {
-                            onEvent(LoginEvent.LoginWithGoogle(idToken))
-                        }
-                    }
-                }
-            )
-
-            Spacer(modifier = Modifier.height(Spaces.Space14))
-
-            SocialLoginButton(
-                text = stringResource(R.string.login_apple),
-                icon = R.drawable.ic_group,
-                onClick = { onEvent(LoginEvent.OnAppleLoginClick) }
-            )
-
-            Spacer(modifier = Modifier.height(Spaces.Space14))
-
-            SocialLoginButton(
-                text = stringResource(R.string.login_email),
-                icon = R.drawable.ic_gmail,
-                onClick = { onEvent(LoginEvent.OnEmailLoginClick) }
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Row(
-                modifier = Modifier.padding(bottom = Spaces.Space32),
-                verticalAlignment = Alignment.CenterVertically
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.White
             ) {
-                Text(
-                    text = stringResource(R.string.login_no_account_full),
-                    color = Color.Gray,
-                    fontSize = AppTextSizes.TextSizeMain
-                )
-                Text(
-                    text = stringResource(R.string.login_sign_up),
-                    color = AppColors.BluePrimary,
-                    fontSize = AppTextSizes.TextSizeMain,
-                    fontWeight = FontWeight.Bold,
+                Row(
                     modifier = Modifier
-                        .clickable { onEvent(LoginEvent.OnSignUpClick) }
-                        .padding(Spaces.Space4)
-                )
+                        .padding(vertical = Spaces.Space24)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.login_no_account_full),
+                        color = Color.Gray,
+                        fontSize = AppTextSizes.TextSizeMain
+                    )
+                    Text(
+                        text = stringResource(R.string.login_sign_up),
+                        color = AppColors.BluePrimary,
+                        fontSize = AppTextSizes.TextSizeMain,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .clickable { onEvent(LoginEvent.OnSignUpClick) }
+                            .padding(Spaces.Space4)
+                    )
+                }
             }
         }
     }

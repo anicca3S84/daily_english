@@ -1,86 +1,218 @@
 package com.codework.dailyenglish.presentation.screen.dictionary
 
+import androidx.lifecycle.viewModelScope
+import com.codework.dailyenglish.R
+import com.codework.dailyenglish.core.base.BaseEffect.ShowToast
+import com.codework.dailyenglish.core.base.BaseUiState
 import com.codework.dailyenglish.core.base.BaseViewModel
-import com.codework.dailyenglish.presentation.screen.dictionary.model.Word
+import com.codework.dailyenglish.core.network.onError
+import com.codework.dailyenglish.core.network.onSuccess
+import com.codework.dailyenglish.domain.dictionary.usecase.ToggleSaveWordUseCase
+import com.codework.dailyenglish.domain.dictionary.usecase.SearchWordUseCase
 import com.codework.dailyenglish.presentation.screen.dictionary.mvi.DictionaryEffect
 import com.codework.dailyenglish.presentation.screen.dictionary.mvi.DictionaryEvent
 import com.codework.dailyenglish.presentation.screen.dictionary.mvi.DictionaryState
+import com.codework.dailyenglish.presentation.utils.UiText
+import com.codework.dailyenglish.presentation.utils.asUiText
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class DictionaryViewModel @Inject constructor() : BaseViewModel<DictionaryState, DictionaryEvent, DictionaryEffect>(
+class DictionaryViewModel @Inject constructor(
+    private val searchWordUseCase: SearchWordUseCase,
+    private val toggleSaveWordUseCase: ToggleSaveWordUseCase
+) : BaseViewModel<DictionaryState, DictionaryEvent, DictionaryEffect>(
     initialState = DictionaryState()
 ) {
 
-    private val mockDictionary = listOf(
-        Word(
-            word = "apple",
-            phoneticUk = "/ˈæp.əl/",
-            phoneticUs = "/ˈæp.əl/",
-            type = "noun",
-            definition = "A round fruit with red or green skin and a white inside.",
-            example = "She ate a fresh apple."
-        ),
-        Word(
-            word = "application",
-            phoneticUk = "/ˌæp.lɪˈkeɪ.ʃən/",
-            phoneticUs = "/ˌæp.ləˈkeɪ.ʃən/",
-            type = "noun",
-            definition = "A formal request to be considered for a position.",
-            example = "I submitted my job application."
-        )
-    )
-
-    init {
-        // Khởi tạo data ban đầu luôn là Success (vì Dashboard không cần call API load lâu)
-//        _state.update {
-//
-//        }
-    }
+    private var searchJob: Job? = null
 
     override fun onEvent(event: DictionaryEvent) {
-//        val currentState = (_state.value as? BaseState.Success)?.data ?: return
 
         when (event) {
+
             is DictionaryEvent.OnSearchQueryChange -> {
+
                 val query = event.query
-                val results = if (query.isBlank()) {
-                    emptyList()
-                } else {
-                    mockDictionary.filter { it.word.contains(query, ignoreCase = true) }
+
+                _state.update {
+                    it.copy(query = query)
                 }
 
-//                _state.update {
-//                    BaseState.Success(currentState.copy(query = query, searchResults = results))
-//                }
+                searchJob?.cancel()
+
+                if (query.isBlank()) {
+
+                    _state.update {
+                        it.copy(
+                            searchResults = BaseUiState()
+                        )
+                    }
+
+                    return
+                }
+
+                _state.update {
+                    it.copy(
+                        searchResults = it.searchResults.copy(
+                            isLoading = true,
+                            error = null
+                        )
+                    )
+                }
+
+                searchJob = viewModelScope.launch {
+
+                    searchWordUseCase(query)
+                        .onSuccess { domainWords ->
+
+                            _state.update {
+                                it.copy(
+                                    searchResults = it.searchResults.copy(
+                                        data = domainWords,
+                                        isLoading = false,
+                                        error = null
+                                    )
+                                )
+                            }
+                        }
+                        .onError { err ->
+
+                            _state.update {
+                                it.copy(
+                                    searchResults = it.searchResults.copy(
+                                        isLoading = false,
+                                        error = err.asUiText()
+                                    )
+                                )
+                            }
+
+                            sendEffect(
+                                DictionaryEffect.ShowToast(
+                                    err.asUiText().toString()
+                                )
+                            )
+                        }
+                }
             }
 
             is DictionaryEvent.OnClearSearch -> {
-//                _state.update {
-//                    BaseState.Success(currentState.copy(query = "", searchResults = emptyList()))
-//                }
+
+                searchJob?.cancel()
+
+                _state.update {
+                    it.copy(
+                        query = "",
+                        searchResults = BaseUiState()
+                    )
+                }
             }
 
             is DictionaryEvent.OnPlayAudio -> {
-                // Đẩy Effect ra UI để UI gọi TextToSpeech hoặc ExoPlayer
-                sendEffect(DictionaryEffect.PlayAudio(event.word, event.accent))
+
+                sendEffect(
+                    DictionaryEffect.PlayAudio(
+                        event.word,
+                        event.accent
+                    )
+                )
             }
 
             is DictionaryEvent.OnToggleSaveWord -> {
-                // Logic đổi trạng thái isSaved (Giả lập)
-//                val updatedResults = currentState.searchResults.map {
-////                    if (it.word == event.word.word) it.copy(isSaved = !it.isSaved) else it
-//                }
-//                _state.update { BaseState.Success(currentState.copy(searchResults = updatedResults)) }
 
-                val status = if (!event.word.isSaved) "Saved" else "Removed"
-                sendEffect(DictionaryEffect.ShowToast("$status ${event.word.word}"))
+                viewModelScope.launch {
+
+                    val targetWord = event.word
+                    val newSaveStatus = !targetWord.isSaved
+
+                    _state.update { currentState ->
+
+                        val currentList =
+                            currentState.searchResults.data ?: emptyList()
+
+                        val updatedList = currentList.map { word ->
+
+                            if (word.id == targetWord.id) {
+                                word.copy(isSaved = newSaveStatus)
+                            } else {
+                                word
+                            }
+                        }
+
+                        currentState.copy(
+                            searchResults = currentState.searchResults.copy(
+                                data = updatedList
+                            )
+                        )
+                    }
+
+                    toggleSaveWordUseCase(targetWord.id)
+                        .onSuccess {
+
+                            sendGlobalEffect(
+                                ShowToast(
+                                    UiText.StringResource(
+                                        R.string.noti_success
+                                    )
+                                )
+                            )
+                        }
+                        .onError { err ->
+
+                            val uiError = err.asUiText()
+
+                            _state.update { currentState ->
+
+                                val currentList =
+                                    currentState.searchResults.data ?: emptyList()
+
+                                val rollbackList = currentList.map { word ->
+
+                                    if (word.id == targetWord.id) {
+                                        word.copy(isSaved = targetWord.isSaved)
+                                    } else {
+                                        word
+                                    }
+                                }
+
+                                currentState.copy(
+                                    searchResults = currentState.searchResults.copy(
+                                        data = rollbackList
+                                    )
+                                )
+                            }
+
+                            sendGlobalEffect(
+                                ShowToast(uiError)
+                            )
+                        }
+                }
             }
 
-            is DictionaryEvent.OnQuickActionClick -> sendEffect(DictionaryEffect.NavigateToFeature(event.action))
-            is DictionaryEvent.OnTopicClick -> sendEffect(DictionaryEffect.ShowToast("Exploring topic: ${event.topic}"))
-            is DictionaryEvent.OnWordClick -> { /* Navigate to detail screen if needed */ }
+            is DictionaryEvent.OnQuickActionClick -> {
+
+                sendEffect(
+                    DictionaryEffect.NavigateToSavedWord(
+                        event.action
+                    )
+                )
+            }
+
+            is DictionaryEvent.OnTopicClick -> {
+
+                sendEffect(
+                    DictionaryEffect.ShowToast(
+                        "Exploring topic: ${event.topic}"
+                    )
+                )
+            }
+
+            is DictionaryEvent.OnWordClick -> {
+                // Navigate detail
+            }
         }
     }
 }

@@ -2,6 +2,7 @@ package com.codework.dailyenglish.presentation.manager
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
+import android.util.Log
 import java.util.Locale
 
 class TextToSpeechManager(context: Context) {
@@ -23,7 +24,15 @@ class TextToSpeechManager(context: Context) {
         if (isReady) {
             tts?.setPitch(1f)
             tts?.setSpeechRate(speed)
-            tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+            val result = tts?.speak(
+                text,
+                TextToSpeech.QUEUE_FLUSH,
+                null,
+                "tts_id"
+            )
+            Log.d("TTS", "Speak result = $result")
+        } else {
+            Log.d("TTS", "Not ready")
         }
     }
 

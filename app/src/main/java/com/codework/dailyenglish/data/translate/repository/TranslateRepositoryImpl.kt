@@ -7,6 +7,7 @@ import com.codework.dailyenglish.data.translate.local.datasource.TranslateLocalD
 import com.codework.dailyenglish.data.translate.mapper.toDomain
 import com.codework.dailyenglish.data.translate.mapper.toEntity
 import com.codework.dailyenglish.data.translate.remote.datasource.TranslateRemoteDataSource
+import com.codework.dailyenglish.data.translate.remote.dto.TranslateRequestDto
 import com.codework.dailyenglish.domain.translate.model.Translation
 import com.codework.dailyenglish.domain.translate.repository.TranslateRepository
 import kotlinx.coroutines.flow.Flow
@@ -26,7 +27,13 @@ class TranslateRepositoryImpl @Inject constructor(
         sourceLang: String,
         targetLang: String
     ): AppResult<String> = withContext(dispatchers.io) {
-        val responseResult = remoteDataSource.translate(text, sourceLang, targetLang)
+        val responseResult = remoteDataSource.translate(
+            translateRequest = TranslateRequestDto(
+                q = text,
+                source = sourceLang,
+                target = targetLang
+            )
+        )
         responseResult.map { dto ->
             dto.translatedText
         }

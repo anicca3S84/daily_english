@@ -1,5 +1,6 @@
 package com.codework.dailyenglish.presentation.screen.translate
 
+import android.media.MediaPlayer
 import androidx.lifecycle.viewModelScope
 import com.codework.dailyenglish.R
 import com.codework.dailyenglish.core.base.BaseEffect.*
@@ -9,6 +10,7 @@ import com.codework.dailyenglish.core.network.onSuccess
 import com.codework.dailyenglish.domain.translate.usecase.ObserveTranslationHistoryUseCase
 import com.codework.dailyenglish.domain.translate.usecase.SaveTranslationHistoryUseCase
 import com.codework.dailyenglish.domain.translate.usecase.TranslateTextUseCase
+import com.codework.dailyenglish.presentation.manager.TextToSpeechManager
 import com.codework.dailyenglish.presentation.screen.translate.mapper.toUiModels
 import com.codework.dailyenglish.presentation.screen.translate.mvi.TranslateEffect
 import com.codework.dailyenglish.presentation.screen.translate.mvi.TranslateEvent
@@ -23,20 +25,77 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.*
+
 
 @HiltViewModel
 class TranslateViewModel @Inject constructor(
     private val translateTextUseCase: TranslateTextUseCase,
     private val observeHistoryUseCase: ObserveTranslationHistoryUseCase,
-    private val saveHistoryUseCase: SaveTranslationHistoryUseCase
+    private val saveHistoryUseCase: SaveTranslationHistoryUseCase,
+    private val ttsManager: TextToSpeechManager
 ) : BaseViewModel<TranslateState, TranslateEvent, TranslateEffect>(
     initialState = TranslateState()
 ) {
 
     private var translateJob: Job? = null
+    private var mediaPlayer: MediaPlayer? = null
+
+    // Tạo luồng phát hiện thay đổi chữ nhập vào để thực hiện debounce
+    private val sourceTextFlow = MutableStateFlow("")
 
     init {
         observeHistory()
+        setupRealtimeTranslation()
+    }
+
+    @OptIn(FlowPreview::class)
+    private fun setupRealtimeTranslation() {
+        sourceTextFlow
+            .debounce(800L) // Đợi người dùng dừng gõ phím 800ms
+            .distinctUntilChanged()
+            .onEach { text ->
+                if (text.isBlank()) {
+                    _state.update { it.copy(targetText = "", isTranslating = false) }
+                    return@onEach
+                }
+                executeTranslation(text)
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun executeTranslation(text: String) {
+        translateJob?.cancel()
+        translateJob = viewModelScope.launch {
+            val currentState = _state.value
+            translateTextUseCase(
+                text = text,
+                sourceLang = currentState.sourceLang,
+                targetLang = currentState.targetLang
+            )
+                .onSuccess { result ->
+                    _state.update {
+                        it.copy(
+                            targetText = result.translatedText,
+                            isTranslating = false
+                        )
+                    }
+                    result.historyItem?.let { item ->
+                        launch {
+                            runCatching { saveHistoryUseCase(item) }
+                        }
+                    }
+                }
+                .onError { appError ->
+                    _state.update {
+                        it.copy(
+                            isTranslating = false,
+                            historyState = it.historyState.copy(error = appError.asUiText())
+                        )
+                    }
+                }
+        }
     }
 
     private fun observeHistory() {
@@ -74,9 +133,12 @@ class TranslateViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         sourceText = event.text,
+                        // Hiển thị loading "..." ngay khi người dùng đang gõ phím
+                        isTranslating = event.text.isNotBlank(),
                         historyState = it.historyState.copy(error = null)
                     )
                 }
+                sourceTextFlow.value = event.text
             }
 
             is TranslateEvent.OnClearText -> {
@@ -84,9 +146,11 @@ class TranslateViewModel @Inject constructor(
                     it.copy(
                         sourceText = "",
                         targetText = "",
+                        isTranslating = false,
                         historyState = it.historyState.copy(error = null)
                     )
                 }
+                sourceTextFlow.value = ""
             }
 
             is TranslateEvent.OnSwapLanguage -> {
@@ -96,60 +160,79 @@ class TranslateViewModel @Inject constructor(
                         targetLang = it.sourceLang,
                         sourceText = it.targetText,
                         targetText = it.sourceText,
+                        isTranslating = it.targetText.isNotBlank(),
                         historyState = it.historyState.copy(error = null)
                     )
                 }
+                sourceTextFlow.value = _state.value.sourceText
             }
 
-            is TranslateEvent.OnTranslateClick -> {
-                if (_state.value.isTranslating) return
-                translateJob?.cancel()
-
-                translateJob = viewModelScope.launch {
-                    val currentState = _state.value
-                    if (currentState.sourceText.isBlank()) return@launch
-
-                    _state.update {
-                        it.copy(
-                            isTranslating = true,
-                            historyState = it.historyState.copy(error = null)
-                        )
-                    }
-
-                    translateTextUseCase(
-                        text = currentState.sourceText,
-                        sourceLang = currentState.sourceLang,
-                        targetLang = currentState.targetLang
-                    )
-                        .onSuccess { result ->
-                            _state.update {
-                                it.copy(
-                                    targetText = result.translatedText,
-                                    isTranslating = false
-                                )
-                            }
-
-                            result.historyItem?.let { item ->
-                                launch {
-                                    runCatching { saveHistoryUseCase(item) }
-                                }
-                            }
-                        }
-                        .onError { appError ->
-                            _state.update {
-                                it.copy(
-                                    isTranslating = false,
-                                    historyState = it.historyState.copy(error = appError.asUiText())
-                                )
-                            }
-                        }
-                }
+            is TranslateEvent.OnPlaySourceAudio -> {
+                playAudio(url = null, textToSpeak = _state.value.sourceText)
             }
 
-            is TranslateEvent.OnCameraClick -> sendGlobalEffect(ShowToast(UiText.StringResource(R.string.noti_coming_soon)))
-            is TranslateEvent.OnImageClick -> sendGlobalEffect(ShowToast(UiText.StringResource(R.string.noti_coming_soon)))
-            is TranslateEvent.OnMicClick -> sendGlobalEffect(ShowToast(UiText.StringResource(R.string.noti_coming_soon)))
-            TranslateEvent.OnSeeAllClick -> sendEffect(TranslateEffect.NavigateToHistory)
+            is TranslateEvent.OnPlayTargetAudio -> {
+                playAudio(url = null, textToSpeak = _state.value.targetText)
+            }
+
+            is TranslateEvent.OnCameraClick -> {
+                sendEffect(TranslateEffect.NavigateToCameraScanner)
+            }
+
+            is TranslateEvent.OnImageClick -> {
+                sendEffect(TranslateEffect.NavigateToGalleryPicker)
+            }
+
+            is TranslateEvent.OnMicClick -> {
+                // Mic Click sẽ được xử lý quyền trực tiếp từ UI Screen
+            }
+
+            is TranslateEvent.OnSeeAllClick -> {
+                sendEffect(TranslateEffect.NavigateToHistory)
+            }
         }
+    }
+
+    fun playAudio(url: String?, textToSpeak: String? = null, speed: Float = 1f) {
+        if (url.isNullOrBlank()) {
+            textToSpeak?.let { ttsManager.speak(it, speed) }
+            return
+        }
+        viewModelScope.launch {
+            try {
+                if (mediaPlayer == null) {
+                    mediaPlayer = MediaPlayer()
+                } else {
+                    mediaPlayer?.reset()
+                }
+
+                mediaPlayer?.apply {
+                    setDataSource(url)
+                    setOnPreparedListener { mp ->
+                        try {
+                            mp.playbackParams = mp.playbackParams.setSpeed(speed)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                        mp.start()
+                    }
+                    setOnErrorListener { _, _, _ ->
+                        textToSpeak?.let { ttsManager.speak(it, speed) }
+                        true
+                    }
+                    prepareAsync()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                textToSpeak?.let { ttsManager.speak(it, speed) }
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        mediaPlayer?.release()
+        mediaPlayer = null
+        ttsManager.shutDown()
     }
 }

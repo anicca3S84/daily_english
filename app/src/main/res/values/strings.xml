@@ -122,6 +122,7 @@
     <string name="noti_lesson_looked">This lesson is locked!</string>
     <string name="noti_correct">Great! That\'s the correct answer.</string>
     <string name="noti_incorrect">Oops! That\'s not quite right.</string>
+    <string name="noti_success">Success</string>
 
     <!--Format-->
     <string name="exp_format">%1$d Exp</string>

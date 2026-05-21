@@ -58,4 +58,10 @@ sealed interface Route {
 
     @Serializable
     data class LessonResultScreen(val scorePercentage: Int, val starsEarned: Int, val lessonId: String)
+
+    @Serializable
+    data object SavedWordsScreen : Route
+
+    @Serializable
+    data object FlashcardScreen : Route
 }

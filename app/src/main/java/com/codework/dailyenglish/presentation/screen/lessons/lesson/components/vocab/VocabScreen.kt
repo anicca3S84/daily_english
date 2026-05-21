@@ -46,109 +46,100 @@ fun VocabCard(
         label = "flip"
     )
 
-    Box(
+    // Đổi Box thành Column và cho nó fillMaxSize để chiếm trọn không gian cho phép
+    Column(
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = Spaces.Space32, vertical = Spaces.Space16),
-        contentAlignment = Alignment.TopCenter
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            // Nhãn tiêu đề
-            Text(
-                text = "Từ vựng mới",
-                fontSize = AppTextSizes.TextSizeTitle,
-                fontWeight = FontWeight.ExtraBold,
-                color = AppColors.Slate700,
-                modifier = Modifier.padding(bottom = Spaces.Space24)
-            )
+        // CỤM 1: Nhãn tiêu đề (Header)
+        Text(
+            text = "Từ vựng mới",
+            fontSize = AppTextSizes.TextSizeTitle,
+            fontWeight = FontWeight.ExtraBold,
+            color = AppColors.Slate700,
+            modifier = Modifier.padding(bottom = Spaces.Space16) // Giảm một chút cho gọn
+        )
 
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Spaces.Space16)
-                    .height(Spaces.Space475)
-                    .graphicsLayer {
-                        rotationY = rotation
-                        cameraDistance = 16f * density
-                    }
-                    .border(Spaces.Space1, Color(0xFFF1F5F9), RoundedCornerShape(AppRadius.Radius32))
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null // Tắt hiệu ứng ripple khi lật thẻ
-                    ) { isFlipped = !isFlipped },
-                shape = RoundedCornerShape(AppRadius.Radius32),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(Spaces.Space3)
-            ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    if (rotation <= 90f) {
-                        VocabCardFront(
+        // CỤM 2: Thẻ Flashcard (Dùng weight(1f) để nó tự động giãn dài/ngắn tuỳ theo màn hình)
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f) // <--- QUAN TRỌNG: Đây chính là chiếc lò xo
+                .padding(horizontal = Spaces.Space16)
+                // ĐÃ XÓA: .height(Spaces.Space475) vì mình muốn nó tự động co giãn
+                .graphicsLayer {
+                    rotationY = rotation
+                    cameraDistance = 16f * density
+                }
+                .border(Spaces.Space1, Color(0xFFF1F5F9), RoundedCornerShape(AppRadius.Radius32))
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) { isFlipped = !isFlipped },
+            shape = RoundedCornerShape(AppRadius.Radius32),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(Spaces.Space3)
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (rotation <= 90f) {
+                    VocabCardFront(
+                        data = data,
+                        isFavorite = isFavorite,
+                        onToggleFavorite = onToggleFavorite,
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                rotationY = 180f
+                            }
+                    ) {
+                        VocabCardBack(
                             data = data,
                             isFavorite = isFavorite,
                             onToggleFavorite = onToggleFavorite,
                         )
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .graphicsLayer {
-                                    rotationY = 180f
-                                }
-                        ) {
-                            VocabCardBack(
-                                data = data,
-                                isFavorite = isFavorite,
-                                onToggleFavorite = onToggleFavorite,
-                            )
-                        }
                     }
                 }
             }
+        }
 
-            Spacer(modifier = Modifier.height(Spaces.Space36))
+        // CỤM 3: Khoảng cách và Hàng nút bấm (Footer)
+        Spacer(modifier = Modifier.height(Spaces.Space24)) // Cố định khoảng cách nút và thẻ
 
-            // CỤM 3 NÚT ACTION 3D BÊN DƯỚI
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Nút Ốc Sên (Phát chậm)
-                SnailAudioButton3D(
-                    onClick = { onPlayAudio(data.usAudioUrl, data.word, 0.5f) }
-                )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            SnailAudioButton3D(
+                onClick = { onPlayAudio(data.usAudioUrl, data.word, 0.5f) }
+            )
 
-                Spacer(modifier = Modifier.width(Spaces.Space24))
+            Spacer(modifier = Modifier.width(Spaces.Space24))
 
-                // Nút Loa Chính (Nổi bật hơn, màu xanh)
-                MainAudioButton3D(
-                    onClick = { onPlayAudio(data.usAudioUrl, data.word, 1f) }
-                )
+            MainAudioButton3D(
+                onClick = { onPlayAudio(data.usAudioUrl, data.word, 1f) }
+            )
 
-                Spacer(modifier = Modifier.width(Spaces.Space24))
+            Spacer(modifier = Modifier.width(Spaces.Space24))
 
-                // Nút Lưu từ (Bookmark) - Đổi màu vàng khi isFavorite = true
-                BookmarkButton3D(
-                    isSaved = isFavorite,
-                    onClick = onToggleFavorite
-                )
-            }
+            BookmarkButton3D(
+                isSaved = isFavorite,
+                onClick = onToggleFavorite
+            )
         }
     }
 }
-
-// ==========================================
-// CÁC COMPONENT NÚT BẤM 3D (NEUMORPHISM)
-// ==========================================
 
 @Composable
 fun SnailAudioButton3D(onClick: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
-    // Animation lún xuống
     val yOffset by animateDpAsState(targetValue = if (isPressed) 4.dp else 0.dp, label = "yOffset")
 
     Box(
@@ -156,18 +147,16 @@ fun SnailAudioButton3D(onClick: () -> Unit) {
             .size(64.dp)
             .clickable(
                 interactionSource = interactionSource,
-                indication = null, // Tắt Ripple mặc định
+                indication = null,
                 onClick = onClick
             )
     ) {
-        // Lớp Shadow (Đáy)
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .offset(y = 4.dp)
                 .background(Color(0xFFE5E5E5), CircleShape)
         )
-        // Lớp Nổi (Mặt trên)
         Surface(
             modifier = Modifier
                 .fillMaxSize()
@@ -192,21 +181,19 @@ fun MainAudioButton3D(onClick: () -> Unit) {
 
     Box(
         modifier = Modifier
-            .size(72.dp) // Nút chính to hơn một chút
+            .size(72.dp)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick
             )
     ) {
-        // Lớp Shadow (Xanh đậm)
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .offset(y = 4.dp)
                 .background(Color(0xFF1899D6), CircleShape)
         )
-        // Lớp Nổi (Xanh sáng)
         Surface(
             modifier = Modifier
                 .fillMaxSize()
@@ -234,7 +221,6 @@ fun BookmarkButton3D(isSaved: Boolean, onClick: () -> Unit) {
 
     val yOffset by animateDpAsState(targetValue = if (isPressed) 4.dp else 0.dp, label = "yOffset")
 
-    // Animation chuyển màu mượt mà khi nhấn lưu
     val bgColor by animateColorAsState(targetValue = if (isSaved) Color(0xFFFEF3C7) else Color.White, label = "bg")
     val borderColor by animateColorAsState(targetValue = if (isSaved) Color(0xFFF4B844) else Color(0xFFE5E5E5), label = "border")
     val iconColor by animateColorAsState(targetValue = if (isSaved) Color(0xFFF4B844) else Color(0xFF9CA3AF), label = "icon")
@@ -248,14 +234,12 @@ fun BookmarkButton3D(isSaved: Boolean, onClick: () -> Unit) {
                 onClick = onClick
             )
     ) {
-        // Lớp Shadow (Đáy đổi màu theo trạng thái)
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .offset(y = 4.dp)
                 .background(borderColor, CircleShape)
         )
-        // Lớp Nổi
         Surface(
             modifier = Modifier
                 .fillMaxSize()

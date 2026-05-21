@@ -1,15 +1,18 @@
+// FILE: app/src/main/java/com/codework/dailyenglish/presentation/screen/dictionary/DictionaryScreen.kt
 package com.codework.dailyenglish.presentation.screen.dictionary
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -21,18 +24,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codework.dailyenglish.presentation.components.AppTopBar
+import com.codework.dailyenglish.domain.dictionary.model.Word
 import com.codework.dailyenglish.presentation.components.PhoneticGroup
-import com.codework.dailyenglish.presentation.screen.dictionary.model.Word
+import com.codework.dailyenglish.presentation.components.StateWrapper
 import com.codework.dailyenglish.presentation.screen.dictionary.mvi.DictionaryEvent
 import com.codework.dailyenglish.presentation.screen.dictionary.mvi.DictionaryState
 import com.codework.dailyenglish.presentation.theme.AppColors
+import com.codework.dailyenglish.presentation.theme.AppTextSizes
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DictionaryScreen(
-    state: DictionaryState, // SỬA: Đổi DictionaryData thành DictionaryState
+    state: DictionaryState,
     onEvent: (DictionaryEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -40,17 +46,28 @@ fun DictionaryScreen(
         containerColor = AppColors.AppBackground,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
-            AppTopBar(
-                onBackClick = onBackClick,
-                onMenuClick = null,
-                titleContent = {
+            CenterAlignedTopAppBar(
+                title = {
                     Text(
                         text = "Dictionary",
-                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF111827)
+                        fontSize = AppTextSizes.TextSizeTitle,
+                        textAlign = TextAlign.Center,
+                        color = AppColors.TextMain
                     )
-                }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = AppColors.TextMain
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.White.copy(alpha = 0.9f)
+                )
             )
         }
     ) { paddingValues ->
@@ -60,85 +77,120 @@ fun DictionaryScreen(
                 .padding(paddingValues)
                 .background(AppColors.AppBackground)
         ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Spacer(modifier = Modifier.height(10.dp))
+                DictionarySearchBar(
+                    query = state.query, // Đã sửa data thành state
+                    onQueryChange = { onEvent(DictionaryEvent.OnSearchQueryChange(it)) },
+                    onClear = { onEvent(DictionaryEvent.OnClearSearch) }
+                )
 
-                Column(modifier = Modifier.fillMaxSize()) {
+                StateWrapper(
+                    uiState = state.searchResults,
+                    modifier = Modifier.fillMaxSize()
+                ) { data ->
 
-//                    DictionarySearchBar(
-//                        query = data.query,
-//                        onQueryChange = { onEvent(DictionaryEvent.OnSearchQueryChange(it)) },
-//                        onClear = { onEvent(DictionaryEvent.OnClearSearch) }
-//                    )
+                    val currentList = data ?: emptyList()
 
-//                    LazyColumn(
-//                        modifier = Modifier.fillMaxSize(),
-//                        contentPadding = PaddingValues(16.dp),
-//                        verticalArrangement = Arrangement.spacedBy(16.dp)
-//                    ) {
-//                        if (data.query.isNotEmpty()) {
-//                            if (data.searchResults.isEmpty()) {
-//                                item { EmptySearchResult(data.query) }
-//                            } else {
-//                                items(data.searchResults) { word ->
-//                                    WordResultCard(
-//                                        word = word,
-//                                        onPlayAudioUk = { onEvent(DictionaryEvent.OnPlayAudio(word.word, "UK")) }, // SỬA: Thêm accent
-//                                        onPlayAudioUs = { onEvent(DictionaryEvent.OnPlayAudio(word.word, "US")) }, // SỬA: Thêm accent
-//                                        onToggleSave = { onEvent(DictionaryEvent.OnToggleSaveWord(word)) } // SỬA: Gắn Event
-//                                    )
-//                                }
-//                            }
-//                        } else {
-//                            item {
-//                                SectionTitle("Quick Actions")
-//                                Spacer(modifier = Modifier.height(12.dp))
-//                                QuickActionsGrid(onEvent = onEvent) // SỬA: Truyền onEvent
-//                            }
-//
-//                            if (data.recentSearches.isNotEmpty()) {
-//                                item {
-//                                    SectionTitle("Recent Searches")
-//                                    Spacer(modifier = Modifier.height(12.dp))
-//                                    RecentSearchList(data.recentSearches)
-//                                }
-//                            }
-//
-//                            item {
-//                                SectionTitle("Explore Topics")
-//                                Spacer(modifier = Modifier.height(12.dp))
-//                                TopicList(onEvent = onEvent) // SỬA: Truyền onEvent
-//                            }
-//
-//                            item {
-//                                Spacer(modifier = Modifier.height(8.dp))
-//                                DailyQuoteCard()
-//                            }
-//                        }
-//
-//                        item { Spacer(modifier = Modifier.height(80.dp)) }
-//                    }
-//                }
-//            }
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+
+                        if (state.query.isNotEmpty()) {
+
+                            if (currentList.isEmpty()) {
+                                item {
+                                    EmptySearchResult(state.query)
+                                }
+                            } else {
+                                items(currentList) { word ->
+                                    WordResultCard(
+                                        word = word,
+                                        onPlayAudioUk = {
+                                            onEvent(
+                                                DictionaryEvent.OnPlayAudio(
+                                                    word.word,
+                                                    "UK"
+                                                )
+                                            )
+                                        },
+                                        onPlayAudioUs = {
+                                            onEvent(
+                                                DictionaryEvent.OnPlayAudio(
+                                                    word.word,
+                                                    "US"
+                                                )
+                                            )
+                                        },
+                                        onToggleSave = {
+                                            onEvent(
+                                                DictionaryEvent.OnToggleSaveWord(word)
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+
+                        } else {
+
+                            item {
+                                SectionTitle("Quick Actions")
+                                Spacer(modifier = Modifier.height(12.dp))
+                                QuickActionsGrid(onEvent = onEvent)
+                            }
+
+                            if (state.recentSearches.isNotEmpty()) {
+                                item {
+                                    SectionTitle("Recent Searches")
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    RecentSearchList(state.recentSearches)
+                                }
+                            }
+
+                            item {
+                                SectionTitle("Explore Topics")
+                                Spacer(modifier = Modifier.height(12.dp))
+                                TopicList(onEvent = onEvent)
+                            }
+
+                            item {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                DailyQuoteCard()
+                            }
+                        }
+
+                        item {
+                            Spacer(modifier = Modifier.height(80.dp))
+                        }
+                    }
                 }
             }
         }
+    }
+}
 
-// SỬA: Cập nhật hàm này để nhận onEvent
-//@Composable
-//fun QuickActionsGrid(onEvent: (DictionaryEvent) -> Unit) {
-//    Row(
-//        modifier = Modifier.fillMaxWidth(),
-//        horizontalArrangement = Arrangement.spacedBy(12.dp)
-//    ) {
-//        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-//            QuickActionCard("Saved Words", Icons.Rounded.Bookmark, Color(0xFF3B82F6)) { onEvent(DictionaryEvent.OnQuickActionClick("Saved")) }
-//            QuickActionCard("Phrasal Verbs", Icons.Rounded.Spellcheck, Color(0xFF10B981)) { onEvent(DictionaryEvent.OnQuickActionClick("Grammar")) }
-//        }
-//        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-//            QuickActionCard("Idioms", Icons.Rounded.Lightbulb, Color(0xFFF59E0B)) { onEvent(DictionaryEvent.OnQuickActionClick("Idioms")) }
-//            QuickActionCard("Flashcards", Icons.Rounded.Quiz, Color(0xFF8B5CF6)) { onEvent(DictionaryEvent.OnQuickActionClick("Flashcards")) }
-//        }
-//    }
-//}
+
+
+@Composable
+fun QuickActionsGrid(onEvent: (DictionaryEvent) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            QuickActionCard("Saved Words", Icons.Rounded.Bookmark, Color(0xFF3B82F6)) { onEvent(DictionaryEvent.OnQuickActionClick("Saved")) }
+            QuickActionCard("Phrasal Verbs", Icons.Rounded.Spellcheck, Color(0xFF10B981)) { onEvent(DictionaryEvent.OnQuickActionClick("Grammar")) }
+        }
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            QuickActionCard("Idioms", Icons.Rounded.Lightbulb, Color(0xFFF59E0B)) { onEvent(DictionaryEvent.OnQuickActionClick("Idioms")) }
+            QuickActionCard("Flashcards", Icons.Rounded.Quiz, Color(0xFF8B5CF6)) { onEvent(DictionaryEvent.OnQuickActionClick("Flashcards")) }
+        }
+    }
+}
+
+// V.v... các component khác giữ nguyên
 
         @Composable
         fun QuickActionCard(
@@ -277,10 +329,6 @@ fun DictionaryScreen(
             }
         }
 
-// ==========================
-// EXISTING COMPONENTS (Giữ nguyên)
-// ==========================
-
         @Composable
         fun DictionarySearchBar(
             query: String,
@@ -387,14 +435,14 @@ fun DictionaryScreen(
                     ) {
                         PhoneticGroup(
                             label = "UK",
-                            phonetic = word.phoneticUk,
+                            phonetic = word.ukPhonetic,
                             mainColor = Color(0xFFE91E63),
                             onClick = onPlayAudioUk
                         )
                         Spacer(modifier = Modifier.width(32.dp))
                         PhoneticGroup(
                             label = "US",
-                            phonetic = word.phoneticUs,
+                            phonetic = word.usPhonetic,
                             mainColor = Color(0xFF3B82F6),
                             onClick = onPlayAudioUs
                         )
@@ -408,7 +456,7 @@ fun DictionaryScreen(
 
                     // --- 3. DEFINITION ---
                     Text(
-                        text = word.definition,
+                        text = word.meaning,
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color(0xFF334155),
                         lineHeight = 22.sp
@@ -449,7 +497,7 @@ fun DictionaryScreen(
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = word.example,
+                                    text = word.examples[0],
                                     style = MaterialTheme.typography.bodySmall,
                                     color = Color(0xFF64748B),
                                     fontStyle = FontStyle.Italic
@@ -550,5 +598,4 @@ fun DictionaryScreen(
                     fontSize = 14.sp
                 )
             }
-        }
 }

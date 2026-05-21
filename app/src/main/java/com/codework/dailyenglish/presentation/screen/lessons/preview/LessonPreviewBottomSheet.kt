@@ -108,8 +108,7 @@ private fun LessonPreviewMainContent(
     val scrollState = rememberScrollState()
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
         Box(
             modifier = Modifier
@@ -118,13 +117,13 @@ private fun LessonPreviewMainContent(
         ) {
             Column(
                 modifier = Modifier
-                    .align(Alignment.Center)
+                    .fillMaxSize()
                     .verticalScroll(scrollState)
-                    .padding(horizontal = Spaces.Space24, vertical = Spaces.Space16),
-                verticalArrangement = Arrangement.spacedBy(Spaces.Space24),
+                    .padding(horizontal = Spaces.Space24, vertical = Spaces.Space32),
+                verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
+                // Emoji Box
                 Box(
                     modifier = Modifier
                         .size(Spaces.Space96)
@@ -134,11 +133,10 @@ private fun LessonPreviewMainContent(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "👋",
-                        fontSize = AppTextSizes.TextSize48
-                    )
+                    Text(text = "👋", fontSize = AppTextSizes.TextSize48)
                 }
+
+                Spacer(modifier = Modifier.height(Spaces.Space24))
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -152,8 +150,6 @@ private fun LessonPreviewMainContent(
                         textAlign = TextAlign.Center
                     )
 
-                    Spacer(Modifier.width(Spaces.Space3))
-
                     Text(
                         text = preview.subtitle,
                         color = Color(0xFF4B5563),
@@ -163,7 +159,8 @@ private fun LessonPreviewMainContent(
                     )
                 }
 
-                // ⏱ + XP
+                Spacer(modifier = Modifier.height(Spaces.Space24))
+
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(Spaces.Space8),
                     verticalAlignment = Alignment.CenterVertically
@@ -183,32 +180,31 @@ private fun LessonPreviewMainContent(
                     )
                 }
 
-                // 📖 DESCRIPTION
+                Spacer(modifier = Modifier.height(Spaces.Space32))
+
                 Text(
                     text = preview.content,
                     color = AppColors.GrayText,
                     fontSize = AppTextSizes.TextSizeMain,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    lineHeight = 22.sp
                 )
 
-                // 🎯 OBJECTIVES
+                Spacer(modifier = Modifier.height(Spaces.Space32))
+
                 Column(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(Spaces.Space16),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Rounded.Star,
                             null,
                             tint = AppColors.BluePrimary,
                             modifier = Modifier.size(AppIcons.IconSizeSmall)
                         )
-
                         Spacer(Modifier.width(Spaces.Space8))
-
                         Text(
                             text = stringResource(R.string.label_what_will_you_learn),
                             fontWeight = FontWeight.Bold,
@@ -220,59 +216,48 @@ private fun LessonPreviewMainContent(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(
-                                Color(0xFFEFF6FF),
-                                RoundedCornerShape(Spaces.Space20)
-                            )
-                            .border(
-                                Spaces.Space1,
-                                Color(0xFFDBEAFE),
-                                RoundedCornerShape(Spaces.Space20)
-                            )
+                            .background(Color(0xFFEFF6FF), RoundedCornerShape(Spaces.Space20))
+                            .border(Spaces.Space1, Color(0xFFDBEAFE), RoundedCornerShape(Spaces.Space20))
                             .padding(Spaces.Space20)
                     ) {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(Spaces.Space14)
-                        ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(Spaces.Space14)) {
                             preview.outcomes.forEach { outcome ->
                                 ObjectiveItem(outcome)
                             }
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(Spaces.Space16))
             }
         }
 
-        // 👇 BUTTON (fixed bottom)
         Surface(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(Spaces.Space24),
-            color = Color.Transparent
+                .fillMaxWidth(),
+            color = Color.White,
         ) {
-            Button(
-                onClick = { onStartClick(preview.id) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(Spaces.Space56),
-                shape = RoundedCornerShape(Spaces.Space16),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF3B82F6)
-                )
-            ) {
-                Icon(Icons.Rounded.PlayCircle, null, tint = Color.White)
-
-                Spacer(Modifier.width(Spaces.Space8))
-
-                Text(
-                    text = stringResource(
-                        if (!isCompleted) R.string.action_start_learning
-                        else R.string.label_review
-                    ),
-                    color = Color.White,
-                    fontWeight = FontWeight.W700,
-                    fontSize = AppTextSizes.TextSizeTitle
-                )
+            Box(modifier = Modifier.padding(Spaces.Space24)) {
+                Button(
+                    onClick = { onStartClick(preview.id) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(Spaces.Space56),
+                    shape = RoundedCornerShape(Spaces.Space16),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
+                ) {
+                    Icon(Icons.Rounded.PlayCircle, null, tint = Color.White)
+                    Spacer(Modifier.width(Spaces.Space8))
+                    Text(
+                        text = stringResource(
+                            if (!isCompleted) R.string.action_start_learning
+                            else R.string.label_review
+                        ),
+                        color = Color.White,
+                        fontWeight = FontWeight.W700,
+                        fontSize = AppTextSizes.TextSizeTitle
+                    )
+                }
             }
         }
     }

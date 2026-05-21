@@ -23,7 +23,6 @@ fun VocabCardFront(
     isFavorite: Boolean,
     onToggleFavorite: () -> Unit,
 ) {
-    // Hiệu ứng nhấp nháy cho text "Chạm để lật"
     val infiniteTransition = rememberInfiniteTransition(label = "pulseTransition")
     val pulseAlpha by infiniteTransition.animateFloat(
         initialValue = 0.4f,
@@ -69,7 +68,6 @@ fun VocabCardFront(
             }
         }
 
-        // Hint lật thẻ
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -78,7 +76,7 @@ fun VocabCardFront(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.alpha(pulseAlpha) // Áp dụng animation nhấp nháy
+                modifier = Modifier.alpha(pulseAlpha)
             ) {
                 Icon(
                     imageVector = Icons.Default.TouchApp,

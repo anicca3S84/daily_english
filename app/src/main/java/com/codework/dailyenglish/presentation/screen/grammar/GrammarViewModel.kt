@@ -27,7 +27,6 @@ class GrammarViewModel @Inject constructor() :
     override fun onEvent(event: GrammarEvent) {
         when (event) {
             is GrammarEvent.OnTopicClick -> sendEffect(GrammarEffect.NavigateToTopic(event.topicId))
-            is GrammarEvent.OnLevelFilterSelected -> filterTopics(event.level)
             is GrammarEvent.OnBackClick -> sendEffect(GrammarEffect.NavigateBack)
             is GrammarEvent.OnSearchClick -> sendEffect(GrammarEffect.OpenSearch)
             is GrammarEvent.OnRetry -> loadGrammarData()
@@ -67,12 +66,5 @@ class GrammarViewModel @Inject constructor() :
         }
     }
 
-    private fun filterTopics(level: String) {
-//        val currentState = (_uiState.value as? BaseState.Success)?.data ?: return
-        val filteredList = if (level == "All") allTopicsSource else allTopicsSource.filter { it.level == level }
 
-//        _uiState.update {
-//            BaseState.Success(currentState.copy(selectedLevel = level, grammarTopics = filteredList))
-//        }
-    }
 }

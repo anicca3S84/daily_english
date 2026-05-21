@@ -194,7 +194,6 @@ fun MultipleChoiceQuestion(
             }
         }
 
-        // 3. KHỐI ĐÁP ÁN (Grid 2 cột)
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             val chunkedOptions = content.options.chunked(2)
             var optionNumber = 1
@@ -303,7 +302,7 @@ fun QuizOption3D(
                 .clip(RoundedCornerShape(16.dp))
                 .clickable(
                     interactionSource = interactionSource,
-                    indication = null, // Bỏ hiệu ứng Ripple mặc định để tôn lên hiệu ứng 3D lún
+                    indication = null,
                     enabled = !isEvaluated
                 ) { onClick(optionId) },
             shape = RoundedCornerShape(16.dp),

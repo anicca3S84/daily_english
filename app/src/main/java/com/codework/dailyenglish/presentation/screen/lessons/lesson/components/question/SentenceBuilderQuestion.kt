@@ -1,6 +1,7 @@
 package com.codework.dailyenglish.presentation.screen.lessons.lesson.components.question
 
 import android.speech.tts.TextToSpeech
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -29,7 +30,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -71,25 +71,28 @@ fun SentenceBuilderQuestion(
         tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
+    // ROOT COLUMN: Chiếm trọn chiều cao màn hình
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize() // Quan trọng: Phải fillMaxSize để weight hoạt động
             .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
+        // CỤM 1: HEADER (Cố định ở trên)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 24.dp),
+                .padding(bottom = 20.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "Put the words in order",
-                fontSize = 24.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color(0xFF1F2937)
             )
 
+            // Speed Selector
             Box {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -97,30 +100,29 @@ fun SentenceBuilderQuestion(
                         .border(2.dp, Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
                         .clip(RoundedCornerShape(12.dp))
                         .clickable { isSpeedDropdownExpanded = true }
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Text(
                         text = "${speedOptions.find { it.first == ttsSpeed }?.second}",
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF4B5563),
-                        fontSize = 14.sp
+                        fontSize = 13.sp
                     )
                     Icon(
                         imageVector = Icons.Default.ArrowDropDown,
                         contentDescription = null,
                         tint = Color(0xFF9CA3AF),
-                        modifier = Modifier.padding(start = 4.dp).size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
 
                 DropdownMenu(
                     expanded = isSpeedDropdownExpanded,
-                    onDismissRequest = { isSpeedDropdownExpanded = false },
-                    modifier = Modifier.background(Color.White)
+                    onDismissRequest = { isSpeedDropdownExpanded = false }
                 ) {
                     speedOptions.forEach { (value, label) ->
                         DropdownMenuItem(
-                            text = { Text(text = "Tốc độ: $label", fontWeight = FontWeight.Bold) },
+                            text = { Text(text = "Tốc độ: $label") },
                             onClick = {
                                 ttsSpeed = value
                                 isSpeedDropdownExpanded = false
@@ -135,112 +137,69 @@ fun SentenceBuilderQuestion(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 32.dp),
+                .padding(bottom = 24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Mascot Gấu
             Box(
                 modifier = Modifier
-                    .size(72.dp)
+                    .size(64.dp)
                     .clip(CircleShape)
                     .background(Color(0xFFF3F4F6))
                     .border(2.dp, Color(0xFFE5E5E5), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "🐻", fontSize = 36.sp)
+                Text(text = "🐻", fontSize = 32.sp)
             }
 
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 12.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .padding(top = 4.dp)
-                        .background(Color(0xFFE5E5E5), RoundedCornerShape(16.dp))
-                )
-
+            Box(modifier = Modifier.weight(1f).padding(start = 12.dp)) {
+                Box(modifier = Modifier.matchParentSize().padding(top = 4.dp).background(Color(0xFFE5E5E5), RoundedCornerShape(16.dp)))
                 Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
                     shape = RoundedCornerShape(16.dp),
                     color = Color.White,
                     border = BorderStroke(2.dp, Color(0xFFE5E5E5))
                 ) {
                     Row(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         SmallAudioButton3D(onClick = { speakText(correctSentence, ttsSpeed) })
-
-                        Text(
-                            text = prompt,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF4B4B4B),
-                            lineHeight = 26.sp
-                        )
+                        Text(text = prompt, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color(0xFF4B4B4B), lineHeight = 24.sp)
                     }
                 }
-
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .offset(x = (-6).dp, y = (-2).dp)
-                        .size(14.dp)
-                        .rotate(45f)
-                        .drawBehind {
-                            drawRect(Color.White)
-                            val stroke = 2.dp.toPx()
-                            drawLine(
-                                color = Color(0xFFE5E5E5),
-                                start = Offset(0f, 0f),
-                                end = Offset(0f, size.height),
-                                strokeWidth = stroke
-                            )
-                            drawLine(
-                                color = Color(0xFFE5E5E5),
-                                start = Offset(0f, size.height),
-                                end = Offset(size.width, size.height),
-                                strokeWidth = stroke
-                            )
-                        }
-                )
             }
         }
 
-
-        val isDropZoneActive = selectedIndices.isNotEmpty()
-        val dropZoneBg = when {
-            isEvaluated && isCorrect == true -> Color(0xFFD7FFB8) // Xanh thành công
-            isEvaluated && isCorrect == false -> Color(0xFFFFE0E0) // Đỏ lỗi
-            isDropZoneActive -> Color(0xFFEFF6FF)
+        // CỤM 3: DROP ZONE (LÒ XO CHÍNH - weight(1f))
+        // Nó sẽ tự giãn ra để chiếm toàn bộ phần giữa, không bao giờ nhảy size
+        val dropZoneActive = selectedIndices.isNotEmpty()
+        val dropZoneBg by animateColorAsState(targetValue = when {
+            isEvaluated && isCorrect == true -> Color(0xFFD7FFB8)
+            isEvaluated && isCorrect == false -> Color(0xFFFFE0E0)
+            dropZoneActive -> Color(0xFFEFF6FF)
             else -> Color(0xFFF9FAFB)
-        }
-        val dropZoneBorder = when {
+        }, label = "bg")
+
+        val dropZoneBorder by animateColorAsState(targetValue = when {
             isEvaluated && isCorrect == true -> Color(0xFF58CC02)
             isEvaluated && isCorrect == false -> Color(0xFFFF4B4B)
-            isDropZoneActive -> Color(0xFF93C5FD)
+            dropZoneActive -> Color(0xFF93C5FD)
             else -> Color(0xFFD1D5DB)
-        }
+        }, label = "border")
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 140.dp, max = 220.dp)
+                .weight(1f) // <--- ĐÂY LÀ FIX: Nó sẽ không bao giờ ngắn lại hay dài ra bất ngờ
                 .dashedBorder(color = dropZoneBorder, width = 2.dp, radius = 16.dp)
                 .clip(RoundedCornerShape(16.dp))
                 .background(dropZoneBg)
-                .padding(16.dp),
-            contentAlignment = Alignment.TopStart
+                .padding(16.dp)
         ) {
-            if (!isDropZoneActive) {
+            if (!dropZoneActive) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Choose the words below", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF9CA3AF), textAlign = TextAlign.Center)
+                    Text("Choose the words below", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color(0xFF9CA3AF))
                 }
             }
 
@@ -252,51 +211,49 @@ fun SentenceBuilderQuestion(
                     WordButton3D(
                         text = words[originalIndex],
                         onClick = {
-                            // 🔥 KHÓA: Nếu đã chấm điểm thì không cho rút từ ra nữa
                             if (isEvaluated) return@WordButton3D
-
                             val newSelections = selectedIndices.toMutableList().apply { remove(originalIndex) }
-                            val currentSentence = newSelections.joinToString(" ") { words[it] }
-                            onAnswerSelected(newSelections, currentSentence)
+                            onAnswerSelected(newSelections, newSelections.joinToString(" ") { words[it] })
                         }
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        HorizontalDivider(color = Color(0xFFF3F4F6), thickness = 2.dp)
-
+        // CỤM 4: WORD BANK (Cố định ở đáy)
         Spacer(modifier = Modifier.height(24.dp))
+        HorizontalDivider(color = Color(0xFFF3F4F6), thickness = 2.dp)
+        Spacer(modifier = Modifier.height(20.dp))
 
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            words.forEachIndexed { index, word ->
-                val isSelected = selectedIndices.contains(index)
-
-                if (isSelected) {
-                    Box(
-                        modifier = Modifier
-                            .background(Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                    ) {
-                        Text(text = word, color = Color(0xFFE5E7EB), fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    }
-                } else {
-                    WordButton3D(
-                        text = word,
-                        onClick = {
-                            if (isEvaluated) return@WordButton3D
-                            speakText(word, 1.0f)
-                            val newSelections = selectedIndices + index
-                            val currentSentence = newSelections.joinToString(" ") { words[it] }
-                            onAnswerSelected(newSelections, currentSentence)
+        // Dùng Box cố định chiều cao cho Word Bank để không bị nhảy khi click
+        Box(modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp)) {
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                words.forEachIndexed { index, word ->
+                    val isSelected = selectedIndices.contains(index)
+                    if (isSelected) {
+                        // Placeholder khi từ đã được chọn
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
+                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                        ) {
+                            Text(text = word, color = Color(0xFFE5E7EB), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         }
-                    )
+                    } else {
+                        WordButton3D(
+                            text = word,
+                            onClick = {
+                                if (isEvaluated) return@WordButton3D
+                                speakText(word, 1.0f)
+                                val newSelections = selectedIndices + index
+                                onAnswerSelected(newSelections, newSelections.joinToString(" ") { words[it] })
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -324,14 +281,12 @@ fun WordButton3D(
                 onClick = onClick
             )
     ) {
-        // Lớp bóng đổ (Shadow)
         Box(
             modifier = Modifier
                 .matchParentSize()
                 .offset(y = 4.dp)
                 .background(Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
         )
-        // Lớp nổi phía trên
         Box(
             modifier = Modifier
                 .offset(y = yOffset)

@@ -16,7 +16,7 @@ fun LessonStepRenderer(
     modifier: Modifier = Modifier,
     step: LessonStep,
     onAnswerInput: (String, List<Int>) -> Unit,
-    onPlayAudio: (String?, String, Float) -> Unit = { _, _, _ -> },
+    onPlayAudio: (String?, String, Float) -> Unit   = { _, _, _ -> },
 ) {
     when (val stepData = step.data) {
         is StepData.Vocab -> {
@@ -73,6 +73,8 @@ fun LessonStepRenderer(
                         phonetic = content.phonetic,
                         translation = content.translation,
                         initialAnswer = stepData.userAnswer,
+                        isEvaluated = stepData.isAnswerEvaluated,
+                        isCorrect = stepData.isCorrect,
                         onAnswerSelected = { text ->
                             onAnswerInput(text, emptyList())
                         },

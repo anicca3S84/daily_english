@@ -110,22 +110,6 @@ fun InputCard(
                     AppCircleButton(icon = Icons.Default.CameraAlt, onClick = onCameraClick)
                     AppCircleButton(icon = Icons.Default.Mic, onClick = onMicClick)
                 }
-
-                Box(
-                    modifier = Modifier
-                        .height(Spaces.Space44)
-                        .background(AppColors.BluePrimary, shape = RoundedCornerShape(Spaces.Space8))
-                        .clip(RoundedCornerShape(Spaces.Space8))
-                        .clickable { onTranslate() }
-                        .padding(horizontal = Spaces.Space24),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = stringResource(R.string.label_translate),
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
             }
         }
     }

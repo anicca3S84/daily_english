@@ -19,6 +19,8 @@ import com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi.LessonEf
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi.LessonEvent
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi.LessonState
 import com.codework.dailyenglish.presentation.utils.asUiText
+import com.codework.dailyenglish.presentation.utils.calculateSimilarity
+import com.codework.dailyenglish.presentation.utils.cleanForSpeaking
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -75,47 +77,38 @@ class LessonViewModel @Inject constructor(
             val currentData = state.data ?: return@update state
             val currentStep = currentData.steps[currentData.currentIndex]
             val questionData = currentStep.data as? StepData.Question ?: return@update state
+            var isCorrect: Boolean
 
-            val qData = questionData
-
-            var isCorrect = false
-            var correctAnswerText: String? = null
-
-            when (val content = qData.content) {
+            when (val content = questionData.content) {
                 is QuestionContent.MultipleChoice -> {
-                    val selectedId = qData.selectedOptionId
+                    val selectedId = questionData.selectedOptionId
                     isCorrect = content.options.find { it.id == selectedId }?.isCorrect == true
-                    correctAnswerText = content.options.find { it.isCorrect }?.text
                 }
                 is QuestionContent.SentenceBuilder -> {
-                    // Đọc từ userAnswer (Hoặc fallback OptionId nếu data cũ dính)
-                    val userSentence = (qData.userAnswer ?: qData.selectedOptionId ?: "").trim().replace(Regex("\\s+"), " ")
+                    val userSentence = questionData.userAnswer.trim().replace(Regex("\\s+"), " ")
                     val correctSentence = content.correctSentence.trim().replace(Regex("\\s+"), " ")
                     isCorrect = userSentence.equals(correctSentence, ignoreCase = true)
-                    correctAnswerText = content.correctSentence
                 }
                 is QuestionContent.FillBlank -> {
-                    // Đọc thẳng text do user gõ
-                    val answerText = (qData.userAnswer ?: "").trim()
+                    val answerText = questionData.userAnswer.trim()
                     isCorrect = answerText.equals(content.correctAnswer.trim(), ignoreCase = true)
-                    correctAnswerText = content.correctAnswer
                 }
-                is QuestionContent.Dictation -> {
-                    val userAnswer = (qData.userAnswer ?: "").trim()
-                    isCorrect = userAnswer.equals(content.targetWord.trim(), ignoreCase = true) ||
-                            userAnswer.equals(content.correctAnswer.trim(), ignoreCase = true) ||
-                            content.acceptedAnswers.any { it.trim().equals(userAnswer, ignoreCase = true) }
-                    correctAnswerText = content.correctAnswer
-                }
+//                is QuestionContent.Dictation -> {
+//                    val userAnswer = (questionData.userAnswer ?: "").trim()
+//                    isCorrect = userAnswer.equals(content.targetWord.trim(), ignoreCase = true) ||
+//                            userAnswer.equals(content.correctAnswer.trim(), ignoreCase = true) ||
+//                            content.acceptedAnswers.any { it.trim().equals(userAnswer, ignoreCase = true) }
+//                }
                 is QuestionContent.Speaking -> {
-                    val userAnswer = (qData.userAnswer ?: "").trim()
-                    isCorrect = userAnswer.equals(content.targetText.trim(), ignoreCase = true) || userAnswer == "PASSED"
-                    correctAnswerText = content.targetText
+                    val similarity = (questionData.userAnswer ?: "").calculateSimilarity(content.targetText)
+
+                    // Nếu giống trên 80% hoặc có mã bypass PASSED thì coi như đúng
+                    isCorrect = similarity >= 0.8f || questionData.userAnswer == "PASSED"
                 }
-                is QuestionContent.Matching -> {
-                    val userAnswer = qData.selectedOptionId ?: qData.userAnswer ?: ""
-                    isCorrect = userAnswer == "CORRECT" || userAnswer == "PASSED"
-                }
+//                is QuestionContent.Matching -> {
+//                    val userAnswer = questionData.selectedOptionId ?: questionData.userAnswer ?: ""
+//                    isCorrect = userAnswer == "CORRECT" || userAnswer == "PASSED"
+//                }
                 else -> {
                     isCorrect = false
                 }
@@ -140,15 +133,34 @@ class LessonViewModel @Inject constructor(
             val currentData = state.data ?: return@update state
             val currentStep = currentData.steps[currentData.currentIndex]
             val questionData = currentStep.data as? StepData.Question ?: return@update state
+
             val isMultipleChoice = questionData.content is QuestionContent.MultipleChoice
-            val updatedQuestionData = questionData.copy(
+            val isSpeaking = questionData.content is QuestionContent.Speaking // Kiểm tra xem có phải Speaking không
+
+            var updatedQuestionData = questionData.copy(
                 selectedOptionId = if (isMultipleChoice) answer.ifEmpty { null } else null,
                 userAnswer = if (!isMultipleChoice) answer else "",
                 selectedIndices = indices
             )
+
+            if (isSpeaking && answer.isNotBlank()) {
+                val content = questionData.content
+                val similarity = answer.calculateSimilarity(content.targetText)
+
+                updatedQuestionData = updatedQuestionData.copy(
+                    isAnswerEvaluated = true, // Tự động đánh dấu đã xong
+                    isCorrect = similarity >= 0.8f || answer == "PASSED"
+                )
+            }
+
             val updatedSteps = currentData.steps.toMutableList()
             updatedSteps[currentData.currentIndex] = currentStep.copy(data = updatedQuestionData)
-            state.copy(data = currentData.copy(steps = updatedSteps))
+
+            state.copy(data = currentData.copy(
+                steps = updatedSteps,
+                // Cập nhật index hiển thị kết quả nếu là Speaking
+                showResultStepIndex = if (isSpeaking) currentData.currentIndex else currentData.showResultStepIndex
+            ))
         }
     }
 
@@ -281,9 +293,7 @@ class LessonViewModel @Inject constructor(
             isCorrect = qData.isCorrect
         }
 
-        // GOM TẤT CẢ VÀO 1 COROUTINE ĐỂ CHẠY ĐỒNG BỘ (TUẦN TỰ)
         viewModelScope.launch {
-            // Bước 1: Gọi API lưu tiến độ và ĐỢI nó chạy xong (suspend)
             updateLessonProgressUseCase(
                 lessonId = lessonId,
                 cursor = if (nextIndex < currentData.steps.size) nextIndex else currentIndex,
@@ -294,12 +304,10 @@ class LessonViewModel @Inject constructor(
                 isCorrect = isCorrect
             )
 
-            // Bước 2: Chỉ khi Backend đã lưu xong, mới thay đổi State UI
             _state.update {
                 it.copy(data = currentData.copy(showResultStepIndex = null))
             }
 
-            // Bước 3: Kiểm tra xem còn câu hỏi không
             if (nextIndex < currentData.steps.size) {
                 _state.update {
                     it.copy(data = it.data?.copy(currentIndex = nextIndex))
@@ -310,8 +318,6 @@ class LessonViewModel @Inject constructor(
                     playAudio(newlyRevealedStep.data.usAudioUrl, newlyRevealedStep.data.word, 1f)
                 }
             } else {
-                // Gọi submitLesson ở đây đảm bảo câu cuối cùng (Câu 5)
-                // CHẮC CHẮN đã được Backend ghi nhận vào Database.
                 submitLesson()
             }
         }
