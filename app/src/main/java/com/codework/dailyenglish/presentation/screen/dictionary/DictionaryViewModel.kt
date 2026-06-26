@@ -9,6 +9,7 @@ import com.codework.dailyenglish.core.network.onError
 import com.codework.dailyenglish.core.network.onSuccess
 import com.codework.dailyenglish.domain.dictionary.usecase.ToggleSaveWordUseCase
 import com.codework.dailyenglish.domain.dictionary.usecase.SearchWordUseCase
+import com.codework.dailyenglish.domain.vocabulary.usecase.GetVocabTopicsUseCase
 import com.codework.dailyenglish.presentation.screen.dictionary.mvi.DictionaryEffect
 import com.codework.dailyenglish.presentation.screen.dictionary.mvi.DictionaryEvent
 import com.codework.dailyenglish.presentation.screen.dictionary.mvi.DictionaryState
@@ -23,25 +24,67 @@ import javax.inject.Inject
 @HiltViewModel
 class DictionaryViewModel @Inject constructor(
     private val searchWordUseCase: SearchWordUseCase,
-    private val toggleSaveWordUseCase: ToggleSaveWordUseCase
+    private val toggleSaveWordUseCase: ToggleSaveWordUseCase,
+    private val getVocabTopicsUseCase: GetVocabTopicsUseCase
 ) : BaseViewModel<DictionaryState, DictionaryEvent, DictionaryEffect>(
     initialState = DictionaryState()
 ) {
 
     private var searchJob: Job? = null
 
+    init {
+        fetchVocabTopics()
+    }
+
+    private fun fetchVocabTopics() {
+        _state.update { it.copy(topicsState = it.topicsState.copy(isLoading = true, error = null)) }
+        viewModelScope.launch {
+            getVocabTopicsUseCase()
+                .onSuccess { topics ->
+                    _state.update {
+                        it.copy(
+                            topicsState = it.topicsState.copy(
+                                data = topics,
+                                isLoading = false
+                            )
+                        )
+                    }
+                }
+                .onError { err ->
+                    _state.update {
+                        it.copy(
+                            topicsState = it.topicsState.copy(
+                                isLoading = false,
+                                error = err.asUiText()
+                            )
+                        )
+                    }
+                }
+        }
+    }
+
     override fun onEvent(event: DictionaryEvent) {
 
         when (event) {
 
+            is DictionaryEvent.LoadTopics -> {
+                _state.update { it.copy(topicsState = it.topicsState.copy(isLoading = true)) }
+                viewModelScope.launch {
+                    getVocabTopicsUseCase()
+                        .onSuccess { topics ->
+                            _state.update { it.copy(topicsState = it.topicsState.copy(data = topics, isLoading = false)) }
+                        }
+                        .onError { err ->
+                            _state.update { it.copy(topicsState = it.topicsState.copy(isLoading = false, error = err.asUiText())) }
+                        }
+                }
+            }
+
             is DictionaryEvent.OnSearchQueryChange -> {
-
                 val query = event.query
-
                 _state.update {
                     it.copy(query = query)
                 }
-
                 searchJob?.cancel()
 
                 if (query.isBlank()) {
@@ -193,25 +236,18 @@ class DictionaryViewModel @Inject constructor(
             }
 
             is DictionaryEvent.OnQuickActionClick -> {
-
-                sendEffect(
-                    DictionaryEffect.NavigateToSavedWord(
-                        event.action
-                    )
-                )
             }
 
             is DictionaryEvent.OnTopicClick -> {
-
                 sendEffect(
-                    DictionaryEffect.ShowToast(
-                        "Exploring topic: ${event.topic}"
+                    DictionaryEffect.NavigateToTopicWords(
+                        topicPublicId = event.topicPublicId,
+                        topicName = event.topicName
                     )
                 )
             }
 
             is DictionaryEvent.OnWordClick -> {
-                // Navigate detail
             }
         }
     }

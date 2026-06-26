@@ -1,0 +1,10 @@
+package com.codework.dailyenglish.domain.ai.repository
+
+import com.codework.dailyenglish.core.network.AppResult
+import com.codework.dailyenglish.domain.ai.model.ChatMessage
+import com.codework.dailyenglish.domain.ai.model.ChatSession
+
+interface AiRepository {
+    suspend fun getHistorySessions(): AppResult<List<ChatSession>>
+    suspend fun sendMessage(sessionId: String, message: String): AppResult<ChatMessage>
+}

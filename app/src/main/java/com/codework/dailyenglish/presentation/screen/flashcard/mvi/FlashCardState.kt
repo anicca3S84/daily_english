@@ -1,4 +1,13 @@
 package com.codework.dailyenglish.presentation.screen.flashcard.mvi
 
-class FlashCardState {
-}
+import com.codework.dailyenglish.domain.dictionary.model.Word
+import com.codework.dailyenglish.presentation.screen.flashcard.model.FlashcardUiModel
+
+data class FlashcardState(
+    val words: List<Word> = emptyList(),
+    val currentIndex: Int = 0,
+    val progress: Float = 0f,
+    val progressText: String = "0/0",
+    val isFlipped: Boolean = false,
+    val isFinished: Boolean = false
+)

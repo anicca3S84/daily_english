@@ -50,4 +50,13 @@ class AuthPreferences @Inject constructor(
     fun clearAll() {
         sharedPreferences.edit { clear() }
     }
+
+    // Thêm các hàm getter này vào class AuthPreferences
+    fun getUserId(): String? = sharedPreferences.getString(KEY_USER_ID, null)
+
+    fun getEmail(): String? = sharedPreferences.getString(KEY_USER_EMAIL, null)
+
+    fun getFullName(): String? = sharedPreferences.getString(KEY_USER_NAME, null)
+
+    fun getAvatarUrl(): String? = sharedPreferences.getString(KEY_USER_AVATAR, null)
 }

@@ -23,7 +23,7 @@ fun AppTopBar(
     titleContent: @Composable () -> Unit
 ) {
     Surface(
-        color = AppColors.AppBackground.copy(alpha = 0.85f),
+        color = Color.White,
         modifier = Modifier.fillMaxWidth(),
         shadowElevation = Spaces.Space0
     ) {

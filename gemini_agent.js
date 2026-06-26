@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const readline = require("readline");
 
-const API_KEY = "AIzaSyDJpDDGEtA8zjnd6IweyHzHrpL7lg6d68Y";
+const API_KEY = "AIzaSyBnJrEn4zqjG-aCL-pv-E_8qm_NvqPLZ44";
 
 // Khởi tạo các instance cần thiết từ thư viện cũ của bạn
 const genAI = new GoogleGenerativeAI(API_KEY);
@@ -57,7 +57,7 @@ async function run(userRequest) {
         // ====================================================================
         // 🛠️ ĐIỂM CẢI TIẾN: QUÉT ĐỒNG THỜI CẢ DATA, DOMAIN, PRESENTATION CỦA TỪ ĐIỂN
         // ====================================================================
-        console.log("🔍 Đang quét toàn bộ các layer liên quan đến Dictionary...");
+        console.log("🔍 Đang quét toàn bộ các layer liên quan...");
 
         let projectCode = "";
         projectCode += "\n--- LAYER: DATA ---\n" + getContext("./app/src/main/java/com/codework/daily_english/data");

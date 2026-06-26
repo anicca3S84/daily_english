@@ -8,4 +8,5 @@ sealed interface PracticeEffect: BaseEffect{
     data class NavigateToAiSpeaking(val type: String) : PracticeEffect
     data class NavigateToGame(val gameName: String) : PracticeEffect
     data class ShowToast(val message: String) : PracticeEffect
+    data object NavigateToLeaderBoard : PracticeEffect
 }

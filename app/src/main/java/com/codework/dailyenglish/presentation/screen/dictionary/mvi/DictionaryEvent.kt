@@ -8,6 +8,7 @@ sealed interface DictionaryEvent {
     data class OnPlayAudio(val word: String, val accent: String) : DictionaryEvent
     data object OnClearSearch : DictionaryEvent
     data class OnQuickActionClick(val action: String) : DictionaryEvent
-    data class OnTopicClick(val topic: String) : DictionaryEvent
+    data class OnTopicClick(val topicPublicId: String, val topicName: String) : DictionaryEvent
     data class OnToggleSaveWord(val word: Word) : DictionaryEvent
+    data object LoadTopics : DictionaryEvent
 }

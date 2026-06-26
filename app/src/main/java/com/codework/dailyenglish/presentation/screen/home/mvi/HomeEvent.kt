@@ -7,6 +7,6 @@ sealed interface HomeEvent {
     data object OnRetry : HomeEvent
     data object OnQuickActionGemini : HomeEvent
     data object OnQuickActionDictionary : HomeEvent
-    data object OnQuickActionGrammar : HomeEvent
+    data object OnQuickActionSavedWord : HomeEvent
     data object OnQuickActionTranslate : HomeEvent
 }

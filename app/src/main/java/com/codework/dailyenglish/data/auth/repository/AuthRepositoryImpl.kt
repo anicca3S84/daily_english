@@ -45,4 +45,8 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun loginWithApple(authCode: String): AppResult<User> = withContext(dispatchers.io) {
         TODO("Not yet implemented")
     }
+
+    override suspend fun getUserInfo(): User? {
+        return localDataSource.getUser()
+    }
 }

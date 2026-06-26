@@ -1,7 +1,7 @@
 package com.codework.dailyenglish.presentation.screen.ai.mvi
 
-import com.codework.dailyenglish.presentation.screen.ai.model.ChatMessage
-import com.codework.dailyenglish.presentation.screen.ai.model.ChatSession
+import com.codework.dailyenglish.domain.ai.model.ChatMessage
+import com.codework.dailyenglish.domain.ai.model.ChatSession
 
 data class AiState(
     val messages: List<ChatMessage> = emptyList(),

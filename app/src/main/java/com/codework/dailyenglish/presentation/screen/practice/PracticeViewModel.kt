@@ -37,6 +37,7 @@ class PracticeViewModel @Inject constructor() : BaseViewModel<PracticeState, Pra
             is PracticeEvent.OnFlashcardClick -> sendEffect(PracticeEffect.NavigateToFlashcard)
             is PracticeEvent.OnAiCardClick -> sendEffect(PracticeEffect.NavigateToAiSpeaking(event.type))
             is PracticeEvent.OnGameClick -> sendEffect(PracticeEffect.NavigateToGame(event.gameName))
+            is PracticeEvent.OnClickLeaderboard -> sendEffect(PracticeEffect.NavigateToLeaderBoard)
         }
     }
 

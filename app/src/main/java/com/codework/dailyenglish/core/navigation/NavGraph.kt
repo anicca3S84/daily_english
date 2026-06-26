@@ -4,10 +4,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -73,13 +71,22 @@ import com.codework.dailyenglish.presentation.screen.translate.mvi.TranslateStat
 import com.codework.dailyenglish.presentation.screen.course_details.mvi.CourseDetailState
 import com.codework.dailyenglish.presentation.screen.course_details.mvi.CourseDetailEvent
 import com.codework.dailyenglish.presentation.screen.course_details.mvi.CourseDetailEffect
-import com.codework.dailyenglish.presentation.screen.saved_word.SavedWordsScreen
-import com.codework.dailyenglish.presentation.screen.saved_word.SavedWordsViewModel
-import com.codework.dailyenglish.presentation.screen.saved_word.mvi.SavedWordsEffect
-import com.codework.dailyenglish.presentation.screen.saved_word.mvi.SavedWordsEvent
-import com.codework.dailyenglish.presentation.screen.saved_word.mvi.SavedWordsState
+import com.codework.dailyenglish.presentation.screen.flashcard.FlashcardScreen
+import com.codework.dailyenglish.presentation.screen.flashcard.FlashcardViewModel
+import com.codework.dailyenglish.presentation.screen.flashcard.mvi.FlashcardEffect
+import com.codework.dailyenglish.presentation.screen.flashcard.mvi.FlashcardEvent
+import com.codework.dailyenglish.presentation.screen.flashcard.mvi.FlashcardState
+import com.codework.dailyenglish.presentation.screen.leaderboard.LeaderboardScreen
+import com.codework.dailyenglish.presentation.screen.leaderboard.LeaderboardViewModel
+import com.codework.dailyenglish.presentation.screen.leaderboard.mvi.LeaderboardEffect
+import com.codework.dailyenglish.presentation.screen.leaderboard.mvi.LeaderboardEvent
+import com.codework.dailyenglish.presentation.screen.leaderboard.mvi.LeaderboardState
+import com.codework.dailyenglish.presentation.screen.vocab_list.VocabularyListScreen
+import com.codework.dailyenglish.presentation.screen.vocab_list.VocabularyListViewModel
+import com.codework.dailyenglish.presentation.screen.vocab_list.mvi.VocabularyListEffect
+import com.codework.dailyenglish.presentation.screen.vocab_list.mvi.VocabularyListEvent
+import com.codework.dailyenglish.presentation.screen.vocab_list.mvi.VocabularyListState
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 
 
 @Composable
@@ -115,7 +122,7 @@ fun NavGraph(
                 when (effect) {
                     is HomeEffect.NavigateToAi -> navController.navigate(Route.AIScreen)
                     is HomeEffect.NavigateToDictionary -> navController.navigate(Route.DictionaryScreen)
-                    is HomeEffect.NavigateToGrammar -> navController.navigate(Route.CourseDetailScreen)
+                    is HomeEffect.NavigateToSavedWord -> navController.navigate(Route.SavedWordsScreen)
                     is HomeEffect.NavigateToTranslate -> navController.navigate(Route.TranslateScreen)
                 }
             }
@@ -207,6 +214,10 @@ fun NavGraph(
 
                     is PracticeEffect.ShowToast -> { /* Hiện toast */
                     }
+                    is PracticeEffect.NavigateToLeaderBoard -> {
+                        navController.navigate(Route.LeaderboardScreen)
+                    }
+
                 }
             }
         ) { state, onEvent ->
@@ -259,8 +270,13 @@ fun NavGraph(
                     is DictionaryEffect.PlayAudio -> {
                     }
 
-                    is DictionaryEffect.NavigateToSavedWord -> {
-                        navController.navigate(Route.SavedWordsScreen)
+                    is DictionaryEffect.NavigateToTopicWords -> {
+                        navController.navigate(
+                            Route.TopicWordsScreen(
+                                topicPublicId = effect.topicPublicId,
+                                topicName = effect.topicName
+                            )
+                        )
                     }
 
                     is DictionaryEffect.ShowToast -> { /* Hiện toast */
@@ -395,20 +411,81 @@ fun NavGraph(
             )
         }
 
-        composableScreen<Route.SavedWordsScreen, SavedWordsViewModel, SavedWordsState, SavedWordsEvent, SavedWordsEffect>(
+        composableScreen<
+                Route.SavedWordsScreen,
+                VocabularyListViewModel,
+                VocabularyListState,
+                VocabularyListEvent,
+                VocabularyListEffect
+                >(
             onNavigate = { effect ->
                 when (effect) {
-                    is SavedWordsEffect.NavigateToFlashCard -> navController.navigate(Route.FlashcardScreen) // Sang màn học
-                    else -> {}
+                    is VocabularyListEffect.NavigateToFlashCard -> {
+                        navController.navigate(Route.FlashcardScreen)
+                    }
                 }
             }
         ) { state, onEvent ->
-            SavedWordsScreen(
+            VocabularyListScreen(
                 state = state,
                 onEvent = onEvent,
                 onBackClick = { navController.popBackStack() }
             )
         }
+
+        composableScreen<
+                Route.TopicWordsScreen,
+                VocabularyListViewModel,
+                VocabularyListState,
+                VocabularyListEvent,
+                VocabularyListEffect
+                >(
+            onNavigate = { effect ->
+                when (effect) {
+                    is VocabularyListEffect.NavigateToFlashCard -> {
+                        navController.navigate(Route.FlashcardScreen)
+                    }
+                }
+            }
+        ) { state, onEvent ->
+            VocabularyListScreen(
+                state = state,
+                onEvent = onEvent,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+
+        composableScreen<Route.FlashcardScreen, FlashcardViewModel, FlashcardState, FlashcardEvent, FlashcardEffect>(
+            onNavigate = { effect ->
+                when (effect) {
+                    else -> {}
+                }
+            }
+        ) { state, onEvent ->
+            FlashcardScreen(
+                state = state,
+                onEvent = onEvent,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composableScreen<
+                Route.LeaderboardScreen,
+                LeaderboardViewModel,
+                LeaderboardState,
+                LeaderboardEvent,
+                LeaderboardEffect
+                >(
+            onNavigate = { effect ->
+            }
+        ) { state, _ ->
+            LeaderboardScreen(
+                state = state,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
 
     }
 

@@ -40,13 +40,13 @@ sealed class BottomNavItem (
         title = R.string.nav_practice,
     )
 
-
-    object Grammar: BottomNavItem(
-        route = Route.GrammarScreen,
-        icon = Icons.Outlined.LibraryBooks,
-        selectedIcon = Icons.Filled.LibraryBooks,
-        title = R.string.nav_grammar,
-    )
+//
+//    object Grammar: BottomNavItem(
+//        route = Route.GrammarScreen,
+//        icon = Icons.Outlined.LibraryBooks,
+//        selectedIcon = Icons.Filled.LibraryBooks,
+//        title = R.string.nav_grammar,
+//    )
 
     object More: BottomNavItem(
         route = Route.MoreScreen,

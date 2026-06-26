@@ -5,6 +5,6 @@ import com.codework.dailyenglish.core.base.BaseEffect
 sealed interface HomeEffect: BaseEffect {
     data object NavigateToAi : HomeEffect
     data object NavigateToDictionary : HomeEffect
-    data object NavigateToGrammar : HomeEffect
+    data object NavigateToSavedWord : HomeEffect
     data object NavigateToTranslate : HomeEffect
 }

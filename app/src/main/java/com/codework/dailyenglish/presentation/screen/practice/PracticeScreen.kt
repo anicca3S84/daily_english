@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -51,9 +52,16 @@ fun PracticeScreen(
                                 color = Color.White,
                                 modifier = Modifier.weight(1f)
                             )
-                            Surface(color = Color.White.copy(0.2f), shape = CircleShape) {
-                                IconButton(onClick = {}) {
-                                    Icon(Icons.Default.History, null, tint = Color.White)
+                            Surface(
+                                color = Color.White.copy(alpha = 0.2f),
+                                shape = CircleShape
+                            ) {
+                                IconButton(onClick = { onEvent(PracticeEvent.OnClickLeaderboard) }) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.EmojiEvents,
+                                        contentDescription = "Leaderboard",
+                                        tint = Color.White
+                                    )
                                 }
                             }
                         }

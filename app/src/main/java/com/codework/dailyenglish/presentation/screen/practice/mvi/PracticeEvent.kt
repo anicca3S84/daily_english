@@ -8,4 +8,5 @@ sealed interface PracticeEvent {
     data object OnFlashcardClick : PracticeEvent
     data class OnAiCardClick(val type: String) : PracticeEvent
     data class OnGameClick(val gameName: String) : PracticeEvent
+    data object OnClickLeaderboard : PracticeEvent
 }

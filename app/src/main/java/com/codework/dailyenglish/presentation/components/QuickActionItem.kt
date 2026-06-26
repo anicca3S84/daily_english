@@ -70,7 +70,7 @@ fun QuickActionSection(
     title: String = "Quick Access",
     actions: List<QuickActionItem>
 ) {
-    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+    Column {
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,

@@ -17,7 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val loginWithGoogleUseCase: LoginWithGoogleUseCase
+    private val loginWithGoogleUseCase: LoginWithGoogleUseCase,
 ) : BaseViewModel<LoginState, LoginEvent, LoginEffect>(
     initialState = LoginState(data = Unit)
 ) {

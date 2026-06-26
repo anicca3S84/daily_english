@@ -63,5 +63,14 @@ sealed interface Route {
     data object SavedWordsScreen : Route
 
     @Serializable
+    data class TopicWordsScreen(
+        val topicPublicId: String,
+        val topicName: String
+    ) : Route
+
+    @Serializable
     data object FlashcardScreen : Route
+
+    @Serializable
+    data object LeaderboardScreen : Route
 }
