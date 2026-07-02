@@ -12,4 +12,6 @@ interface VocabularyRemoteDataSource {
         page: Int,
         size: Int
     ): AppResult<PageDto<WordDto>>
+
+    suspend fun getWordDetail(wordId: String): AppResult<WordDto>
 }

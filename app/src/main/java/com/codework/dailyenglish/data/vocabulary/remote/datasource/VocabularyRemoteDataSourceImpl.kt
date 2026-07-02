@@ -4,6 +4,7 @@ import com.codework.dailyenglish.core.network.AppResult
 import com.codework.dailyenglish.core.network.safeApiCall
 import com.codework.dailyenglish.core.network.unwrap
 import com.codework.dailyenglish.data.dictionary.remote.dto.WordDto
+import com.codework.dailyenglish.data.remote.response.BaseResponse
 import com.codework.dailyenglish.data.remote.response.PageDto
 import com.codework.dailyenglish.data.vocabulary.remote.VocabularyApi
 import com.codework.dailyenglish.data.vocabulary.remote.dto.VocabTopicDto
@@ -23,6 +24,12 @@ class VocabularyRemoteDataSourceImpl @Inject constructor(
     ): AppResult<PageDto<WordDto>> {
         return safeApiCall {
             api.getVocabulariesByTopic(topicPublicId, page, size)
+        }.unwrap()
+    }
+
+    override suspend fun getWordDetail(wordId: String): AppResult<WordDto> {
+        return safeApiCall {
+            api.getWordDetail(wordId)
         }.unwrap()
     }
 }

@@ -11,4 +11,7 @@ interface VocabularyRepository {
         page: Int = 0,
         size: Int = 10
     ): AppResult<List<Word>>
+
+    suspend fun getWordDetail(wordId: String): AppResult<Word>
+
 }

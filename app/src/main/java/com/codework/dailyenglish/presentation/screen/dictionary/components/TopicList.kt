@@ -30,24 +30,21 @@ import com.codework.dailyenglish.presentation.screen.dictionary.mvi.DictionaryEv
 
 @Composable
 fun TopicList(
-    uiState: BaseUiState<List<VocabTopic>>,
+    topics: List<VocabTopic>,
     onEvent: (DictionaryEvent) -> Unit
 ) {
-    StateWrapper(uiState = uiState) { topics ->
-        val topicList = topics ?: emptyList()
-
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(horizontal = 4.dp)
-        ) {
-            items(topicList) { topic ->
-                Surface(
-                    onClick = { onEvent(DictionaryEvent.OnTopicClick(topic.id, topic.name)) },
-                    shape = RoundedCornerShape(12.dp),
-                    color = Color.White,
-                    border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
-                    modifier = Modifier.width(110.dp).height(80.dp)
-                ) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(horizontal = 4.dp)
+    ) {
+        items(topics) { topic -> // Không cần StateWrapper ở đây nữa
+            Surface(
+                onClick = { onEvent(DictionaryEvent.OnTopicClick(topic.id, topic.name)) },
+                shape = RoundedCornerShape(12.dp),
+                color = Color.White,
+                border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                modifier = Modifier.width(110.dp).height(80.dp)
+            ) {
                     Column(
                         modifier = Modifier.fillMaxSize().padding(8.dp),
                         verticalArrangement = Arrangement.Center,
@@ -69,6 +66,5 @@ fun TopicList(
                     }
                 }
             }
-        }
     }
 }

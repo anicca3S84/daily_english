@@ -20,4 +20,10 @@ interface VocabularyApi {
         @Query("size") size: Int
     ): BaseResponse<PageDto<WordDto>>
 
+
+    @GET("vocabularies/words/{wordId}")
+    suspend fun getWordDetail(
+        @Path("wordId") wordId: String
+    ): BaseResponse<WordDto>
+
 }

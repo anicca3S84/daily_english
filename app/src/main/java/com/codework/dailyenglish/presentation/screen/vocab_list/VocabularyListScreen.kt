@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import com.codework.dailyenglish.domain.dictionary.model.Word
 import com.codework.dailyenglish.presentation.components.StateWrapper
 import com.codework.dailyenglish.presentation.screen.vocab_list.components.EmptySavedState
+import com.codework.dailyenglish.presentation.screen.vocab_list.components.VocabularyItemCard
 import com.codework.dailyenglish.presentation.screen.vocab_list.mvi.VocabularyListEvent
 import com.codework.dailyenglish.presentation.screen.vocab_list.mvi.VocabularyListState
 import com.codework.dailyenglish.presentation.theme.AppColors
@@ -149,7 +150,6 @@ fun VocabularyListScreen(
                             }
                         }
 
-                        // Thêm một khoảng đệm nhỏ cuối cùng để nút không bị dính sát vào cạnh dưới màn hình khi cuộn kịch sàn
                         item {
                             Spacer(modifier = Modifier.height(24.dp))
                         }
@@ -160,94 +160,3 @@ fun VocabularyListScreen(
     }
 }
 
-@Composable
-fun VocabularyItemCard(
-    word: Word,
-    isSavedMode: Boolean,
-    isSelected: Boolean,
-    onSelectToggle: () -> Unit,
-    onPlayAudio: () -> Unit,
-    onToggleSave: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onSelectToggle() }, // Bấm vào bất kỳ đâu trên card cũng có thể tích chọn nhanh
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) Color(0xFFF0F7FF) else Color.White // Đổi màu nền nhẹ nếu được chọn
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = if (isSelected) AppColors.BluePrimary.copy(alpha = 0.5f) else Color(0xFFE2E8F0)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .height(IntrinsicSize.Min),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // KHU VỰC 1: Ô CHECKBOX CUSTOM TRÒN BÊN TRÁI
-            Icon(
-                imageVector = if (isSelected) Icons.Rounded.CheckCircle else Icons.Rounded.RadioButtonUnchecked,
-                contentDescription = "Select status",
-                tint = if (isSelected) AppColors.BluePrimary else Color(0xFFCBD5E1),
-                modifier = Modifier
-                    .size(24.dp)
-                    .clickable { onSelectToggle() }
-            )
-
-            Spacer(modifier = Modifier.width(14.dp))
-
-            // KHU VỰC 2: NỘI DUNG TỪ VỰNG CHÍNH Ở GIỮA
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = word.word,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppColors.TextMain
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    // Nút bấm phát âm dạng nhỏ cạnh chữ
-                    Icon(
-                        imageVector = Icons.Rounded.VolumeUp,
-                        contentDescription = "Play Audio",
-                        tint = AppColors.BluePrimary,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clickable { onPlayAudio() }
-                    )
-                }
-
-                Text(
-                    text = word.usPhonetic,
-                    fontSize = 14.sp,
-                    color = AppColors.BluePrimary,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
-
-                Text(
-                    text = word.meaning,
-                    fontSize = 15.sp,
-                    color = Color(0xFF475569),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-
-            // KHU VỰC 3: ACTION BUTTONS (NÚT SAVE / GỠ SAVE) BÊN PHẢI
-            IconButton(onClick = onToggleSave) {
-                Icon(
-                    imageVector = if (isSavedMode || word.isSaved) Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder,
-                    contentDescription = "Save Action",
-                    tint = if (isSavedMode || word.isSaved) AppColors.BluePrimary else Color(0xFF94A3B8),
-                    modifier = Modifier.size(26.dp)
-                )
-            }
-        }
-    }
-}

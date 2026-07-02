@@ -44,7 +44,6 @@ fun AiScreen(
         "Daily conversation 👋", "Vocabulary quiz 🧠", "Roleplay interview 👔"
     )
 
-    // Tự động scroll khi có tin nhắn mới hoặc đang typing
     LaunchedEffect(state.messages.size, state.isTyping) {
         if (state.messages.isNotEmpty()) {
             listState.animateScrollToItem(state.messages.size)
@@ -67,8 +66,6 @@ fun AiScreen(
                     onBackClick = onBackClick,
                     onMenuClick = { scope.launch { drawerState.open() } },
                     titleContent = {
-                        // Đây là phần hiển thị tiêu đề ở giữa của bạn
-
                             Text(
                                 text = "Anicca AI",
                                 fontWeight = FontWeight.Bold,
@@ -84,7 +81,7 @@ fun AiScreen(
                     modifier = Modifier
                         .background(AppColors.AppBackground)
                         .navigationBarsPadding()
-                        .imePadding() // Thêm imePadding để đẩy nội dung khi bàn phím hiện
+                        .imePadding()
                 ) {
                     if (state.messages.isEmpty()) {
                         AutoScrollingSuggestionSection(suggestions) { onEvent(AiEvent.OnSuggestionClick(it)) }
@@ -101,12 +98,11 @@ fun AiScreen(
                 }
             }
         ) { innerPadding ->
-            // innerPadding này ĐÃ bao gồm khoảng cách của TopBar và BottomBar
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(AppColors.AppBackground)
-                    .padding(innerPadding) // Sử dụng innerPadding của Scaffold
+                    .padding(innerPadding)
             ) {
                 AnimatedVisibility(
                     visible = state.messages.isEmpty(),
@@ -119,7 +115,7 @@ fun AiScreen(
 
                 LazyColumn(
                     state = listState,
-                    modifier = Modifier.fillMaxSize(), // Bỏ padding top vì innerPadding đã lo rồi
+                    modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {

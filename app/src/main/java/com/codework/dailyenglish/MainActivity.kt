@@ -4,12 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.lifecycleScope
 import com.codework.dailyenglish.core.utils.AppTimeTracker
 import com.codework.dailyenglish.domain.user_statistic.usecase.StudyTimeManagerUseCase
-import com.codework.dailyenglish.domain.user_statistic.usecase.SyncStudyTimeUseCase
 import com.codework.dailyenglish.presentation.MainScreen
+import com.codework.dailyenglish.presentation.main.MainViewModel
 import com.codework.dailyenglish.presentation.theme.DailyEnglishTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -22,10 +25,13 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var studyTimeManager: StudyTimeManagerUseCase
 
+    private val mainViewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val state by mainViewModel.state.collectAsState()
 
             AppTimeTracker(
                 onSaveSessionTime = { seconds ->
@@ -42,7 +48,9 @@ class MainActivity : ComponentActivity() {
             }
 
             DailyEnglishTheme {
-                MainScreen()
+                if (!state.isLoading) {
+                    MainScreen(startDestination = state.startDestination)
+                }
             }
         }
     }

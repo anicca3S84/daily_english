@@ -8,4 +8,7 @@ interface AuthRepository {
     suspend fun loginWithGoogle(idToken: String): AppResult<User>
     suspend fun loginWithApple(authCode: String): AppResult<User>
     suspend fun getUserInfo(): User?
+    suspend fun getAccessToken(): String?
+    suspend fun isUserLoggedIn(): Boolean
+    suspend fun logout()
 }

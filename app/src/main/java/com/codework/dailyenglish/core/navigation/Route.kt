@@ -64,7 +64,7 @@ sealed interface Route {
 
     @Serializable
     data class TopicWordsScreen(
-        val topicPublicId: String,
+        val topicId: String,
         val topicName: String
     ) : Route
 
@@ -73,4 +73,20 @@ sealed interface Route {
 
     @Serializable
     data object LeaderboardScreen : Route
+
+    @Serializable
+    data class WordDetailScreen(
+        val wordId: String
+    ) : Route
+
+    @Serializable
+    data class TopicScreen(
+        val origin: String
+    ) : Route
+
+    @Serializable
+    data class AiSpeakingScreen(
+        val topicId: String,
+        val topicName: String
+    ) : Route
 }

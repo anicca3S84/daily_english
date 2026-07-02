@@ -49,4 +49,17 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun getUserInfo(): User? {
         return localDataSource.getUser()
     }
+
+    override suspend fun getAccessToken(): String? = withContext(dispatchers.io) {
+        localDataSource.getAccessToken()
+    }
+
+    override suspend fun isUserLoggedIn(): Boolean = withContext(dispatchers.io) {
+        val token = localDataSource.getAccessToken()
+        !token.isNullOrBlank()
+    }
+
+    override suspend fun logout() = withContext(dispatchers.io) {
+        localDataSource.clearSession()
+    }
 }

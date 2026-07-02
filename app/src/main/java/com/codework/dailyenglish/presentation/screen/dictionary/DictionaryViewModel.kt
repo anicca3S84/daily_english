@@ -2,6 +2,7 @@ package com.codework.dailyenglish.presentation.screen.dictionary
 
 import androidx.lifecycle.viewModelScope
 import com.codework.dailyenglish.R
+import com.codework.dailyenglish.core.base.BaseEffect
 import com.codework.dailyenglish.core.base.BaseEffect.ShowToast
 import com.codework.dailyenglish.core.base.BaseUiState
 import com.codework.dailyenglish.core.base.BaseViewModel
@@ -133,9 +134,9 @@ class DictionaryViewModel @Inject constructor(
                                 )
                             }
 
-                            sendEffect(
-                                DictionaryEffect.ShowToast(
-                                    err.asUiText().toString()
+                            sendGlobalEffect(
+                                ShowToast(
+                                    err.asUiText()
                                 )
                             )
                         }
@@ -248,6 +249,15 @@ class DictionaryViewModel @Inject constructor(
             }
 
             is DictionaryEvent.OnWordClick -> {
+                sendEffect(
+                    DictionaryEffect.NavigateToWordDetail(
+                        wordId = event.word.id
+                    )
+                )
+            }
+
+            is DictionaryEvent.OnExploreTopicsClick -> {
+                sendEffect(DictionaryEffect.NavigateToTopicSelection(origin = "DICTIONARY"))
             }
         }
     }

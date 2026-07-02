@@ -1,10 +1,10 @@
 package com.codework.dailyenglish.presentation.screen.practice.mvi
 
+import com.codework.dailyenglish.core.base.BaseUiState
+import com.codework.dailyenglish.domain.vocabulary.model.VocabTopic
 import com.codework.dailyenglish.presentation.screen.practice.model.PracticeCategory
 
 data class PracticeState(
-    val streak: Int = 0,
-    val totalPoints: Int = 0,
     val categories: List<PracticeCategory> = emptyList(),
-    val error: String? = null,
+    val topicsState: BaseUiState<List<VocabTopic>> = BaseUiState(),
 )

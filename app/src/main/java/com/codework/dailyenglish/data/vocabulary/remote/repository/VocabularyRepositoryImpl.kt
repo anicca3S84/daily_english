@@ -38,4 +38,11 @@ class VocabularyRepositoryImpl @Inject constructor(
             pageDto.content.map { it.toDomain() }
         }
     }
+
+    override suspend fun getWordDetail(wordId: String): AppResult<Word> = withContext(dispatchers.io) {
+        remoteDataSource.getWordDetail(wordId).map { responseDto ->
+            responseDto.toDomain()
+        }
+    }
+
 }

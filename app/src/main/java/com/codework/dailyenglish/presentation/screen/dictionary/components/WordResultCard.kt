@@ -2,6 +2,7 @@ package com.codework.dailyenglish.presentation.screen.dictionary.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,6 +43,7 @@ import com.codework.dailyenglish.presentation.theme.AppColors
 @Composable
 fun WordResultCard(
     word: Word,
+    onClick: () -> Unit,
     onPlayAudioUk: () -> Unit,
     onPlayAudioUs: () -> Unit,
     onToggleSave: () -> Unit
@@ -51,9 +53,11 @@ fun WordResultCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
+            .clickable { onClick() },
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 

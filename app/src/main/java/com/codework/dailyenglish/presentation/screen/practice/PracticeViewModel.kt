@@ -8,21 +8,27 @@ import androidx.compose.material.icons.filled.Translate
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import com.codework.dailyenglish.core.base.BaseViewModel
+import com.codework.dailyenglish.core.network.onError
+import com.codework.dailyenglish.core.network.onSuccess
+import com.codework.dailyenglish.domain.vocabulary.usecase.GetVocabTopicsUseCase
 import com.codework.dailyenglish.presentation.screen.practice.model.PracticeCategory
 import com.codework.dailyenglish.presentation.screen.practice.mvi.PracticeEffect
 import com.codework.dailyenglish.presentation.screen.practice.mvi.PracticeEvent
 import com.codework.dailyenglish.presentation.screen.practice.mvi.PracticeState
+import com.codework.dailyenglish.presentation.utils.asUiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class PracticeViewModel @Inject constructor() : BaseViewModel<PracticeState, PracticeEvent, PracticeEffect>(
+class PracticeViewModel @Inject constructor(
+    private val getVocabTopicsUseCase: GetVocabTopicsUseCase
+) : BaseViewModel<PracticeState, PracticeEvent, PracticeEffect>(
     initialState = PracticeState()
 )
 {
-
     init {
         loadPracticeContent()
     }
@@ -31,66 +37,26 @@ class PracticeViewModel @Inject constructor() : BaseViewModel<PracticeState, Pra
         when (event) {
             is PracticeEvent.LoadData -> loadPracticeContent()
             is PracticeEvent.OnRetry -> loadPracticeContent()
-            is PracticeEvent.OnCategoryClick -> sendEffect(PracticeEffect.NavigateToCategory(event.id))
-
-            // Bắn Effect cho các action mới
-            is PracticeEvent.OnFlashcardClick -> sendEffect(PracticeEffect.NavigateToFlashcard)
-            is PracticeEvent.OnAiCardClick -> sendEffect(PracticeEffect.NavigateToAiSpeaking(event.type))
             is PracticeEvent.OnGameClick -> sendEffect(PracticeEffect.NavigateToGame(event.gameName))
             is PracticeEvent.OnClickLeaderboard -> sendEffect(PracticeEffect.NavigateToLeaderBoard)
+            is PracticeEvent.OnExploreMoreAiTopics ->
+                sendEffect(PracticeEffect.NavigateToTopicSelection(origin = "AI_PRACTICE"))
+
+            is PracticeEvent.OnAiTopicClick ->
+                sendEffect(PracticeEffect.NavigateToAiSpeaking(event.id, event.name))
         }
     }
 
     private fun loadPracticeContent() {
+        _state.update { it.copy(topicsState = it.topicsState.copy(isLoading = true)) }
         viewModelScope.launch {
-//            _state.update {
-//
-//            }
-            try {
-                delay(1000) // Giả lập load data
-
-                val mockData = PracticeState( // Đổi thành PracticeState
-                    streak = 15,
-                    totalPoints = 1250,
-                    categories = listOf(
-                        PracticeCategory(
-                            id = "1",
-                            title = "Vocabulary",
-                            description = "Daily 20 words",
-                            icon = Icons.Default.Translate,
-                            color = Color(0xFF4CAF50) // Green
-                        ),
-                        PracticeCategory(
-                            id = "2",
-                            title = "Listening",
-                            description = "Short stories",
-                            icon = Icons.Default.Headset,
-                            color = Color(0xFF2196F3) // Blue
-                        ),
-                        PracticeCategory(
-                            id = "3",
-                            title = "Speaking",
-                            description = "Pronunciation",
-                            icon = Icons.Default.Mic,
-                            color = Color(0xFFFF9800) // Orange
-                        ),
-                        PracticeCategory(
-                            id = "4",
-                            title = "Quick Quiz",
-                            description = "Test yourself",
-                            icon = Icons.Default.Quiz,
-                            color = Color(0xFFE91E63) // Pink
-                        )
-                    )
-                )
-//                _state.update {
-
-//                }
-            } catch (e: Exception) {
-//                _state.update {
-//
-//                }
-            }
+            getVocabTopicsUseCase()
+                .onSuccess { topics ->
+                    _state.update { it.copy(topicsState = it.topicsState.copy(data = topics, isLoading = false)) }
+                }
+                .onError { err ->
+                    _state.update { it.copy(topicsState = it.topicsState.copy(isLoading = false, error = err.asUiText())) }
+                }
         }
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -93,6 +94,9 @@ fun DictionaryScreen(
                                 items(currentList) { word ->
                                     WordResultCard(
                                         word = word,
+                                        onClick = {
+                                            onEvent(DictionaryEvent.OnWordClick(word))
+                                        },
                                         onPlayAudioUk = {
                                             onEvent(DictionaryEvent.OnPlayAudio(word.word, "UK"))
                                         },
@@ -118,7 +122,28 @@ fun DictionaryScreen(
                             item {
                                 SectionTitle("Explore Topics")
                                 Spacer(modifier = Modifier.height(12.dp))
-                                TopicList(uiState = state.topicsState, onEvent = onEvent)
+
+                                val allTopics = state.topicsState.data ?: emptyList()
+
+                                val displayList = allTopics.take(5)
+
+                                Column {
+                                    TopicList(
+                                        topics = displayList,
+                                        onEvent = onEvent
+                                    )
+
+                                    if (allTopics.size > 5) {
+                                        TextButton(
+                                            onClick = { onEvent(DictionaryEvent.OnExploreTopicsClick) },
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Text("More Topics", fontWeight = FontWeight.Bold)
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                                        }
+                                    }
+                                }
                             }
 
                             item {

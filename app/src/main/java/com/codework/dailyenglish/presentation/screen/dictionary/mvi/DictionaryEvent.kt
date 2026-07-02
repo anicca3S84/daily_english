@@ -10,5 +10,7 @@ sealed interface DictionaryEvent {
     data class OnQuickActionClick(val action: String) : DictionaryEvent
     data class OnTopicClick(val topicPublicId: String, val topicName: String) : DictionaryEvent
     data class OnToggleSaveWord(val word: Word) : DictionaryEvent
+    data object OnExploreTopicsClick : DictionaryEvent
     data object LoadTopics : DictionaryEvent
+
 }

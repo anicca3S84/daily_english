@@ -16,6 +16,11 @@ import com.codework.dailyenglish.presentation.screen.ai.*
 import com.codework.dailyenglish.presentation.screen.ai.mvi.AiEffect
 import com.codework.dailyenglish.presentation.screen.ai.mvi.AiEvent
 import com.codework.dailyenglish.presentation.screen.ai.mvi.AiState
+import com.codework.dailyenglish.presentation.screen.ai_speaking.AiSpeakingScreen
+import com.codework.dailyenglish.presentation.screen.ai_speaking.AiSpeakingViewModel
+import com.codework.dailyenglish.presentation.screen.ai_speaking.mvi.AiSpeakingEffect
+import com.codework.dailyenglish.presentation.screen.ai_speaking.mvi.AiSpeakingEvent
+import com.codework.dailyenglish.presentation.screen.ai_speaking.mvi.AiSpeakingState
 import com.codework.dailyenglish.presentation.screen.auth.login.LoginScreen
 import com.codework.dailyenglish.presentation.screen.auth.login.LoginViewModel
 import com.codework.dailyenglish.presentation.screen.auth.login.mvi.LoginEffect
@@ -81,24 +86,34 @@ import com.codework.dailyenglish.presentation.screen.leaderboard.LeaderboardView
 import com.codework.dailyenglish.presentation.screen.leaderboard.mvi.LeaderboardEffect
 import com.codework.dailyenglish.presentation.screen.leaderboard.mvi.LeaderboardEvent
 import com.codework.dailyenglish.presentation.screen.leaderboard.mvi.LeaderboardState
+import com.codework.dailyenglish.presentation.screen.topic.TopicScreen
+import com.codework.dailyenglish.presentation.screen.topic.TopicViewModel
+import com.codework.dailyenglish.presentation.screen.topic.mvi.TopicEffect
+import com.codework.dailyenglish.presentation.screen.topic.mvi.TopicEvent
+import com.codework.dailyenglish.presentation.screen.topic.mvi.TopicState
 import com.codework.dailyenglish.presentation.screen.vocab_list.VocabularyListScreen
 import com.codework.dailyenglish.presentation.screen.vocab_list.VocabularyListViewModel
 import com.codework.dailyenglish.presentation.screen.vocab_list.mvi.VocabularyListEffect
 import com.codework.dailyenglish.presentation.screen.vocab_list.mvi.VocabularyListEvent
 import com.codework.dailyenglish.presentation.screen.vocab_list.mvi.VocabularyListState
+import com.codework.dailyenglish.presentation.screen.word_detail.WordDetailScreen
+import com.codework.dailyenglish.presentation.screen.word_detail.WordDetailViewModel
+import com.codework.dailyenglish.presentation.screen.word_detail.mvi.WordDetailEffect
+import com.codework.dailyenglish.presentation.screen.word_detail.mvi.WordDetailEvent
+import com.codework.dailyenglish.presentation.screen.word_detail.mvi.WordDetailState
 import kotlinx.coroutines.delay
 
 
 @Composable
 fun NavGraph(
     navController: NavHostController,
+    startDestination: Any // Thay đổi: nhận startDestination động từ ngoài truyền vào
 ) {
     NavHost(
         navController = navController,
-        startDestination = Route.LoginScreen,
+        startDestination = startDestination, // Áp dụng ở đây
         modifier = Modifier.padding(bottom = 0.dp)
     ) {
-
         composableScreen<Route.LoginScreen, LoginViewModel, LoginState, LoginEvent, LoginEffect>(
             onNavigate = { effect ->
                 when (effect) {
@@ -106,15 +121,15 @@ fun NavGraph(
                     is LoginEffect.NavigateToSignUp -> {}
                     is LoginEffect.NavigateToEmailLogin -> {}
                     is LoginEffect.NavigateToHome -> {
-                        navController.navigate(Route.HomeScreen)
+                        // Khi Login thành công, xóa LoginScreen khỏi BackStack
+                        navController.navigate(Route.HomeScreen) {
+                            popUpTo(Route.LoginScreen) { inclusive = true }
+                        }
                     }
                 }
             }
         ) { state, onEvent ->
-            LoginScreen(
-                state = state,
-                onEvent = onEvent
-            )
+            LoginScreen(state = state, onEvent = onEvent)
         }
 
         composableScreen<Route.HomeScreen, HomeViewModel, HomeState, HomeEvent, HomeEffect>(
@@ -201,23 +216,34 @@ fun NavGraph(
             )
         }
 
-        composableScreen<Route.PracticeScreen, PracticeViewModel, PracticeState, PracticeEvent, PracticeEffect>(
+        // Trong file NavGraph.kt của bạn
+        composableScreen<
+                Route.PracticeScreen,
+                PracticeViewModel,
+                PracticeState,
+                PracticeEvent,
+                PracticeEffect
+                >(
             onNavigate = { effect ->
                 when (effect) {
-                    is PracticeEffect.NavigateToAiSpeaking -> navController.navigate(Route.AIScreen)
-                    is PracticeEffect.NavigateToFlashcard -> navController.navigate(Route.VocabularyScreen)
-                    is PracticeEffect.NavigateToCategory -> { /* TODO */
+                    is PracticeEffect.NavigateToAiSpeaking -> {
+                        navController.navigate(
+                            Route.AiSpeakingScreen(
+                                topicId = effect.topicId,
+                                topicName = effect.topicName
+                            )
+                        )
                     }
 
-                    is PracticeEffect.NavigateToGame -> { /* TODO */
+                    is PracticeEffect.NavigateToTopicSelection -> {
+                        navController.navigate(Route.TopicScreen(origin = effect.origin))
                     }
 
-                    is PracticeEffect.ShowToast -> { /* Hiện toast */
-                    }
                     is PracticeEffect.NavigateToLeaderBoard -> {
                         navController.navigate(Route.LeaderboardScreen)
                     }
 
+                    else -> {}
                 }
             }
         ) { state, onEvent ->
@@ -230,7 +256,10 @@ fun NavGraph(
                     is MoreEffect.NavigateToEditProfile -> { /* TODO: Chuyển sang màn Edit Profile */
                     }
 
-                    is MoreEffect.HandleLogout -> { /* TODO: Xóa token, chuyển về màn Login */
+                    is MoreEffect.HandleLogout -> {
+                        navController.navigate(Route.LoginScreen) {
+                            popUpTo(0) { inclusive = true }
+                        }
                     }
 
                     is MoreEffect.NavigateToMenu -> { /* TODO: Xử lý click menu phụ dựa vào effect.label */
@@ -273,14 +302,28 @@ fun NavGraph(
                     is DictionaryEffect.NavigateToTopicWords -> {
                         navController.navigate(
                             Route.TopicWordsScreen(
-                                topicPublicId = effect.topicPublicId,
+                                topicId = effect.topicPublicId,
                                 topicName = effect.topicName
                             )
                         )
                     }
 
-                    is DictionaryEffect.ShowToast -> { /* Hiện toast */
+                    is DictionaryEffect.NavigateToWordDetail -> {
+                        navController.navigate(
+                            Route.WordDetailScreen(
+                                wordId = effect.wordId
+                            )
+                        )
                     }
+
+                    is DictionaryEffect.NavigateToTopicSelection -> {
+                        navController.navigate(
+                            Route.TopicScreen(
+                                origin = effect.origin
+                            )
+                        )
+                    }
+
                 }
             }
         ) { state, onEvent ->
@@ -383,7 +426,7 @@ fun NavGraph(
         composableScreen<Route.CourseDetailScreen, CourseDetailViewModel, CourseDetailState, CourseDetailEvent, CourseDetailEffect>(
             onNavigate = { effect ->
                 when (effect) {
-                    else -> {  }
+                    else -> {}
                 }
             }
         ) { state, onEvent ->
@@ -482,6 +525,84 @@ fun NavGraph(
         ) { state, _ ->
             LeaderboardScreen(
                 state = state,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composableScreen<
+                Route.WordDetailScreen,
+                WordDetailViewModel,
+                WordDetailState,
+                WordDetailEvent,
+                WordDetailEffect
+                >(
+            onNavigate = { effect ->
+                when (effect) {
+                    else -> {}
+                }
+            }
+        ) { state, onEvent ->
+            WordDetailScreen(
+                state = state,
+                onEvent = onEvent,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composableScreen<
+                Route.TopicScreen,
+                TopicViewModel,
+                TopicState,
+                TopicEvent,
+                TopicEffect
+                >(
+            onNavigate = { effect ->
+                when (effect) {
+                    is TopicEffect.NavigateToVocabList -> {
+                        navController.navigate(
+                            Route.TopicWordsScreen(
+                                topicId = effect.topicId,
+                                topicName = effect.topicName
+                            )
+                        )
+                    }
+
+                    is TopicEffect.NavigateToAiPractice -> {
+                        navController.navigate(
+                            Route.AiSpeakingScreen(
+                                topicId = effect.topicId,
+                                topicName = effect.topicName
+                            )
+                        )
+                    }
+                }
+            }
+        ) { state, onEvent ->
+            TopicScreen(
+                state = state,
+                onEvent = onEvent,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composableScreen<
+                Route.AiSpeakingScreen,
+                AiSpeakingViewModel,
+                AiSpeakingState,
+                AiSpeakingEvent,
+                AiSpeakingEffect
+                >(
+            onNavigate = { effect ->
+                when (effect) {
+                    is AiSpeakingEffect.StartSpeechRecognition -> {
+
+                    }
+                }
+            }
+        ) { state, onEvent ->
+            AiSpeakingScreen(
+                state = state,
+                onEvent = onEvent,
                 onBackClick = { navController.popBackStack() }
             )
         }

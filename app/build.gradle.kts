@@ -165,4 +165,6 @@ dependencies {
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid.v110)
 
+
+    implementation(libs.compose)
 }

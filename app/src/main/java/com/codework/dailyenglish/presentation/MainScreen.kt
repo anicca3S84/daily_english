@@ -15,7 +15,9 @@ import com.codework.dailyenglish.core.navigation.NavGraph
 import com.codework.dailyenglish.core.navigation.Route
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    startDestination: Any
+) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -23,7 +25,6 @@ fun MainScreen() {
     val showBottomBar = currentDestination?.hasRoute<Route.HomeScreen>() == true ||
             currentDestination?.hasRoute<Route.CourseScreen>() == true ||
             currentDestination?.hasRoute<Route.PracticeScreen>() == true ||
-//            currentDestination?.hasRoute<Route.GrammarScreen>() == true ||
             currentDestination?.hasRoute<Route.MoreScreen>() == true
 
     Scaffold(
@@ -44,7 +45,10 @@ fun MainScreen() {
                     }
                 )
         ) {
-            NavGraph(navController = navController)
+            NavGraph(
+                navController = navController,
+                startDestination = startDestination
+            )
         }
     }
 }

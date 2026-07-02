@@ -2,16 +2,21 @@ package com.codework.dailyenglish.presentation.screen.more
 
 import androidx.lifecycle.viewModelScope
 import com.codework.dailyenglish.core.base.BaseViewModel
+import com.codework.dailyenglish.domain.auth.usecase.LogoutUseCase
+import com.codework.dailyenglish.domain.user.usecase.GetUserInfoUseCase
 import com.codework.dailyenglish.presentation.screen.more.mvi.MoreEffect
 import com.codework.dailyenglish.presentation.screen.more.mvi.MoreEvent
 import com.codework.dailyenglish.presentation.screen.more.mvi.MoreState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MoreViewModel @Inject constructor() : BaseViewModel<MoreState, MoreEvent, MoreEffect>(
+class MoreViewModel @Inject constructor(
+    private val getUserInfoUseCase: GetUserInfoUseCase,
+    private val logoutUseCase: LogoutUseCase
+) : BaseViewModel<MoreState, MoreEvent, MoreEffect>(
     initialState = MoreState()
 ) {
 
@@ -22,32 +27,30 @@ class MoreViewModel @Inject constructor() : BaseViewModel<MoreState, MoreEvent, 
     override fun onEvent(event: MoreEvent) {
         when(event) {
             is MoreEvent.OnEditProfile -> sendEffect(MoreEffect.NavigateToEditProfile)
-            is MoreEvent.OnLogout -> sendEffect(MoreEffect.HandleLogout)
             is MoreEvent.OnMenuClick -> sendEffect(MoreEffect.NavigateToMenu(event.label))
             is MoreEvent.OnRetry -> loadProfile()
+            is MoreEvent.OnLogout -> handleLogout()
         }
     }
 
     private fun loadProfile() {
         viewModelScope.launch {
-//            _state.update {
-////                BaseState.Loading
-//            }
-            delay(1000) // Giả lập mạng
+            val user = getUserInfoUseCase()
 
-            val mockData = MoreState(
-                userName = "CodeWork",
-                email = "student@codework.com",
-                avatarUrl = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
-                streak = 15,
-                totalXp = 1250,
-                wordsLearned = 342,
-                appVersion = "1.0.0"
-            )
+            _state.update { currentState ->
+                currentState.copy(
+                    userName = user?.fullName ?: "Guest",
+                    email = user?.email ?: "",
+                    avatarUrl = user?.avatarUrl ?: "",
+                )
+            }
+        }
+    }
 
-//            _state.update {
-////                BaseState.Success(mockData)
-//            }
+    private fun handleLogout() {
+        viewModelScope.launch {
+            logoutUseCase()
+            sendEffect(MoreEffect.HandleLogout)
         }
     }
 }
