@@ -137,7 +137,7 @@ fun NavGraph(
                 when (effect) {
                     is HomeEffect.NavigateToAi -> navController.navigate(Route.AIScreen)
                     is HomeEffect.NavigateToDictionary -> navController.navigate(Route.DictionaryScreen)
-                    is HomeEffect.NavigateToSavedWord -> navController.navigate(Route.SavedWordsScreen)
+                    is HomeEffect.NavigateToSavedWord -> navController.navigate(Route.VocabularyListScreen)
                     is HomeEffect.NavigateToTranslate -> navController.navigate(Route.TranslateScreen)
                 }
             }
@@ -455,7 +455,7 @@ fun NavGraph(
         }
 
         composableScreen<
-                Route.SavedWordsScreen,
+                Route.VocabularyListScreen,
                 VocabularyListViewModel,
                 VocabularyListState,
                 VocabularyListEvent,
@@ -469,6 +469,20 @@ fun NavGraph(
                 }
             }
         ) { state, onEvent ->
+            // Lấy trạng thái Lifecycle của màn hình hiện tại trong Navigation Stack
+            val currentBackStackEntry = navController.currentBackStackEntry
+
+            // Lắng nghe sự kiện khi màn hình này được "quay trở lại" và hoạt động (RESUMED)
+            LaunchedEffect(currentBackStackEntry) {
+                currentBackStackEntry?.lifecycle?.addObserver(androidx.lifecycle.LifecycleEventObserver { _, event ->
+                    if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                        // Gửi sự kiện yêu cầu làm mới/tải lại danh sách từ vựng
+                        // Hãy thay VocabularyListEvent.OnRefresh bằng tên Event chuẩn trong file của bạn nhé
+                        onEvent(VocabularyListEvent.OnRefresh)
+                    }
+                })
+            }
+
             VocabularyListScreen(
                 state = state,
                 onEvent = onEvent,

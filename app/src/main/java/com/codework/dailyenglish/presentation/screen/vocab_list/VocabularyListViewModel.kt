@@ -33,7 +33,7 @@ class VocabularyListViewModel @Inject constructor(
     private var topicId: String? = null
 
     init {
-        topicId = savedStateHandle.get<String>("topicPublicId")
+        topicId = savedStateHandle.get<String>("topicId")
         val topicName = savedStateHandle.get<String>("topicName")
 
         if (topicId != null && topicName != null) {
@@ -89,6 +89,10 @@ class VocabularyListViewModel @Inject constructor(
                     }
                     currentState.copy(selectedWordIds = currentSelected)
                 }
+            }
+
+            is VocabularyListEvent.OnRefresh -> {
+                loadSavedWords()
             }
 
             is VocabularyListEvent.OnSelectAllToggle -> {

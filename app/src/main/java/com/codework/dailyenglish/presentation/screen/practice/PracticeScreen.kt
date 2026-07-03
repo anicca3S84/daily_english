@@ -116,7 +116,9 @@
                                         topic = VocabTopic(
                                             id = "free_talk",
                                             name = "Free Talk",
-                                            imageUrl = "https://cdn-icons-png.flaticon.com/512/2040/2040946.png"
+                                            imageUrl = "https://cdn-icons-png.flaticon.com/512/2040/2040946.png",
+                                            description = "Explore this topic",
+                                            totalWords = 0
                                         ),
                                         onClick = { onEvent(PracticeEvent.OnAiTopicClick("free_talk", "Free Talk")) }
                                     )

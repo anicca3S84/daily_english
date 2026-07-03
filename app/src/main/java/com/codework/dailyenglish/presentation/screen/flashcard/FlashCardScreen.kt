@@ -10,15 +10,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Replay
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.StarBorder
-import androidx.compose.material.icons.rounded.VolumeUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -32,9 +32,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codework.dailyenglish.presentation.components.AppProgressTopBar
+import com.codework.dailyenglish.presentation.screen.flashcard.components.FinishDeckWidget
+import com.codework.dailyenglish.presentation.screen.flashcard.components.FlashcardBackFace
+import com.codework.dailyenglish.presentation.screen.flashcard.components.FlashcardFrontFace
+import com.codework.dailyenglish.presentation.screen.flashcard.components.MainAudioButton3D
+import com.codework.dailyenglish.presentation.screen.flashcard.components.SnailAudioButton3D
 import com.codework.dailyenglish.presentation.screen.flashcard.mvi.FlashcardEvent
 import com.codework.dailyenglish.presentation.screen.flashcard.mvi.FlashcardState
 import com.codework.dailyenglish.presentation.theme.AppColors
+
 
 @Composable
 fun FlashcardScreen(
@@ -42,8 +48,6 @@ fun FlashcardScreen(
     onEvent: (FlashcardEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
-    var forgotCount by rememberSaveable { mutableIntStateOf(0) }
-    var knowItCount by rememberSaveable { mutableIntStateOf(0) }
 
     Scaffold(
         containerColor = AppColors.AppBackground,
@@ -59,230 +63,231 @@ fun FlashcardScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 20.dp, vertical = 12.dp)
+                .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
             if (state.isFinished) {
                 FinishDeckWidget(onBackClick)
+            } else if (state.showReviewOptions) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "You finished this round!",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AppColors.TextMain
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "You have ${state.forgotWords.size} words left to learn. What do you want to do?",
+                        fontSize = 16.sp,
+                        color = Color(0xFF64748B),
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Button(
+                        onClick = { onEvent(FlashcardEvent.OnReviewForgotWords) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AppColors.BluePrimary)
+                    ) {
+                        Text(text = "Review forgotten words", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedButton(
+                        onClick = { onEvent(FlashcardEvent.OnForceFinish) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+                    ) {
+                        Text(
+                            text = "Finish lesson",
+                            fontSize = 15.sp,
+                            color = Color(0xFF64748B),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             } else {
                 state.words.getOrNull(state.currentIndex)?.let { word ->
                     Column(
                         modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.SpaceBetween,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Spacer(modifier = Modifier.height(4.dp))
 
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp)) // Bo góc mượt mà toàn khối
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Color.White)
+                                .border(
+                                    1.dp,
+                                    Color(0xFFE2E8F0),
+                                    RoundedCornerShape(16.dp)
+                                )
                         ) {
-                            // Cụm Chưa thuộc (Nửa trái đỏ)
+
                             Row(
                                 modifier = Modifier
-                                    .weight(1f) // Chiếm exacly 50%
-                                    .background(Color(0xFFEF4444))
-                                    .padding(vertical = 10.dp),
+                                    .weight(1f)
+                                    .padding(vertical = 14.dp),
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.Close,
                                     contentDescription = null,
-                                    tint = Color.White,
+                                    tint = Color(0xFFEF4444),
                                     modifier = Modifier.size(18.dp)
                                 )
-                                Spacer(modifier = Modifier.width(4.dp))
+
+                                Spacer(modifier = Modifier.width(6.dp))
+
                                 Text(
-                                    text = "$forgotCount",
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Black,
+                                    text = "Learning: ${state.forgotWords.size}",
+                                    color = Color(0xFFEF4444),
+                                    fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp
                                 )
                             }
 
-                            // Cụm Đã thuộc (Nửa phải xanh)
+                            Box(
+                                modifier = Modifier
+                                    .width(1.dp)
+                                    .height(28.dp)
+                                    .background(Color(0xFFE2E8F0))
+                                    .align(Alignment.CenterVertically)
+                            )
+
                             Row(
                                 modifier = Modifier
-                                    .weight(1f) // Chiếm exactly 50%
-                                    .background(Color(0xFF22C55E))
-                                    .padding(vertical = 10.dp),
+                                    .weight(1f)
+                                    .padding(vertical = 14.dp),
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.Check,
                                     contentDescription = null,
-                                    tint = Color.White,
+                                    tint = AppColors.BluePrimary,
                                     modifier = Modifier.size(18.dp)
                                 )
-                                Spacer(modifier = Modifier.width(4.dp))
+
+                                Spacer(modifier = Modifier.width(6.dp))
+
                                 Text(
-                                    text = "$knowItCount",
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Black,
+                                    text = "Mastered: ${state.currentIndex - state.forgotWords.size}",
+                                    color = AppColors.BluePrimary,
+                                    fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp
                                 )
                             }
                         }
 
-                        // Hiệu ứng lật 3D mượt mà
+                        Spacer(modifier = Modifier.height(40.dp))
+
                         val rotation3d by animateFloatAsState(
                             targetValue = if (state.isFlipped) 180f else 0f,
                             animationSpec = tween(durationMillis = 500),
                             label = "CardFlipAnimation"
                         )
 
-                        // --- CONTAINER CARD ---
-                        Card(
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .weight(1f)
-                                .padding(vertical = 16.dp)
-                                .graphicsLayer {
-                                    rotationY = rotation3d
-                                    cameraDistance = 14 * density
-                                }
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-                                    onEvent(FlashcardEvent.OnCardClick)
-                                },
-                            shape = RoundedCornerShape(24.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
-                            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                                .weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
-                            Box(
+                            Card(
                                 modifier = Modifier
-                                    .fillMaxSize()
+                                    .fillMaxWidth()
+                                    .fillMaxHeight(0.70f)
                                     .graphicsLayer {
-                                        if (rotation3d > 90f) rotationY = 180f
+                                        rotationY = rotation3d
+                                        cameraDistance = 14 * density
                                     }
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
+                                        onEvent(FlashcardEvent.OnCardClick)
+                                    },
+                                shape = RoundedCornerShape(24.dp),
+                                colors = CardDefaults.cardColors(containerColor = AppColors.FlashCardBackground),
+                                border = BorderStroke(width = 1.dp, color = AppColors.FlashCardBorder),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                             ) {
-                                // 🌟 NÚT STAR/SAVE TÍCH HỢP TRÊN GÓC PHẢI CARD
                                 Box(
                                     modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .padding(20.dp)
-                                        .size(32.dp)
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = null
-                                        ) {
-                                            onEvent(FlashcardEvent.OnToggleSaveClick)
-                                        },
-                                    contentAlignment = Alignment.Center
+                                        .fillMaxSize()
+                                        .graphicsLayer {
+                                            if (rotation3d > 90f) rotationY = 180f
+                                        }
                                 ) {
-                                    Icon(
-                                        imageVector = if (word.isSaved) Icons.Rounded.Star else Icons.Rounded.StarBorder,
-                                        contentDescription = "Save Word",
-                                        tint = if (word.isSaved) Color(0xFFF59E0B) else Color(0xFF94A3B8),
-                                        modifier = Modifier.size(30.dp)
-                                    )
-                                }
-
-                                // --- NỘI DUNG THẺ ---
-                                if (rotation3d <= 90f) {
                                     Box(
                                         modifier = Modifier
-                                            .fillMaxSize()
-                                            .padding(24.dp)
-                                    ) {
-
-                                        Column(
-                                            modifier = Modifier
-                                                .align(Alignment.Center)
-                                                .fillMaxWidth(),
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
-
-                                            Text(
-                                                text = word.word,
-                                                fontSize = 30.sp,
-                                                fontWeight = FontWeight.Black,
-                                                color = AppColors.TextMain,
-                                                textAlign = TextAlign.Center,
-                                                letterSpacing = 0.5.sp
-                                            )
-
-                                            Spacer(modifier = Modifier.height(8.dp))
-
-                                            Text(
-                                                text = word.usPhonetic,
-                                                fontSize = 16.sp,
-                                                fontWeight = FontWeight.Medium,
-                                                color = Color(0xFF64748B),
-                                                textAlign = TextAlign.Center
-                                            )
-
-                                            Spacer(modifier = Modifier.height(36.dp))
-
-                                            Row(
-                                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                                verticalAlignment = Alignment.CenterVertically
+                                            .align(Alignment.TopEnd)
+                                            .padding(16.dp)
+                                            .size(42.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0xFFF8FAFC))
+                                            .border(width = 1.dp, color = Color(0xFFE2E8F0), shape = CircleShape)
+                                            .clickable(
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                indication = ripple()
                                             ) {
-                                                MainAudioButton3D(
-                                                    onClick = {
-                                                        onEvent(FlashcardEvent.OnPlayAudio)
-                                                    }
-                                                )
-
-                                                SnailAudioButton3D(
-                                                    onClick = {
-                                                        // TODO: Phát âm chậm
-                                                    }
-                                                )
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    // MẶT SAU THẺ: NGHĨA VÀ VÍ DỤ
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .padding(28.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center
+                                                onEvent(FlashcardEvent.OnToggleSaveClick)
+                                            },
+                                        contentAlignment = Alignment.Center
                                     ) {
-                                        Text(
-                                            text = word.meaning,
-                                            fontSize = 26.sp,
-                                            fontWeight = FontWeight.Black,
-                                            color = Color(0xFF0F172A),
-                                            textAlign = TextAlign.Center
+                                        Icon(
+                                            imageVector = if (word.isSaved) Icons.Rounded.Star else Icons.Rounded.StarBorder,
+                                            contentDescription = "Save Word",
+                                            tint = if (word.isSaved) Color(0xFFFFC83D) else Color(0xFF94A3B8),
+                                            modifier = Modifier.size(24.dp)
                                         )
+                                    }
 
-                                        if (word.examples.isNotEmpty()) {
-                                            Spacer(modifier = Modifier.height(24.dp))
-                                            Column(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .background(Color(0xFFF8FAFC), RoundedCornerShape(16.dp))
-                                                    .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(16.dp))
-                                                    .padding(16.dp)
-                                            ) {
-                                                Text(
-                                                    text = "EXAMPLE SENTENCE",
-                                                    fontSize = 10.sp,
-                                                    fontWeight = FontWeight.Black,
-                                                    color = AppColors.BluePrimary,
-                                                    letterSpacing = 1.sp
-                                                )
-                                                Spacer(modifier = Modifier.height(8.dp))
-                                                Text(
-                                                    text = word.examples.first(),
-                                                    fontSize = 15.sp,
-                                                    color = Color(0xFF334155),
-                                                    fontWeight = FontWeight.Bold,
-                                                    lineHeight = 22.sp
-                                                )
-                                            }
-                                        }
+                                    if (rotation3d <= 90f) {
+                                        FlashcardFrontFace(
+                                            word = word.word,
+                                            phonetic = word.usPhonetic
+                                        )
+                                    } else {
+                                        FlashcardBackFace(
+                                            meaning = word.meaning,
+                                            examples = word.examples
+                                        )
                                     }
                                 }
                             }
+                            Spacer(modifier = Modifier.weight(1f))
+
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                MainAudioButton3D(
+                                    onClick = { onEvent(FlashcardEvent.OnPlayAudio) }
+                                )
+
+                                SnailAudioButton3D(
+                                    onClick = { /* TODO: Phát âm chậm */ }
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.weight(1f))
                         }
 
                         Row(
@@ -293,165 +298,39 @@ fun FlashcardScreen(
                         ) {
                             Button(
                                 onClick = {
-                                    forgotCount++
                                     onEvent(FlashcardEvent.OnStillLearningClick)
                                 },
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(56.dp),
-                                shape = RoundedCornerShape(16.dp),
+                                    .height(50.dp),
+                                shape = RoundedCornerShape(10.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(0xFFEF4444),
                                     contentColor = Color.White
                                 )
                             ) {
-                                Text(text = "FORGOT", fontSize = 15.sp, fontWeight = FontWeight.Black)
+                                Text(text = "Forgot", fontSize = 15.sp, fontWeight = FontWeight.Black)
                             }
 
                             Button(
                                 onClick = {
-                                    knowItCount++
                                     onEvent(FlashcardEvent.OnKnowItClick)
                                 },
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(56.dp),
-                                shape = RoundedCornerShape(16.dp),
+                                    .height(50.dp),
+                                shape = RoundedCornerShape(10.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF22C55E),
+                                    containerColor = AppColors.BluePrimary,
                                     contentColor = Color.White
                                 )
                             ) {
-                                Text(text = "KNOW IT", fontSize = 15.sp, fontWeight = FontWeight.Black)
+                                Text(text = "Know it", fontSize = 15.sp, fontWeight = FontWeight.Black)
                             }
                         }
                     }
                 }
             }
-        }
-    }
-}
-
-
-@Composable
-fun SnailAudioButton3D(onClick: () -> Unit) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-
-    val yOffset by animateDpAsState(
-        targetValue = if (isPressed) 4.dp else 0.dp,
-        label = "yOffset"
-    )
-
-    Box(
-        modifier = Modifier
-            .size(64.dp)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            )
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(y = 4.dp)
-                .background(Color(0xFFE5E5E5), CircleShape)
-        )
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(y = yOffset),
-            shape = CircleShape,
-            color = Color.White,
-            border = BorderStroke(2.dp, Color(0xFFE5E5E5))
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Text(text = "🐌", fontSize = 24.sp)
-            }
-        }
-    }
-}
-
-@Composable
-fun MainAudioButton3D(onClick: () -> Unit) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-
-    val yOffset by animateDpAsState(
-        targetValue = if (isPressed) 4.dp else 0.dp,
-        label = "yOffset"
-    )
-
-    Box(
-        modifier = Modifier
-            .size(72.dp)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            )
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(y = 4.dp)
-                .background(Color(0xFF1899D6), CircleShape)
-        )
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(y = yOffset),
-            shape = CircleShape,
-            color = Color(0xFF1CB0F6),
-            border = BorderStroke(2.dp, Color(0xFF1899D6))
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Rounded.VolumeUp,
-                    contentDescription = "TTS normal speed",
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun FinishDeckWidget(onBackClick: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = "🏆", fontSize = 72.sp)
-        Spacer(modifier = Modifier.height(20.dp))
-        Text(
-            text = "Session Completed!",
-            fontSize = 26.sp,
-            fontWeight = FontWeight.Black,
-            color = AppColors.TextMain
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "You have reviewed all selected cards successfully.",
-            fontSize = 15.sp,
-            color = Color.Gray,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-        Button(
-            onClick = onBackClick,
-            modifier = Modifier
-                .fillMaxWidth(0.6f)
-                .height(54.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AppColors.BluePrimary)
-        ) {
-            Icon(imageVector = Icons.Rounded.Replay, contentDescription = null, tint = Color.White)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Restart Session", fontWeight = FontWeight.Bold, color = Color.White)
         }
     }
 }

@@ -9,4 +9,5 @@ sealed interface VocabularyListEvent {
     data class OnSelectWordToggle(val wordId: String) : VocabularyListEvent
     object OnSelectAllToggle : VocabularyListEvent
     object OnFlashCardClick : VocabularyListEvent
+    object OnRefresh : VocabularyListEvent
 }

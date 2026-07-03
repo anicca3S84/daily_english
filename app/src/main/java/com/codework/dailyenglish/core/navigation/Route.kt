@@ -60,7 +60,7 @@ sealed interface Route {
     data class LessonResultScreen(val scorePercentage: Int, val starsEarned: Int, val lessonId: String)
 
     @Serializable
-    data object SavedWordsScreen : Route
+    data object VocabularyListScreen : Route
 
     @Serializable
     data class TopicWordsScreen(

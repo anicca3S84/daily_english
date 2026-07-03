@@ -20,7 +20,8 @@ import com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi.LessonEv
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi.LessonState
 import com.codework.dailyenglish.presentation.utils.asUiText
 import com.codework.dailyenglish.presentation.utils.calculateSimilarity
-import com.codework.dailyenglish.presentation.utils.cleanForSpeaking
+import android.app.Application
+import com.codework.dailyenglish.core.utils.TextToSpeechUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -34,15 +35,14 @@ class LessonViewModel @Inject constructor(
     private val reviewLessonUseCase: ReviewLessonUseCase,
     private val updateLessonProgressUseCase: UpdateLessonProgressUseCase,
     private val completeLessonUseCase: CompleteLessonUseCase,
-    private val ttsManager: TextToSpeechManager,
+    application: Application,
     savedStateHandle: SavedStateHandle
 ) : BaseViewModel<LessonState, LessonEvent, LessonEffect>(
     initialState = BaseUiState(isLoading = true)
 ) {
     private val lessonId: String = checkNotNull(savedStateHandle["lessonId"])
     private val isCompleted: Boolean = checkNotNull(savedStateHandle["isCompleted"])
-    private var mediaPlayer: MediaPlayer? = null
-
+    private val ttsUtils = TextToSpeechUtils(application)
     init {
         loadLessonData()
     }
@@ -148,7 +148,7 @@ class LessonViewModel @Inject constructor(
                 val similarity = answer.calculateSimilarity(content.targetText)
 
                 updatedQuestionData = updatedQuestionData.copy(
-                    isAnswerEvaluated = true, // Tự động đánh dấu đã xong
+                    isAnswerEvaluated = true,
                     isCorrect = similarity >= 0.8f || answer == "PASSED"
                 )
             }
@@ -175,47 +175,9 @@ class LessonViewModel @Inject constructor(
         }
     }
 
-    fun playAudio(url: String?, textToSpeak: String? = null, speed: Float = 1f) {
-        if (url.isNullOrBlank()) {
-            textToSpeak?.let { ttsManager.speak(it, speed) }
-            return
-        }
-        viewModelScope.launch {
-            try {
-                if (mediaPlayer == null) {
-                    mediaPlayer = MediaPlayer()
-                } else {
-                    mediaPlayer?.reset()
-                }
-
-                mediaPlayer?.apply {
-                    setDataSource(url)
-                    setOnPreparedListener { mp ->
-                        try {
-                            mp.playbackParams = mp.playbackParams.setSpeed(speed)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                        mp.start()
-                    }
-                    setOnErrorListener { _, _, _ ->
-                        textToSpeak?.let { ttsManager.speak(it, speed) }
-                        true
-                    }
-                    prepareAsync()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                textToSpeak?.let { ttsManager.speak(it, speed) }
-            }
-        }
-    }
-
     override fun onCleared() {
         super.onCleared()
-        mediaPlayer?.release()
-        mediaPlayer = null
-        ttsManager.shutDown()
+        ttsUtils.release()
     }
 
 
@@ -342,6 +304,15 @@ class LessonViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             updateLessonProgressUseCase(lessonId, cursorIndex)
         }
+    }
+
+    private fun playAudio(url: String?, word: String, speed: Float = 1f) {
+        ttsUtils.playAudio(
+            url = url,
+            textToSpeak = word,
+            speed = speed,
+            scope = viewModelScope
+        )
     }
 
 

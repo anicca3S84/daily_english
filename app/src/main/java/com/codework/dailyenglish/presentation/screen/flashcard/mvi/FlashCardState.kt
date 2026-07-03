@@ -6,8 +6,12 @@ import com.codework.dailyenglish.presentation.screen.flashcard.model.FlashcardUi
 data class FlashcardState(
     val words: List<Word> = emptyList(),
     val currentIndex: Int = 0,
-    val progress: Float = 0f,
-    val progressText: String = "0/0",
     val isFlipped: Boolean = false,
-    val isFinished: Boolean = false
+    val isFinished: Boolean = false,
+
+    val forgotWords: List<Word> = emptyList(),
+    val showReviewOptions: Boolean = false,
+
+    val progress: Float = 0f,
+    val progressText: String = ""
 )

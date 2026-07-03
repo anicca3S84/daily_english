@@ -22,7 +22,9 @@ class VocabularyRepositoryImpl @Inject constructor(
                 VocabTopic(
                     id = dto.id,
                     name = dto.name,
-                    imageUrl = dto.imageUrl.orEmpty()
+                    imageUrl = dto.imageUrl.orEmpty(),
+                    description = dto.description ?: "Explore this topic",
+                    totalWords = dto.totalWords ?: 0
                 )
             }
         }

@@ -8,4 +8,6 @@ sealed interface FlashcardEvent {
     object OnKnowItClick : FlashcardEvent
     object OnStillLearningClick : FlashcardEvent
     object OnPlayAudio : FlashcardEvent
+    object OnReviewForgotWords : FlashcardEvent
+    object OnForceFinish : FlashcardEvent
 }

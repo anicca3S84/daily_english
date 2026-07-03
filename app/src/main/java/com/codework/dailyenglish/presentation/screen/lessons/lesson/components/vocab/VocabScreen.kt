@@ -16,7 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.outlined.BookmarkBorder
-import androidx.compose.material.icons.rounded.VolumeUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,6 +25,10 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.codework.dailyenglish.domain.lesson.model.StepData
+import com.codework.dailyenglish.presentation.screen.flashcard.components.FlashcardBackFace
+import com.codework.dailyenglish.presentation.screen.flashcard.components.FlashcardFrontFace
+import com.codework.dailyenglish.presentation.screen.flashcard.components.MainAudioButton3D
+import com.codework.dailyenglish.presentation.screen.flashcard.components.SnailAudioButton3D
 import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.AppRadius
 import com.codework.dailyenglish.presentation.theme.AppTextSizes
@@ -37,7 +40,7 @@ fun VocabCard(
     modifier: Modifier = Modifier,
     isFavorite: Boolean = false,
     onToggleFavorite: () -> Unit = {},
-    onPlayAudio:  (String?, String, Float) -> Unit = { _,_, _ -> }
+    onPlayAudio: (String?, String, Float) -> Unit = { _, _, _ -> }
 ) {
     var isFlipped by remember { mutableStateOf(false) }
     val rotation by animateFloatAsState(
@@ -46,48 +49,48 @@ fun VocabCard(
         label = "flip"
     )
 
-    // Đổi Box thành Column và cho nó fillMaxSize để chiếm trọn không gian cho phép
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = Spaces.Space32, vertical = Spaces.Space16),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // CỤM 1: Nhãn tiêu đề (Header)
         Text(
             text = "Từ vựng mới",
             fontSize = AppTextSizes.TextSizeTitle,
             fontWeight = FontWeight.ExtraBold,
             color = AppColors.Slate700,
-            modifier = Modifier.padding(bottom = Spaces.Space16) // Giảm một chút cho gọn
+            modifier = Modifier.padding(bottom = Spaces.Space16)
         )
 
-        // CỤM 2: Thẻ Flashcard (Dùng weight(1f) để nó tự động giãn dài/ngắn tuỳ theo màn hình)
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f) // <--- QUAN TRỌNG: Đây chính là chiếc lò xo
+                .weight(1f) // Giữ nguyên weight để tự co giãn theo màn hình
                 .padding(horizontal = Spaces.Space16)
-                // ĐÃ XÓA: .height(Spaces.Space475) vì mình muốn nó tự động co giãn
                 .graphicsLayer {
                     rotationY = rotation
-                    cameraDistance = 16f * density
+                    cameraDistance = 14f * density // Đồng bộ khoảng cách camera (14 thay vì 16)
                 }
-                .border(Spaces.Space1, Color(0xFFF1F5F9), RoundedCornerShape(AppRadius.Radius32))
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
                 ) { isFlipped = !isFlipped },
-            shape = RoundedCornerShape(AppRadius.Radius32),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(Spaces.Space3)
+            shape = RoundedCornerShape(24.dp), // Đồng bộ bo góc 24.dp giống màn hình trước
+            colors = CardDefaults.cardColors(
+                containerColor = AppColors.FlashCardBackground // <--- Đổi thành màu nền Flashcard của bạn ở đây!
+            ),
+            border = BorderStroke(
+                width = 1.dp,
+                color = AppColors.FlashCardBorder // Đồng bộ màu viền border của bài trước
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp) // Đồng bộ elevation 2.dp
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 if (rotation <= 90f) {
-                    VocabCardFront(
-                        data = data,
-                        isFavorite = isFavorite,
-                        onToggleFavorite = onToggleFavorite,
+                    FlashcardFrontFace(
+                        word = data.word,
+                        phonetic = data.ukPhonetic ?: ""
                     )
                 } else {
                     Box(
@@ -97,18 +100,18 @@ fun VocabCard(
                                 rotationY = 180f
                             }
                     ) {
-                        VocabCardBack(
-                            data = data,
-                            isFavorite = isFavorite,
-                            onToggleFavorite = onToggleFavorite,
-                        )
+                        data.examples?.let {
+                            FlashcardBackFace(
+                                meaning = data.meaning,
+                                examples = data.examples
+                            )
+                        }
                     }
                 }
             }
         }
 
-        // CỤM 3: Khoảng cách và Hàng nút bấm (Footer)
-        Spacer(modifier = Modifier.height(Spaces.Space24)) // Cố định khoảng cách nút và thẻ
+        Spacer(modifier = Modifier.height(Spaces.Space24))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -131,85 +134,6 @@ fun VocabCard(
                 isSaved = isFavorite,
                 onClick = onToggleFavorite
             )
-        }
-    }
-}
-
-@Composable
-fun SnailAudioButton3D(onClick: () -> Unit) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-
-    val yOffset by animateDpAsState(targetValue = if (isPressed) 4.dp else 0.dp, label = "yOffset")
-
-    Box(
-        modifier = Modifier
-            .size(64.dp)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            )
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(y = 4.dp)
-                .background(Color(0xFFE5E5E5), CircleShape)
-        )
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(y = yOffset),
-            shape = CircleShape,
-            color = Color.White,
-            border = BorderStroke(2.dp, Color(0xFFE5E5E5))
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Text(text = "🐌", fontSize = AppTextSizes.TextSize24)
-            }
-        }
-    }
-}
-
-@Composable
-fun MainAudioButton3D(onClick: () -> Unit) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-
-    val yOffset by animateDpAsState(targetValue = if (isPressed) 4.dp else 0.dp, label = "yOffset")
-
-    Box(
-        modifier = Modifier
-            .size(72.dp)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            )
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(y = 4.dp)
-                .background(Color(0xFF1899D6), CircleShape)
-        )
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(y = yOffset),
-            shape = CircleShape,
-            color = Color(0xFF1CB0F6),
-            border = BorderStroke(2.dp, Color(0xFF1899D6))
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Rounded.VolumeUp,
-                    contentDescription = "Nghe",
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
         }
     }
 }

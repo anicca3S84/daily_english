@@ -53,6 +53,10 @@ object AppColors {
 
     val USRed = Color(0xFFEF4444)
     val HintBackGround = Color(0xFFE5F2FD)
+
+    val FlashCardBackground = Color(0xFFF4F8FF)
+    val FlashCardBorder = Color(0xFFE9EEF5)
+
 }
 
 // Rookie
