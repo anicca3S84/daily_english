@@ -54,33 +54,19 @@ fun FlashcardBackFace(
 
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 examples.forEach { example ->
-                    Row(
-                        modifier = Modifier
-                            .padding(vertical = 6.dp)
-                            .widthIn(max = 300.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(6.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFF64748B))
-                        )
-
-                        Spacer(modifier = Modifier.width(10.dp))
-
-                        Text(
-                            text = example,
-                            fontSize = 17.sp,
-                            color = Color(0xFF334155),
-                            fontWeight = FontWeight.W400,
-                            lineHeight = 22.sp,
-                            textAlign = TextAlign.Start
-                        )
-                    }
+                    Text(
+                        text = "•  $example",
+                        modifier = Modifier.widthIn(max = 300.dp),
+                        fontSize = 17.sp,
+                        color = Color(0xFF334155),
+                        fontWeight = FontWeight.W400,
+                        lineHeight = 22.sp,
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }

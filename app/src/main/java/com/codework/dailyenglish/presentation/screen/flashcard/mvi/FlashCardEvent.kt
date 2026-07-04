@@ -6,6 +6,7 @@ sealed interface FlashcardEvent {
     object OnCardClick : FlashcardEvent
     object OnToggleSaveClick : FlashcardEvent
     object OnKnowItClick : FlashcardEvent
+    object OnPlayAudioSlow : FlashcardEvent
     object OnStillLearningClick : FlashcardEvent
     object OnPlayAudio : FlashcardEvent
     object OnReviewForgotWords : FlashcardEvent

@@ -29,6 +29,7 @@ import com.codework.dailyenglish.presentation.screen.flashcard.components.Flashc
 import com.codework.dailyenglish.presentation.screen.flashcard.components.FlashcardFrontFace
 import com.codework.dailyenglish.presentation.screen.flashcard.components.MainAudioButton3D
 import com.codework.dailyenglish.presentation.screen.flashcard.components.SnailAudioButton3D
+import com.codework.dailyenglish.presentation.screen.lessons.lesson.components.question.components.BookmarkButton3D
 import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.AppRadius
 import com.codework.dailyenglish.presentation.theme.AppTextSizes
@@ -49,6 +50,8 @@ fun VocabCard(
         label = "flip"
     )
 
+    var localIsFavorite by remember(data.word, isFavorite) { mutableStateOf(isFavorite) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -56,7 +59,7 @@ fun VocabCard(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = "Từ vựng mới",
+            text = "New vocabulary",
             fontSize = AppTextSizes.TextSizeTitle,
             fontWeight = FontWeight.ExtraBold,
             color = AppColors.Slate700,
@@ -66,25 +69,25 @@ fun VocabCard(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f) // Giữ nguyên weight để tự co giãn theo màn hình
+                .weight(1f)
                 .padding(horizontal = Spaces.Space16)
                 .graphicsLayer {
                     rotationY = rotation
-                    cameraDistance = 14f * density // Đồng bộ khoảng cách camera (14 thay vì 16)
+                    cameraDistance = 14f * density
                 }
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
                 ) { isFlipped = !isFlipped },
-            shape = RoundedCornerShape(24.dp), // Đồng bộ bo góc 24.dp giống màn hình trước
+            shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(
-                containerColor = AppColors.FlashCardBackground // <--- Đổi thành màu nền Flashcard của bạn ở đây!
+                containerColor = AppColors.FlashCardBackground
             ),
             border = BorderStroke(
                 width = 1.dp,
-                color = AppColors.FlashCardBorder // Đồng bộ màu viền border của bài trước
+                color = AppColors.FlashCardBorder
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp) // Đồng bộ elevation 2.dp
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 if (rotation <= 90f) {
@@ -131,55 +134,16 @@ fun VocabCard(
             Spacer(modifier = Modifier.width(Spaces.Space24))
 
             BookmarkButton3D(
-                isSaved = isFavorite,
-                onClick = onToggleFavorite
+                isSaved = localIsFavorite,
+                onClick = {
+                    localIsFavorite = !localIsFavorite
+                    onToggleFavorite()
+                }
             )
         }
+
+        Spacer(modifier = Modifier.height(Spaces.Space24))
+
     }
 }
 
-@Composable
-fun BookmarkButton3D(isSaved: Boolean, onClick: () -> Unit) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-
-    val yOffset by animateDpAsState(targetValue = if (isPressed) 4.dp else 0.dp, label = "yOffset")
-
-    val bgColor by animateColorAsState(targetValue = if (isSaved) Color(0xFFFEF3C7) else Color.White, label = "bg")
-    val borderColor by animateColorAsState(targetValue = if (isSaved) Color(0xFFF4B844) else Color(0xFFE5E5E5), label = "border")
-    val iconColor by animateColorAsState(targetValue = if (isSaved) Color(0xFFF4B844) else Color(0xFF9CA3AF), label = "icon")
-
-    Box(
-        modifier = Modifier
-            .size(64.dp)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            )
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(y = 4.dp)
-                .background(borderColor, CircleShape)
-        )
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(y = yOffset),
-            shape = CircleShape,
-            color = bgColor,
-            border = BorderStroke(2.dp, borderColor)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = if (isSaved) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-                    contentDescription = "Lưu từ",
-                    tint = iconColor,
-                    modifier = Modifier.size(28.dp)
-                )
-            }
-        }
-    }
-}

@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.codework.dailyenglish.R
 import com.codework.dailyenglish.presentation.components.QuickActionSection
+import com.codework.dailyenglish.presentation.components.StateWrapper
 import com.codework.dailyenglish.presentation.screen.home.components.WeeklyProgressCard
 import com.codework.dailyenglish.presentation.screen.home.components.HomeHeader
 import com.codework.dailyenglish.presentation.screen.home.model.QuickActionItem
@@ -35,16 +36,17 @@ fun HomeScreen(
         ) {
             HomeContent(
                 state = state,
-                onEvent = onEvent
+                onEvent = onEvent,
+                snackbarHostState = snackbarHostState // Truyền xuống
             )
         }
     }
 }
-
 @Composable
 fun HomeContent(
     state: HomeState,
-    onEvent: (HomeEvent) -> Unit
+    onEvent: (HomeEvent) -> Unit,
+    snackbarHostState: SnackbarHostState
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -91,21 +93,18 @@ fun HomeContent(
         item {
             Text(text = "Learning Statistics", style = MaterialTheme.typography.titleMedium)
 
-                // Dựa vào weeklyStatsState để quyết định hiển thị
             Spacer(modifier = Modifier.height(16.dp))
 
-
-            when {
-                    state.weeklyStatsState.isLoading -> {
-                        CircularProgressIndicator() // Hoặc Shimmer Loading
-                    }
-                    state.weeklyStatsState.error != null -> {
-                        Text(text = "Error: ${state.weeklyStatsState.error}")
-                    }
-                    else -> {
-                        WeeklyProgressCard(weeklyStats = state.weeklyStatsState.data ?: emptyList())
-                    }
-                }
+            StateWrapper(
+                uiState = state.weeklyStatsState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 200.dp),
+                snackbarHostState = snackbarHostState,
+                onRetry = { onEvent(HomeEvent.OnRetry) }
+            ) { data ->
+                WeeklyProgressCard(weeklyStats = data ?: emptyList())
+            }
         }
     }
 }

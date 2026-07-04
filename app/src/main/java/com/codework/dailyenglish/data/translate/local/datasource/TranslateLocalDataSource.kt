@@ -7,4 +7,5 @@ interface TranslateLocalDataSource {
     suspend fun insert(entity: TranslationEntity)
     fun getAllHistory(): Flow<List<TranslationEntity>>
     fun getRecentHistory(): Flow<List<TranslationEntity>>
+    suspend fun clearAllHistory()
 }

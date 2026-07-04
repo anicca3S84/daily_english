@@ -8,7 +8,7 @@ import jakarta.inject.Inject
 class CompleteLessonUseCase @Inject constructor(
     private val repository: LessonRepository
 ) {
-    suspend operator fun invoke(lessonPublicId: String): AppResult<LessonResult> {
-        return repository.completeLesson(lessonPublicId)
+    suspend operator fun invoke(lessonId: String): AppResult<LessonResult> {
+        return repository.completeLesson(lessonId)
     }
 }

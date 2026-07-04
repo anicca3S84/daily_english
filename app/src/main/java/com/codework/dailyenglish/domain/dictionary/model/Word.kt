@@ -1,11 +1,9 @@
 package com.codework.dailyenglish.domain.dictionary.model
 
-import com.google.gson.annotations.SerializedName
-
 data class Word(
     val id: String,
     val type: String,
-    val word: String,
+    var word: String,
     val meaning: String,
     val imageUrl: String,
     val ukPhonetic: String,
@@ -14,5 +12,6 @@ data class Word(
     val usAudioUrl: String,
     val examples: List<String>,
     val relatedWords: List<String>,
-    val isSaved: Boolean
+    val isSaved: Boolean,
+    val definitions: List<DefinitionDetail>
 )

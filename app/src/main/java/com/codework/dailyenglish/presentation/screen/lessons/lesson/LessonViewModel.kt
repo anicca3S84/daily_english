@@ -1,6 +1,5 @@
 package com.codework.dailyenglish.presentation.screen.lessons.lesson
 
-import android.media.MediaPlayer
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.codework.dailyenglish.core.base.BaseViewModel
@@ -13,7 +12,6 @@ import com.codework.dailyenglish.domain.lesson.usecase.CompleteLessonUseCase
 import com.codework.dailyenglish.domain.lesson.usecase.GetLessonPlayDataUseCase
 import com.codework.dailyenglish.domain.lesson.usecase.ReviewLessonUseCase
 import com.codework.dailyenglish.domain.lesson.usecase.UpdateLessonProgressUseCase
-import com.codework.dailyenglish.presentation.manager.TextToSpeechManager
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi.LessonConfigUi
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi.LessonEffect
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi.LessonEvent
@@ -21,7 +19,12 @@ import com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi.LessonSt
 import com.codework.dailyenglish.presentation.utils.asUiText
 import com.codework.dailyenglish.presentation.utils.calculateSimilarity
 import android.app.Application
-import com.codework.dailyenglish.core.utils.TextToSpeechUtils
+import com.codework.dailyenglish.R
+import com.codework.dailyenglish.core.base.BaseEffect
+import com.codework.dailyenglish.core.utils.TextToSpeechParser
+import com.codework.dailyenglish.domain.dictionary.usecase.RestartLessonUseCase
+import com.codework.dailyenglish.domain.dictionary.usecase.ToggleSaveWordUseCase
+import com.codework.dailyenglish.presentation.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -31,22 +34,25 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LessonViewModel @Inject constructor(
-    private val getLessonPlayDataUseCase: GetLessonPlayDataUseCase,
+    private val restartLessonUseCase: RestartLessonUseCase,
     private val reviewLessonUseCase: ReviewLessonUseCase,
+    private val getLessonPlayDataUseCase: GetLessonPlayDataUseCase,
     private val updateLessonProgressUseCase: UpdateLessonProgressUseCase,
     private val completeLessonUseCase: CompleteLessonUseCase,
-    application: Application,
+    private val textToSpeechParser: TextToSpeechParser,
+    private val toggleSaveWordUseCase: ToggleSaveWordUseCase,
     savedStateHandle: SavedStateHandle
 ) : BaseViewModel<LessonState, LessonEvent, LessonEffect>(
     initialState = BaseUiState(isLoading = true)
 ) {
     private val lessonId: String = checkNotNull(savedStateHandle["lessonId"])
     private val isCompleted: Boolean = checkNotNull(savedStateHandle["isCompleted"])
-    private val ttsUtils = TextToSpeechUtils(application)
+    private val isReview: Boolean = savedStateHandle["isReview"] ?: false
+
+
     init {
         loadLessonData()
     }
-
 
     override fun onEvent(event: LessonEvent) {
         when (event) {
@@ -66,6 +72,22 @@ class LessonViewModel @Inject constructor(
                     updateConfig { it.copy(isQuitDialogVisible = false) }
                     delay(100)
                     sendEffect(LessonEffect.NavigateBack)
+                }
+            }
+            is LessonEvent.OnToggleSaveWord ->{
+                viewModelScope.launch {
+                    event.wordId.let {
+                        toggleSaveWordUseCase(event.wordId)
+                            .onSuccess {
+                                sendGlobalEffect(
+                                    BaseEffect.ShowToast(UiText.StringResource(R.string.noti_success))
+                                )
+                            }
+                            .onError { err ->
+                                val uiError = err.asUiText()
+                                sendGlobalEffect(BaseEffect.ShowToast(uiError))
+                            }
+                    }
                 }
             }
             else -> {}
@@ -93,22 +115,10 @@ class LessonViewModel @Inject constructor(
                     val answerText = questionData.userAnswer.trim()
                     isCorrect = answerText.equals(content.correctAnswer.trim(), ignoreCase = true)
                 }
-//                is QuestionContent.Dictation -> {
-//                    val userAnswer = (questionData.userAnswer ?: "").trim()
-//                    isCorrect = userAnswer.equals(content.targetWord.trim(), ignoreCase = true) ||
-//                            userAnswer.equals(content.correctAnswer.trim(), ignoreCase = true) ||
-//                            content.acceptedAnswers.any { it.trim().equals(userAnswer, ignoreCase = true) }
-//                }
                 is QuestionContent.Speaking -> {
                     val similarity = (questionData.userAnswer ?: "").calculateSimilarity(content.targetText)
-
-                    // Nếu giống trên 80% hoặc có mã bypass PASSED thì coi như đúng
                     isCorrect = similarity >= 0.8f || questionData.userAnswer == "PASSED"
                 }
-//                is QuestionContent.Matching -> {
-//                    val userAnswer = questionData.selectedOptionId ?: questionData.userAnswer ?: ""
-//                    isCorrect = userAnswer == "CORRECT" || userAnswer == "PASSED"
-//                }
                 else -> {
                     isCorrect = false
                 }
@@ -135,7 +145,7 @@ class LessonViewModel @Inject constructor(
             val questionData = currentStep.data as? StepData.Question ?: return@update state
 
             val isMultipleChoice = questionData.content is QuestionContent.MultipleChoice
-            val isSpeaking = questionData.content is QuestionContent.Speaking // Kiểm tra xem có phải Speaking không
+            val isSpeaking = questionData.content is QuestionContent.Speaking
 
             var updatedQuestionData = questionData.copy(
                 selectedOptionId = if (isMultipleChoice) answer.ifEmpty { null } else null,
@@ -158,7 +168,6 @@ class LessonViewModel @Inject constructor(
 
             state.copy(data = currentData.copy(
                 steps = updatedSteps,
-                // Cập nhật index hiển thị kết quả nếu là Speaking
                 showResultStepIndex = if (isSpeaking) currentData.currentIndex else currentData.showResultStepIndex
             ))
         }
@@ -175,63 +184,65 @@ class LessonViewModel @Inject constructor(
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        ttsUtils.release()
-    }
-
-
-
     private fun loadLessonData() {
         _state.update { it.copy(isLoading = true, error = null) }
 
         viewModelScope.launch {
-            val result = if (isCompleted) {
-                reviewLessonUseCase(lessonId)
-            } else {
-                getLessonPlayDataUseCase(lessonId)
-            }
-            result.onSuccess { playData ->
-                    _state.update { it.copy(
-                        isLoading = false,
-                        data = LessonConfigUi(
-                            lessonId = playData.lessonId,
-                            steps = playData.steps,
-                            currentIndex = playData.resumeCursor,
-                        )
-                    )}
+            val result = when {
+                isCompleted && isReview -> {
+                    reviewLessonUseCase(lessonId)
                 }
+                isCompleted && !isReview -> {
+                    restartLessonUseCase(lessonId)
+                }
+                else -> {
+                    getLessonPlayDataUseCase(lessonId)
+                }
+            }
+
+            result.onSuccess { playData ->
+                _state.update { it.copy(
+                    isLoading = false,
+                    data = LessonConfigUi(
+                        lessonId = playData.lessonId,
+                        steps = playData.steps,
+                        currentIndex = playData.resumeCursor,
+                    )
+                )}
+                val stepData = playData.steps.getOrNull(playData.resumeCursor)?.data
+                if (stepData is StepData.Vocab) {
+                    playAudio(stepData.usAudioUrl, stepData.word, 1f)
+                }
+            }
                 .onError { err ->
                     _state.update { it.copy(isLoading = false, error = err.asUiText()) }
                 }
         }
     }
 
-    private fun submitLesson() {
-        viewModelScope.launch {
-            _state.update { currentState ->
-                val currentData = currentState.data
-                currentState.copy(
-                    isLoading = true,
-                    data = currentData?.copy(showResultStepIndex = null)
+    private suspend fun submitLesson() {
+        _state.update { currentState ->
+            val currentData = currentState.data
+            currentState.copy(
+                isLoading = true,
+                data = currentData?.copy(showResultStepIndex = null)
+            )
+        }
+
+        completeLessonUseCase(lessonId)
+            .onSuccess { data ->
+                _state.update { it.copy(isLoading = false) }
+                sendEffect(
+                    LessonEffect.NavigateToResult(
+                        scorePercentage = data.scorePercentage,
+                        starsEarned = data.starsEarned,
+                        lessonId = lessonId
+                    )
                 )
             }
-
-            completeLessonUseCase(lessonId)
-                .onSuccess { data ->
-                    _state.update { it.copy(isLoading = false) }
-                    sendEffect(
-                        LessonEffect.NavigateToResult(
-                            scorePercentage = data.scorePercentage,
-                            starsEarned = data.starsEarned,
-                            lessonId = lessonId
-                        )
-                    )
-                }
-                .onError { err ->
-                    _state.update { it.copy(isLoading = false, error = err.asUiText()) }
-                }
-        }
+            .onError { err ->
+                _state.update { it.copy(isLoading = false, error = err.asUiText()) }
+            }
     }
 
     private fun nextStep() {
@@ -280,7 +291,11 @@ class LessonViewModel @Inject constructor(
                     playAudio(newlyRevealedStep.data.usAudioUrl, newlyRevealedStep.data.word, 1f)
                 }
             } else {
-                submitLesson()
+                if (isReview) {
+                    sendEffect(LessonEffect.NavigateBack)
+                } else {
+                    submitLesson()
+                }
             }
         }
     }
@@ -291,11 +306,21 @@ class LessonViewModel @Inject constructor(
             val prevIndex = currentData.currentIndex - 1
 
             if (prevIndex >= 0) {
-                val newData = currentData.copy(currentIndex = prevIndex)
+                val newData = currentData.copy(
+                    currentIndex = prevIndex,
+                    showResultStepIndex = null
+                )
                 trackProgress(prevIndex)
                 state.copy(data = newData)
             } else {
-                state.copy(data = currentData.copy(isQuitDialogVisible = true))
+                if (isReview) {
+                    viewModelScope.launch {
+                        sendEffect(LessonEffect.NavigateBack)
+                    }
+                    state
+                } else {
+                    state.copy(data = currentData.copy(isQuitDialogVisible = true))
+                }
             }
         }
     }
@@ -307,7 +332,7 @@ class LessonViewModel @Inject constructor(
     }
 
     private fun playAudio(url: String?, word: String, speed: Float = 1f) {
-        ttsUtils.playAudio(
+        textToSpeechParser.playAudio(
             url = url,
             textToSpeak = word,
             speed = speed,
@@ -315,7 +340,8 @@ class LessonViewModel @Inject constructor(
         )
     }
 
-
-
-
+    override fun onCleared() {
+        super.onCleared()
+        textToSpeechParser.release()
+    }
 }

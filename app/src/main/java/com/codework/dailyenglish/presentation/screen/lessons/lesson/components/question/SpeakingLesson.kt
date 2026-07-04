@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
-import com.codework.dailyenglish.presentation.manager.VoiceToTextParser
 import com.codework.dailyenglish.presentation.utils.calculateSimilarity
 
 
@@ -57,184 +56,184 @@ fun SpeakingQuestion(
     onAnswerSelected: (String) -> Unit,
     onPlayAudio: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val voiceToTextParser = remember { VoiceToTextParser(context) }
-    val voiceState by voiceToTextParser.state.collectAsState()
-
-    val currentAnswer = voiceState.spokenText.takeIf { it.isNotBlank() } ?: initialAnswer
-
-    val similarity = currentAnswer?.calculateSimilarity(targetText) ?: 0f
-    val isPass = if (isEvaluated && isCorrect != null) {
-        isCorrect
-    } else {
-        similarity >= 0.8f
-    }
-
-    val canInteract = !isEvaluated
-
-    val sentenceColor by animateColorAsState(
-        targetValue = when {
-            currentAnswer.isNullOrBlank() -> Color(0xFF1F2937)
-            isPass -> Color(0xFF10B981)
-            else -> Color(0xFFEF4444)
-        },
-        label = "textColor"
-    )
-
-    var hasPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
-        )
-    }
-
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { isGranted ->
-            hasPermission = isGranted
-            if (isGranted && canInteract) {
-                voiceToTextParser.startListening()
-            }
-        }
-    )
-
-    LaunchedEffect(voiceState.spokenText) {
-        if (voiceState.spokenText.isNotBlank()) {
-            onAnswerSelected(voiceState.spokenText)
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose { voiceToTextParser.stopListening() }
-    }
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .padding(horizontal = 14.dp, vertical = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .shadow(20.dp, RoundedCornerShape(32.dp), spotColor = Color(0x1A000000))
-                .background(Color.White, RoundedCornerShape(32.dp))
-                .border(1.dp, Color(0xFFF3F4F6), RoundedCornerShape(32.dp))
-                .padding(vertical = 24.dp, horizontal = 24.dp),
-            contentAlignment = Alignment.TopCenter
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .background(Color(0xFFEFF6FF), RoundedCornerShape(16.dp))
-                        .padding(horizontal = 20.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(Icons.Rounded.GraphicEq, null, tint = Color(0xFF3B82F6), modifier = Modifier.size(14.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(text = "Say this aloud", color = Color(0xFF2563EB), fontSize = 14.sp, fontWeight = FontWeight.W600)
-                }
-
-                Spacer(Modifier.weight(1f))
-
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = if (currentAnswer.isNullOrBlank())
-//                            targetText
-                            "They say I'm an old soul."
-                        else currentAnswer,
-                        fontSize = 30.sp,
-                        fontWeight = FontWeight.W600,
-                        color = sentenceColor,
-                        textAlign = TextAlign.Center,
-                        lineHeight = 36.sp,
-                        style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-                    )
-
-                    if (voiceState.error != null) {
-                        Text(text = voiceState.error!!, color = Color(0xFFEF4444), fontSize = 14.sp, modifier = Modifier.padding(top = 16.dp))
-                    }
-
-                    Spacer(Modifier.height(24.dp))
-
-                    Text(text =
-//                        phonetic,
-                        "/ ðeɪ seɪ aɪm ən oʊld soʊl /",
-                        fontSize = 18.sp, color = Color(0xFF9CA3AF), textAlign = TextAlign.Center)
-
-                    Spacer(Modifier.height(24.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color(0xFFF9FAFB), RoundedCornerShape(16.dp))
-                            .padding(horizontal = 20.dp, vertical = 14.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text =
-//                            translation,
-                            "Họ nói tôi là một người có\ntâm hồn già dặn.",
-                            fontSize = 15.sp, color = Color(0xFF6B7280), textAlign = TextAlign.Center)
-                    }
-                }
-
-                Spacer(Modifier.weight(1f))
-
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(Modifier.fillMaxWidth(0.8f).height(1.dp).background(Color(0xFFF3F4F6)))
-                    Spacer(Modifier.height(24.dp))
-
-                    Text(
-                        text = when {
-                            isEvaluated -> "Completed"
-                            voiceState.isSpeaking -> "Listening... tap to stop"
-                            !currentAnswer.isNullOrBlank() -> "Recorded (Similarity: ${(similarity * 100).toInt()}%)"
-                            else -> "Tap the mic to speak"
-                        },
-                        fontSize = 15.sp,
-                        color = if (voiceState.isSpeaking) Color(0xFFEF4444) else Color(0xFF9CA3AF),
-                        modifier = Modifier.padding(bottom = 24.dp)
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        ElegantAudioButton(Icons.Rounded.VolumeUp, onClick = onPlayAudio)
-                        Spacer(Modifier.width(32.dp))
-                        Box(contentAlignment = Alignment.Center) {
-                            if (voiceState.isSpeaking) MicRippleAnimation()
-
-                            MicButtonElegant(
-                                isRecording = voiceState.isSpeaking,
-                                isEnabled = canInteract, // Truyền trạng thái khóa mic vào đây
-                                onClick = {
-                                    if (!canInteract) return@MicButtonElegant
-
-                                    if (voiceState.isSpeaking) {
-                                        voiceToTextParser.stopListening()
-                                    } else {
-                                        if (hasPermission) {
-                                            voiceToTextParser.startListening()
-                                        } else {
-                                            permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                        Spacer(Modifier.width(32.dp))
-                        ElegantAudioButton(Icons.Rounded.PlayArrow, onClick = onPlayAudio) // Hoặc đổi icon này nếu có logic khác
-                    }
-                }
-            }
-        }
-    }
+//    val context = LocalContext.current
+//    val voiceToTextParser = remember { VoiceToTextParser(context) }
+//    val voiceState by voiceToTextParser.state.collectAsState()
+//
+//    val currentAnswer = voiceState.spokenText.takeIf { it.isNotBlank() } ?: initialAnswer
+//
+//    val similarity = currentAnswer?.calculateSimilarity(targetText) ?: 0f
+//    val isPass = if (isEvaluated && isCorrect != null) {
+//        isCorrect
+//    } else {
+//        similarity >= 0.8f
+//    }
+//
+//    val canInteract = !isEvaluated
+//
+//    val sentenceColor by animateColorAsState(
+//        targetValue = when {
+//            currentAnswer.isNullOrBlank() -> Color(0xFF1F2937)
+//            isPass -> Color(0xFF10B981)
+//            else -> Color(0xFFEF4444)
+//        },
+//        label = "textColor"
+//    )
+//
+//    var hasPermission by remember {
+//        mutableStateOf(
+//            ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+//        )
+//    }
+//
+//    val permissionLauncher = rememberLauncherForActivityResult(
+//        contract = ActivityResultContracts.RequestPermission(),
+//        onResult = { isGranted ->
+//            hasPermission = isGranted
+//            if (isGranted && canInteract) {
+//                voiceToTextParser.startListening()
+//            }
+//        }
+//    )
+//
+//    LaunchedEffect(voiceState.spokenText) {
+//        if (voiceState.spokenText.isNotBlank()) {
+//            onAnswerSelected(voiceState.spokenText)
+//        }
+//    }
+//
+//    DisposableEffect(Unit) {
+//        onDispose { voiceToTextParser.stopListening() }
+//    }
+//
+//    Column(
+//        modifier = modifier
+//            .fillMaxWidth()
+//            .fillMaxHeight()
+//            .padding(horizontal = 14.dp, vertical = 12.dp),
+//        horizontalAlignment = Alignment.CenterHorizontally,
+//        verticalArrangement = Arrangement.Center
+//    ) {
+//        Box(
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .shadow(20.dp, RoundedCornerShape(32.dp), spotColor = Color(0x1A000000))
+//                .background(Color.White, RoundedCornerShape(32.dp))
+//                .border(1.dp, Color(0xFFF3F4F6), RoundedCornerShape(32.dp))
+//                .padding(vertical = 24.dp, horizontal = 24.dp),
+//            contentAlignment = Alignment.TopCenter
+//        ) {
+//            Column(
+//                horizontalAlignment = Alignment.CenterHorizontally,
+//                modifier = Modifier.fillMaxSize()
+//            ) {
+//                Row(
+//                    modifier = Modifier
+//                        .background(Color(0xFFEFF6FF), RoundedCornerShape(16.dp))
+//                        .padding(horizontal = 20.dp, vertical = 8.dp),
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    Icon(Icons.Rounded.GraphicEq, null, tint = Color(0xFF3B82F6), modifier = Modifier.size(14.dp))
+//                    Spacer(Modifier.width(6.dp))
+//                    Text(text = "Say this aloud", color = Color(0xFF2563EB), fontSize = 14.sp, fontWeight = FontWeight.W600)
+//                }
+//
+//                Spacer(Modifier.weight(1f))
+//
+//                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+//                    Text(
+//                        text = if (currentAnswer.isNullOrBlank())
+////                            targetText
+//                            "They say I'm an old soul."
+//                        else currentAnswer,
+//                        fontSize = 30.sp,
+//                        fontWeight = FontWeight.W600,
+//                        color = sentenceColor,
+//                        textAlign = TextAlign.Center,
+//                        lineHeight = 36.sp,
+//                        style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
+//                    )
+//
+//                    if (voiceState.error != null) {
+//                        Text(text = voiceState.error!!, color = Color(0xFFEF4444), fontSize = 14.sp, modifier = Modifier.padding(top = 16.dp))
+//                    }
+//
+//                    Spacer(Modifier.height(24.dp))
+//
+//                    Text(text =
+////                        phonetic,
+//                        "/ ðeɪ seɪ aɪm ən oʊld soʊl /",
+//                        fontSize = 18.sp, color = Color(0xFF9CA3AF), textAlign = TextAlign.Center)
+//
+//                    Spacer(Modifier.height(24.dp))
+//
+//                    Box(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .background(Color(0xFFF9FAFB), RoundedCornerShape(16.dp))
+//                            .padding(horizontal = 20.dp, vertical = 14.dp),
+//                        contentAlignment = Alignment.Center
+//                    ) {
+//                        Text(text =
+////                            translation,
+//                            "Họ nói tôi là một người có\ntâm hồn già dặn.",
+//                            fontSize = 15.sp, color = Color(0xFF6B7280), textAlign = TextAlign.Center)
+//                    }
+//                }
+//
+//                Spacer(Modifier.weight(1f))
+//
+//                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+//                    Box(Modifier.fillMaxWidth(0.8f).height(1.dp).background(Color(0xFFF3F4F6)))
+//                    Spacer(Modifier.height(24.dp))
+//
+//                    Text(
+//                        text = when {
+//                            isEvaluated -> "Completed"
+//                            voiceState.isSpeaking -> "Listening... tap to stop"
+//                            !currentAnswer.isNullOrBlank() -> "Recorded (Similarity: ${(similarity * 100).toInt()}%)"
+//                            else -> "Tap the mic to speak"
+//                        },
+//                        fontSize = 15.sp,
+//                        color = if (voiceState.isSpeaking) Color(0xFFEF4444) else Color(0xFF9CA3AF),
+//                        modifier = Modifier.padding(bottom = 24.dp)
+//                    )
+//
+//                    Row(
+//                        modifier = Modifier.fillMaxWidth(),
+//                        horizontalArrangement = Arrangement.Center,
+//                        verticalAlignment = Alignment.CenterVertically
+//                    ) {
+//                        ElegantAudioButton(Icons.Rounded.VolumeUp, onClick = onPlayAudio)
+//                        Spacer(Modifier.width(32.dp))
+//                        Box(contentAlignment = Alignment.Center) {
+//                            if (voiceState.isSpeaking) MicRippleAnimation()
+//
+//                            MicButtonElegant(
+//                                isRecording = voiceState.isSpeaking,
+//                                isEnabled = canInteract, // Truyền trạng thái khóa mic vào đây
+//                                onClick = {
+//                                    if (!canInteract) return@MicButtonElegant
+//
+//                                    if (voiceState.isSpeaking) {
+//                                        voiceToTextParser.stopListening()
+//                                    } else {
+//                                        if (hasPermission) {
+//                                            voiceToTextParser.startListening()
+//                                        } else {
+//                                            permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+//                                        }
+//                                    }
+//                                }
+//                            )
+//                        }
+//                        Spacer(Modifier.width(32.dp))
+//                        ElegantAudioButton(Icons.Rounded.PlayArrow, onClick = onPlayAudio) // Hoặc đổi icon này nếu có logic khác
+//                    }
+//                }
+//            }
+//        }
+//    }
 }
 
 @Composable

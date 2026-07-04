@@ -2,9 +2,12 @@ package com.codework.dailyenglish.presentation.screen.flashcard
 
 import android.app.Application
 import androidx.lifecycle.viewModelScope
+import com.codework.dailyenglish.R
+import com.codework.dailyenglish.core.base.BaseEffect.ShowToast
 import com.codework.dailyenglish.core.base.BaseViewModel
 import com.codework.dailyenglish.core.network.onError
-import com.codework.dailyenglish.core.utils.TextToSpeechUtils
+import com.codework.dailyenglish.core.network.onSuccess
+import com.codework.dailyenglish.core.utils.TextToSpeechParser
 import com.codework.dailyenglish.data.vocabulary.local.FlashcardDataStore
 import com.codework.dailyenglish.presentation.screen.flashcard.mvi.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,15 +16,16 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.codework.dailyenglish.domain.dictionary.model.Word
 import com.codework.dailyenglish.domain.dictionary.usecase.ToggleSaveWordUseCase
+import com.codework.dailyenglish.presentation.utils.UiText
+import com.codework.dailyenglish.presentation.utils.asUiText
 
 @HiltViewModel
 class FlashcardViewModel @Inject constructor(
     private val flashcardDataStore: FlashcardDataStore,
     private val toggleSaveWordUseCase: ToggleSaveWordUseCase,
-    application: Application
+    private val textToSpeechParser: TextToSpeechParser,
 ) : BaseViewModel<FlashcardState, FlashcardEvent, FlashcardEffect>(FlashcardState()) {
 
-    private val ttsUtils = TextToSpeechUtils(application)
 
     init {
         val inputWords = flashcardDataStore.words
@@ -61,7 +65,18 @@ class FlashcardViewModel @Inject constructor(
                         currentState.copy(words = updatedWords)
                     }
                     viewModelScope.launch {
-                        toggleSaveWordUseCase(currentWord.id).onError {}
+                        toggleSaveWordUseCase(currentWord.id)
+                            .onSuccess {
+                                sendGlobalEffect(
+                                    ShowToast(UiText.StringResource(R.string.noti_success))
+                                )
+                            }
+                            .onError { err ->
+                                val uiError = err.asUiText()
+
+                                sendGlobalEffect(ShowToast(uiError))
+                            }
+
                     }
                 }
             }
@@ -117,6 +132,12 @@ class FlashcardViewModel @Inject constructor(
                     playAudio(it.usAudioUrl, it.word, 1f)
                 }
             }
+
+            is FlashcardEvent.OnPlayAudioSlow -> {
+                getCurrentWord()?.let {
+                    playAudio(it.usAudioUrl, it.word, 0.5f)
+                }
+            }
         }
     }
 
@@ -152,7 +173,7 @@ class FlashcardViewModel @Inject constructor(
     }
 
     private fun playAudio(url: String?, word: String, speed: Float) {
-        ttsUtils.playAudio(
+        textToSpeechParser.playAudio(
             url = url,
             textToSpeak = word,
             speed = speed,
@@ -174,6 +195,6 @@ class FlashcardViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        ttsUtils.release()
+        textToSpeechParser.release()
     }
 }

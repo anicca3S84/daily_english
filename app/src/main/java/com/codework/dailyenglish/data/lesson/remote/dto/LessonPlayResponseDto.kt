@@ -20,6 +20,8 @@ data class LessonStepDto(
 interface StepDataDto
 
 data class VocabDto(
+    @SerializedName("id") val id: String?,
+    @SerializedName("type") val type: String?,
     @SerializedName("word") val word: String?,
     @SerializedName("meaning") val meaning: String?,
     @SerializedName("imageUrl") val imageUrl: String?,
@@ -28,7 +30,8 @@ data class VocabDto(
     @SerializedName("ukAudioUrl") val ukAudioUrl: String?,
     @SerializedName("usAudioUrl") val usAudioUrl: String?,
     @SerializedName("examples") val examples: List<String>?,
-    @SerializedName("relatedWords") val relatedWords: List<String>?
+    @SerializedName("relatedWords") val relatedWords: List<String>?,
+    @SerializedName("isSaved") val isSaved: Boolean?
 ) : StepDataDto
 
 data class QuestionDto(

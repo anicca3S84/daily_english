@@ -33,7 +33,7 @@ fun AppProgressTopBar(
     onCloseClick: (() -> Unit)? = null
 ) {
     Surface(
-        color = AppColors.AppBackground,
+        color = Color.White,
         modifier = Modifier.fillMaxWidth(),
         shadowElevation = Spaces.Space0
     ) {

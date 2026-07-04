@@ -16,4 +16,7 @@ interface TranslationDao {
 
     @Query("SELECT * FROM translations ORDER BY timestamp DESC LIMIT 10")
     fun getRecentHistory(): Flow<List<TranslationEntity>>
+
+    @Query("DELETE FROM translations")
+    suspend fun clearAllHistory()
 }

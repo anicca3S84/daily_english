@@ -25,7 +25,6 @@ fun WeeklyProgressCard(weeklyStats: List<DailyStudyTime>) {
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp) // Flat design
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Tiêu đề biểu đồ căn giữa
             Text(
                 text = "Weekly Study Progress",
                 modifier = Modifier.fillMaxWidth(),

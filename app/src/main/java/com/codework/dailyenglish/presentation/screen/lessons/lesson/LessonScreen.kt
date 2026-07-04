@@ -46,12 +46,18 @@ fun LessonScreen(
         },
         bottomBar = {
             if (data != null) {
+                val isLastStep = data.currentIndex == data.steps.size - 1
+                // Hoặc nếu data đã có sẵn: val isLastStep = data.isLastStep
+
                 LessonBottomBar(
                     currentStep = data.currentStep,
+                    isLastStep = isLastStep, // Truyền biến vào đây
                     onNextClick = {
                         val stepData = data.currentStep?.data
                         if (stepData is StepData.Question) {
                             if (stepData.isAnswerEvaluated) {
+                                // Nếu là câu cuối cùng thì có thể gọi event Finish
+                                // if (isLastStep) onEvent(LessonEvent.OnFinishLesson) else
                                 onEvent(LessonEvent.OnNextStep)
                             } else {
                                 if (stepData.isUserAnswered) {
@@ -59,6 +65,8 @@ fun LessonScreen(
                                 }
                             }
                         } else {
+                            // Nếu là câu cuối cùng thì có thể gọi event Finish
+                            // if (isLastStep) onEvent(LessonEvent.OnFinishLesson) else
                             onEvent(LessonEvent.OnNextStep)
                         }
                     },
@@ -103,6 +111,9 @@ fun LessonScreen(
                                 onEvent(LessonEvent.OnPlayAudio(url, word, speed))
                             },
                             modifier = Modifier.fillMaxSize(),
+                            onToggleSaveWord = { wordId ->
+                                onEvent(LessonEvent.OnToggleSaveWord(wordId))
+                            }
                         )
                     }
                 }
@@ -112,6 +123,8 @@ fun LessonScreen(
                 val currentStepData = data.currentStep?.data as? StepData.Question
                 val shouldShowSheet = data.showResultStepIndex == data.currentIndex
                 val isCorrect = currentStepData?.isCorrect == true
+
+                val isLastStep = data.currentIndex == data.steps.lastIndex
 
                 if (shouldShowSheet && currentStepData != null) {
                     val correctAnswerText = when (val content = currentStepData.content) {
@@ -124,6 +137,7 @@ fun LessonScreen(
                     }
                     AnswerBottomSheet(
                         isCorrect = isCorrect,
+                        isLastStep = isLastStep,
                         correctAnswer = correctAnswerText,
                         onNextClicked = { onEvent(LessonEvent.OnNextStep) }
                     )

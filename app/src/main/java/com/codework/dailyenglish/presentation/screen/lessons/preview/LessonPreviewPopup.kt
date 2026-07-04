@@ -17,7 +17,7 @@ fun LessonPreviewPopup(
     visible: Boolean,
     isCompleted: Boolean,
     onDismiss: () -> Unit,
-    onNavigateToLearn: (String) -> Unit,
+    onNavigateToLearn: (String, Boolean) -> Unit, // Cập nhật từ (String) -> Unit thành (String, Boolean) -> Unit
     courseTheme: CourseTheme,
     viewModel: LessonPreviewViewModel = hiltViewModel()
 ) {
@@ -32,7 +32,7 @@ fun LessonPreviewPopup(
     CollectEffect(viewModel.effectFlow) { effect ->
         when (effect) {
             is LessonPreviewEffect.NavigateToLearningSession -> {
-                onNavigateToLearn(effect.lessonId)
+                onNavigateToLearn(effect.lessonId, effect.isReview)
             }
             LessonPreviewEffect.CloseBottomSheet -> {
                 onDismiss()

@@ -1,5 +1,6 @@
 package com.codework.dailyenglish.presentation.screen.vocab_list
 
+import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.codework.dailyenglish.core.base.BaseViewModel
 import com.codework.dailyenglish.core.network.onError
@@ -17,6 +18,7 @@ import javax.inject.Inject
 import androidx.lifecycle.SavedStateHandle
 import com.codework.dailyenglish.core.base.BaseEffect
 import com.codework.dailyenglish.core.network.onSuccess
+import com.codework.dailyenglish.core.utils.TextToSpeechParser
 import com.codework.dailyenglish.domain.vocabulary.usecase.GetVocabulariesByTopicUseCase
 import com.codework.dailyenglish.presentation.utils.UiText
 
@@ -27,7 +29,8 @@ class VocabularyListViewModel @Inject constructor(
     private val getSavedWordUseCase: GetSavedWordUseCase,
     private val getVocabulariesByTopicUseCase: GetVocabulariesByTopicUseCase,
     private val toggleSaveWordUseCase: ToggleSaveWordUseCase,
-    private val flashcardDataStore: FlashcardDataStore
+    private val flashcardDataStore: FlashcardDataStore,
+    private val textToSpeechParser: TextToSpeechParser,
 ) : BaseViewModel<VocabularyListState, VocabularyListEvent, VocabularyListEffect>(VocabularyListState()) {
 
     private var topicId: String? = null
@@ -46,33 +49,47 @@ class VocabularyListViewModel @Inject constructor(
     }
 
     private fun loadSavedWords() {
-        _state.update { it.copy(vocabWords = it.vocabWords.copy(isLoading = true, error = null)) }
+        _state.update { it.copy(
+            vocabWords = it.vocabWords.copy(isLoading = true, error = null),
+            isInitialized = false // <-- Reset về false khi bắt đầu tải
+        )}
         viewModelScope.launch {
             getSavedWordUseCase()
                 .onSuccess { resultList ->
                     _state.update { it.copy(
                         vocabWords = it.vocabWords.copy(isLoading = false, data = resultList),
-                        selectedWordIds = resultList.map { word -> word.id }.toSet() // Mặc định tất cả chọn
+                        selectedWordIds = resultList.map { word -> word.id }.toSet(),
+                        isInitialized = true // <-- Đặt thành true khi tải xong thành công
                     )}
                 }
                 .onError { err ->
-                    _state.update { it.copy(vocabWords = it.vocabWords.copy(isLoading = false, error = err.asUiText())) }
+                    _state.update { it.copy(
+                        vocabWords = it.vocabWords.copy(isLoading = false, error = err.asUiText()),
+                        isInitialized = true // <-- Đặt thành true khi kết thúc quá trình gọi API (dù lỗi)
+                    )}
                 }
         }
     }
 
     private fun loadTopicWords(id: String) {
-        _state.update { it.copy(vocabWords = it.vocabWords.copy(isLoading = true, error = null)) }
+        _state.update { it.copy(
+            vocabWords = it.vocabWords.copy(isLoading = true, error = null),
+            isInitialized = false // <-- Reset về false khi bắt đầu tải
+        )}
         viewModelScope.launch {
             getVocabulariesByTopicUseCase(id)
                 .onSuccess { resultList ->
                     _state.update { it.copy(
                         vocabWords = it.vocabWords.copy(isLoading = false, data = resultList),
-                        selectedWordIds = resultList.map { word -> word.id }.toSet() // Mặc định tất cả chọn
+                        selectedWordIds = resultList.map { word -> word.id }.toSet(),
+                        isInitialized = true // <-- Đặt thành true khi tải xong thành công
                     )}
                 }
                 .onError { err ->
-                    _state.update { it.copy(vocabWords = it.vocabWords.copy(isLoading = false, error = err.asUiText())) }
+                    _state.update { it.copy(
+                        vocabWords = it.vocabWords.copy(isLoading = false, error = err.asUiText()),
+                        isInitialized = true // <-- Đặt thành true khi kết thúc quá trình gọi API (dù lỗi)
+                    )}
                 }
         }
     }
@@ -118,7 +135,19 @@ class VocabularyListViewModel @Inject constructor(
                     } else {
                         currentList.map { if (it.id == targetWord.id) it.copy(isSaved = !it.isSaved) else it }
                     }
-                    currentState.copy(vocabWords = currentState.vocabWords.copy(data = updatedList))
+
+                    // Cập nhật lại danh sách ID đã chọn
+                    val updatedSelectedIds = currentState.selectedWordIds.toMutableSet().apply {
+                        if (isSavedMode) {
+                            // Nếu đang ở màn hình từ đã lưu và nhấn bỏ lưu, xóa ID này khỏi danh sách chọn
+                            remove(targetWord.id)
+                        }
+                    }
+
+                    currentState.copy(
+                        vocabWords = currentState.vocabWords.copy(data = updatedList),
+                        selectedWordIds = updatedSelectedIds // Gán danh sách ID mới vào state
+                    )
                 }
 
                 viewModelScope.launch {
@@ -141,7 +170,23 @@ class VocabularyListViewModel @Inject constructor(
                 }
             }
 
-            is VocabularyListEvent.OnPlayAudio -> {}
+            is VocabularyListEvent.OnPlayAudio -> {
+                playAudio(event.word.usAudioUrl, event.word.word)
+            }
         }
+    }
+
+    private fun playAudio(url: String?, word: String) {
+        textToSpeechParser.playAudio(
+            url = url,
+            textToSpeak = word,
+            speed =  1.0f,
+            scope = viewModelScope
+        )
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        textToSpeechParser.release()
     }
 }

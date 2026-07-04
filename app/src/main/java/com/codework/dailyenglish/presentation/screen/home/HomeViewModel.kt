@@ -1,4 +1,3 @@
-// FILE: app/src/main/java/com/codework/dailyenglish/presentation/screen/home/HomeViewModel.kt
 package com.codework.dailyenglish.presentation.screen.home
 
 import androidx.lifecycle.viewModelScope
@@ -46,19 +45,12 @@ class HomeViewModel @Inject constructor(
 
     private fun loadHomeData() {
         viewModelScope.launch {
-            // 1. Cập nhật trạng thái loading cho cả 2 phần (hoặc từng phần tùy bạn)
             _state.update {
                 it.copy(weeklyStatsState = it.weeklyStatsState.copy(isLoading = true))
             }
-
-            // 2. Chạy cả 2 tác vụ song song bằng coroutine scope
-            // Sử dụng launch + join hoặc gọi tuần tự nếu cần
-
-            // Lấy User Info (tác vụ nhẹ từ Local)
             val user = getUserInfoUseCase()
             _state.update { it.copy(userName = user?.fullName ?: "Guest", avatarUrl = user?.avatarUrl) }
 
-            // Lấy Thống kê (tác vụ nặng từ API)
             getWeeklyStatsUseCase()
                 .onSuccess { stats ->
                     _state.update { state ->

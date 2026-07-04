@@ -41,10 +41,8 @@ fun SuggestionRowWithAutoScroll(
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         userScrollEnabled = true,
-        // BỎ reverseLayout = reverseLayout ở đây
     ) {
         items(count = Int.MAX_VALUE) { index ->
-            // Sử dụng % items.size để vòng lặp nội dung vô tận
             val item = items[index % items.size]
             Surface(
                 onClick = { onClick(item) },

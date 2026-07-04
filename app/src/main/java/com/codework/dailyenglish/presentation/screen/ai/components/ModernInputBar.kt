@@ -5,11 +5,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,11 +48,12 @@ fun ModernInputBar(
     val inputBackgroundColor = Color(0xFFF2F4F7)
     val isTyping = value.isNotBlank()
 
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.Bottom
     ) {
-        // Nút đính kèm ảnh
         Box(
             modifier = Modifier.size(48.dp).clip(CircleShape).background(inputBackgroundColor).clickable { onAttachClick() },
             contentAlignment = Alignment.Center
@@ -58,7 +63,6 @@ fun ModernInputBar(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        // Khung nhập liệu
         Surface(
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(24.dp),
@@ -70,6 +74,17 @@ fun ModernInputBar(
                 onValueChange = onValueChange,
                 textStyle = TextStyle(fontSize = 16.sp, color = Color(0xFF263238), lineHeight = 24.sp),
                 maxLines = 5,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Send
+                ),
+                keyboardActions = KeyboardActions(
+                    onSend = {
+                        if (isTyping && isEnabled) {
+                            onSend()
+                            keyboardController?.hide()
+                        }
+                    }
+                ),
                 decorationBox = { innerTextField ->
                     Box(
                         contentAlignment = Alignment.CenterStart,
@@ -84,13 +99,22 @@ fun ModernInputBar(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        // Nút Send / Mic
         Box(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
                 .background(brush = if (isTyping) AppColors.MainGradient else Brush.linearGradient(listOf(Color(0xFF212121), Color(0xFF212121))))
-                .clickable(enabled = isEnabled, onClick = { if (isTyping) onSend() else onMicClick() }),
+                .clickable(
+                    enabled = isEnabled,
+                    onClick = {
+                        if (isTyping) {
+                            onSend()
+                            keyboardController?.hide()
+                        } else {
+                            onMicClick()
+                        }
+                    }
+                ),
             contentAlignment = Alignment.Center
         ) {
             Icon(

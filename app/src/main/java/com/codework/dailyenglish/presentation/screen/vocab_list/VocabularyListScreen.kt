@@ -1,12 +1,10 @@
 package com.codework.dailyenglish.presentation.screen.vocab_list
 
-
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -22,13 +20,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codework.dailyenglish.presentation.components.StateWrapper
+import com.codework.dailyenglish.presentation.screen.dictionary.components.WordResultCard
 import com.codework.dailyenglish.presentation.screen.vocab_list.components.EmptySavedState
-import com.codework.dailyenglish.presentation.screen.vocab_list.components.VocabularyItemCard
 import com.codework.dailyenglish.presentation.screen.vocab_list.mvi.VocabularyListEvent
 import com.codework.dailyenglish.presentation.screen.vocab_list.mvi.VocabularyListState
 import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.AppTextSizes
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VocabularyListScreen(
@@ -67,14 +64,13 @@ fun VocabularyListScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        // Cách 1: Tự động né thanh điều hướng của hệ thống Android (Khuyên dùng)
                         .navigationBarsPadding(),
-                    contentAlignment = Alignment.Center // Giữ nút luôn ở giữa
+                    contentAlignment = Alignment.Center
                 ) {
                     Button(
                         onClick = { onEvent(VocabularyListEvent.OnFlashCardClick) },
                         modifier = Modifier
-                            .fillMaxWidth(0.9f) // Chiều rộng bằng 90% màn hình như cũ
+                            .fillMaxWidth(0.9f)
                             .height(56.dp),
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = AppColors.BluePrimary)
@@ -99,18 +95,26 @@ fun VocabularyListScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) { wordsList ->
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .background(AppColors.AppBackground)) {
-                if (wordsList.isNullOrEmpty()) {
-                    EmptySavedState()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(AppColors.AppBackground)
+            ) {
+                if (wordsList == null) {
+                    Spacer(modifier = Modifier.fillMaxSize())
+                } else if (wordsList.isEmpty()) {
+                    if (state.isInitialized) {
+                        EmptySavedState()
+                    } else {
+                        Spacer(modifier = Modifier.fillMaxSize())
+                    }
                 } else {
                     val isAllSelected = state.selectedWordIds.size == wordsList.size
 
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         item {
                             Row(
@@ -136,20 +140,24 @@ fun VocabularyListScreen(
                             }
                         }
 
-                        items(items = wordsList, key = { it.id }) { word ->
+                        itemsIndexed(items = wordsList, key = { _, word -> word.id }) { index, word ->
                             val isSelected = state.selectedWordIds.contains(word.id)
-                            VocabularyItemCard(
+
+                            WordResultCard(
                                 word = word,
+                                index = index,
                                 isSavedMode = state.isSavedMode,
                                 isSelected = isSelected,
-                                onSelectToggle = { onEvent(VocabularyListEvent.OnSelectWordToggle(word.id)) },
+                                onClick = {
+                                    onEvent(VocabularyListEvent.OnSelectWordToggle(word.id))
+                                },
                                 onPlayAudio = { onEvent(VocabularyListEvent.OnPlayAudio(word)) },
                                 onToggleSave = { onEvent(VocabularyListEvent.OnToggleSaveClick(word)) }
                             )
                         }
 
                         item {
-                            Spacer(modifier = Modifier.height(80.dp))
+                            Spacer(modifier = Modifier.height(120.dp))
                         }
                     }
                 }
@@ -157,4 +165,3 @@ fun VocabularyListScreen(
         }
     }
 }
-

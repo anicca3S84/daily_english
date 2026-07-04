@@ -283,7 +283,7 @@ fun FlashcardScreen(
                                 )
 
                                 SnailAudioButton3D(
-                                    onClick = { /* TODO: Phát âm chậm */ }
+                                    onClick = { onEvent(FlashcardEvent.OnPlayAudioSlow)  }
                                 )
                             }
 

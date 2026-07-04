@@ -82,6 +82,7 @@ fun AiScreen(
                         .background(AppColors.AppBackground)
                         .navigationBarsPadding()
                         .imePadding()
+                        .padding(bottom = 24.dp)
                 ) {
                     if (state.messages.isEmpty()) {
                         AutoScrollingSuggestionSection(suggestions) { onEvent(AiEvent.OnSuggestionClick(it)) }

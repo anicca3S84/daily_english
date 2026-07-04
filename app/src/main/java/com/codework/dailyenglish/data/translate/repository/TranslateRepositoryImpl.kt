@@ -1,6 +1,7 @@
 package com.codework.dailyenglish.data.translate.repository
 
 import com.codework.dailyenglish.core.dispatchers.Dispatcher
+import com.codework.dailyenglish.core.network.AppError
 import com.codework.dailyenglish.core.network.AppResult
 import com.codework.dailyenglish.core.network.map
 import com.codework.dailyenglish.data.translate.local.datasource.TranslateLocalDataSource
@@ -51,4 +52,18 @@ class TranslateRepositoryImpl @Inject constructor(
             }
             .flowOn(dispatchers.io)
     }
+
+    override suspend fun clearAllHistory(): AppResult<Unit> = withContext(dispatchers.io) {
+        try {
+            localDataSource.clearAllHistory()
+            AppResult.Success(Unit)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            AppResult.Error(
+                error = AppError.Unknown(throwable = e),
+                message = e.localizedMessage
+            )
+        }
+    }
+
 }

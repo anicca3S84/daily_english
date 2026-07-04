@@ -1,16 +1,17 @@
 package com.codework.dailyenglish.presentation.screen.translate
 
-import android.media.MediaPlayer
 import androidx.lifecycle.viewModelScope
 import com.codework.dailyenglish.R
 import com.codework.dailyenglish.core.base.BaseEffect.*
 import com.codework.dailyenglish.core.base.BaseViewModel
 import com.codework.dailyenglish.core.network.onError
 import com.codework.dailyenglish.core.network.onSuccess
+import com.codework.dailyenglish.core.utils.TextToSpeechParser
+import com.codework.dailyenglish.core.utils.VoiceToTextParser
+import com.codework.dailyenglish.domain.dictionary.usecase.ClearTranslationHistoryUseCase
 import com.codework.dailyenglish.domain.translate.usecase.ObserveTranslationHistoryUseCase
 import com.codework.dailyenglish.domain.translate.usecase.SaveTranslationHistoryUseCase
 import com.codework.dailyenglish.domain.translate.usecase.TranslateTextUseCase
-import com.codework.dailyenglish.presentation.manager.TextToSpeechManager
 import com.codework.dailyenglish.presentation.screen.translate.mapper.toUiModels
 import com.codework.dailyenglish.presentation.screen.translate.mvi.TranslateEffect
 import com.codework.dailyenglish.presentation.screen.translate.mvi.TranslateEvent
@@ -26,41 +27,72 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.*
+import java.util.Locale
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 
+
+private data class TranslationRequest(
+    val text: String,
+    val shouldTranslate: Boolean = true
+)
 
 @HiltViewModel
 class TranslateViewModel @Inject constructor(
     private val translateTextUseCase: TranslateTextUseCase,
     private val observeHistoryUseCase: ObserveTranslationHistoryUseCase,
     private val saveHistoryUseCase: SaveTranslationHistoryUseCase,
-    private val ttsManager: TextToSpeechManager
+    private val clearTranslationHistoryUseCase: ClearTranslationHistoryUseCase,
+    private val textToSpeechParser: TextToSpeechParser,
+    private val voiceToTextParser: VoiceToTextParser,
 ) : BaseViewModel<TranslateState, TranslateEvent, TranslateEffect>(
     initialState = TranslateState()
 ) {
 
     private var translateJob: Job? = null
-    private var mediaPlayer: MediaPlayer? = null
-
-    // Tạo luồng phát hiện thay đổi chữ nhập vào để thực hiện debounce
-    private val sourceTextFlow = MutableStateFlow("")
+    private val sourceTextFlow = MutableStateFlow(TranslationRequest(""))
 
     init {
         observeHistory()
         setupRealtimeTranslation()
+        observeVoiceState()
     }
 
     @OptIn(FlowPreview::class)
     private fun setupRealtimeTranslation() {
         sourceTextFlow
-            .debounce(800L) // Đợi người dùng dừng gõ phím 800ms
+            .debounce(800L)
             .distinctUntilChanged()
-            .onEach { text ->
+            .onEach { request ->
+                if (!request.shouldTranslate) {
+                    return@onEach
+                }
+
+                val text = request.text
                 if (text.isBlank()) {
                     _state.update { it.copy(targetText = "", isTranslating = false) }
                     return@onEach
                 }
                 executeTranslation(text)
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeVoiceState() {
+        voiceToTextParser.state
+            .onEach { voiceState ->
+                _state.update {
+                    it.copy(
+                        isRecording = voiceState.isListening,
+                        sourceText = voiceState.spokenText.ifBlank { it.sourceText },
+                        isTranslating = voiceState.spokenText.isNotBlank()
+                    )
+                }
+
+                if (voiceState.spokenText.isNotBlank()) {
+                    sourceTextFlow.value = TranslationRequest(voiceState.spokenText, shouldTranslate = true)
+                }
             }
             .launchIn(viewModelScope)
     }
@@ -133,12 +165,12 @@ class TranslateViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         sourceText = event.text,
-                        // Hiển thị loading "..." ngay khi người dùng đang gõ phím
                         isTranslating = event.text.isNotBlank(),
                         historyState = it.historyState.copy(error = null)
                     )
                 }
-                sourceTextFlow.value = event.text
+                // Tự gõ chữ -> Cần dịch
+                sourceTextFlow.value = TranslationRequest(event.text, shouldTranslate = true)
             }
 
             is TranslateEvent.OnClearText -> {
@@ -150,7 +182,7 @@ class TranslateViewModel @Inject constructor(
                         historyState = it.historyState.copy(error = null)
                     )
                 }
-                sourceTextFlow.value = ""
+                sourceTextFlow.value = TranslationRequest("", shouldTranslate = false)
             }
 
             is TranslateEvent.OnSwapLanguage -> {
@@ -164,15 +196,29 @@ class TranslateViewModel @Inject constructor(
                         historyState = it.historyState.copy(error = null)
                     )
                 }
-                sourceTextFlow.value = _state.value.sourceText
+                sourceTextFlow.value = TranslationRequest(_state.value.sourceText, shouldTranslate = true)
             }
 
             is TranslateEvent.OnPlaySourceAudio -> {
-                playAudio(url = null, textToSpeak = _state.value.sourceText)
+                val currentLang = _state.value.sourceLang
+                val targetLocale = getLocaleFromLangCode(currentLang)
+
+                playAudio(
+                    url = null,
+                    word = _state.value.sourceText,
+                    locale = targetLocale
+                )
             }
 
             is TranslateEvent.OnPlayTargetAudio -> {
-                playAudio(url = null, textToSpeak = _state.value.targetText)
+                val currentLang = _state.value.targetLang
+                val targetLocale = getLocaleFromLangCode(currentLang)
+
+                playAudio(
+                    url = null,
+                    word = _state.value.targetText,
+                    locale = targetLocale
+                )
             }
 
             is TranslateEvent.OnCameraClick -> {
@@ -184,55 +230,75 @@ class TranslateViewModel @Inject constructor(
             }
 
             is TranslateEvent.OnMicClick -> {
-                // Mic Click sẽ được xử lý quyền trực tiếp từ UI Screen
+                if (voiceToTextParser.state.value.isListening) {
+                    voiceToTextParser.stopListening()
+                } else {
+                    _state.update {
+                        it.copy(
+                            sourceText = "",
+                            targetText = "",
+                            isTranslating = true
+                        )
+                    }
+                    sourceTextFlow.value = TranslationRequest("", shouldTranslate = false)
+
+                    val langCode = getLocaleFromLangCode(_state.value.sourceLang).language
+                    voiceToTextParser.startListening(langCode)
+                }
             }
 
-            is TranslateEvent.OnSeeAllClick -> {
-                sendEffect(TranslateEffect.NavigateToHistory)
+            is TranslateEvent.OnClearAllClick -> {
+                viewModelScope.launch {
+                    clearTranslationHistoryUseCase()
+                        .onSuccess {
+                            sendGlobalEffect(ShowToast(UiText.StringResource(R.string.noti_success)))
+                        }
+                        .onError {
+                            sendGlobalEffect(ShowToast(UiText.StringResource(R.string.noti_errorr)))
+                        }
+                }
             }
+
+            is TranslateEvent.OnCopySuccess -> {
+                sendGlobalEffect(ShowToast(UiText.StringResource(R.string.noti_copy_success)))
+            }
+
+            is TranslateEvent.OnHistoryItemClick -> {
+                _state.update {
+                    it.copy(
+                        sourceText = event.source,
+                        targetText = event.target,
+                        isTranslating = false
+                    )
+                }
+                sourceTextFlow.value = TranslationRequest(event.source, shouldTranslate = false)
+            }
+
+            else -> {}
         }
     }
 
-    fun playAudio(url: String?, textToSpeak: String? = null, speed: Float = 1f) {
-        if (url.isNullOrBlank()) {
-            textToSpeak?.let { ttsManager.speak(it, speed) }
-            return
+    private fun getLocaleFromLangCode(langCode: String): Locale {
+        return when (langCode.lowercase()) {
+            "vi", "việt nam", "vietnamese" -> Locale("vi", "VN")
+            "en", "anh", "english" -> Locale.US
+            else -> Locale.getDefault()
         }
-        viewModelScope.launch {
-            try {
-                if (mediaPlayer == null) {
-                    mediaPlayer = MediaPlayer()
-                } else {
-                    mediaPlayer?.reset()
-                }
+    }
 
-                mediaPlayer?.apply {
-                    setDataSource(url)
-                    setOnPreparedListener { mp ->
-                        try {
-                            mp.playbackParams = mp.playbackParams.setSpeed(speed)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                        mp.start()
-                    }
-                    setOnErrorListener { _, _, _ ->
-                        textToSpeak?.let { ttsManager.speak(it, speed) }
-                        true
-                    }
-                    prepareAsync()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                textToSpeak?.let { ttsManager.speak(it, speed) }
-            }
-        }
+    private fun playAudio(url: String?, word: String, locale: Locale) {
+        textToSpeechParser.playAudio(
+            url = url,
+            textToSpeak = word,
+            speed = 1f,
+            locale = locale,
+            scope = viewModelScope
+        )
     }
 
     override fun onCleared() {
         super.onCleared()
-        mediaPlayer?.release()
-        mediaPlayer = null
-        ttsManager.shutDown()
+        textToSpeechParser.release()
+        voiceToTextParser.release()
     }
 }

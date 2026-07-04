@@ -27,4 +27,8 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideTranslationDao(db: AppDatabase) = db.translationDao()
+
+    @Provides
+    @Singleton
+    fun provideRecentWordSearchDao(db: AppDatabase) = db.recentWordSearchDao()
 }

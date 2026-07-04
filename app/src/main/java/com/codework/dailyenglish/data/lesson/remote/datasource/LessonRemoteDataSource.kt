@@ -6,6 +6,7 @@ import com.codework.dailyenglish.data.lesson.remote.dto.LessonResultResponseDto
 
 interface LessonRemoteDataSource {
     suspend fun getLessonPlayData(lessonId: String): AppResult<LessonPlayResponseDto>
+    suspend fun restartLesson(lessonId: String): AppResult<LessonPlayResponseDto>
     suspend fun reviewLesson(lessonId: String): AppResult<LessonPlayResponseDto>
     suspend fun updateLessonProgress(
         lessonId: String,

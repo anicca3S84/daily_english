@@ -15,9 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -39,11 +36,14 @@ import com.codework.dailyenglish.presentation.screen.translate.components.InputC
 import com.codework.dailyenglish.presentation.screen.translate.components.LanguageSwitchBar
 import com.codework.dailyenglish.presentation.screen.translate.components.ResultCard
 import com.codework.dailyenglish.R
-import com.codework.dailyenglish.presentation.manager.VoiceToTextParser
 import com.codework.dailyenglish.presentation.screen.translate.components.AnimatedHistoryItem
 import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.Spaces
-import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.style.TextAlign
+import com.codework.dailyenglish.presentation.theme.AppTextSizes
 
 @Composable
 fun TranslateScreen(
@@ -54,13 +54,15 @@ fun TranslateScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
-    val voiceToTextParser = remember { VoiceToTextParser(context) }
-    val voiceState by voiceToTextParser.state.collectAsState()
+    val clipboardManager = LocalClipboardManager.current
+    val focusManager = LocalFocusManager.current
 
-    // Quản lý quyền RECORD_AUDIO cho Micro
     var hasMicPermission by remember {
         mutableStateOf(
-            ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.RECORD_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED
         )
     }
 
@@ -69,12 +71,11 @@ fun TranslateScreen(
         onResult = { isGranted ->
             hasMicPermission = isGranted
             if (isGranted) {
-                voiceToTextParser.startListening()
+                onEvent(TranslateEvent.OnMicClick)
             }
         }
     )
 
-    // Quản lý quyền CAMERA cho máy ảnh
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
@@ -83,17 +84,6 @@ fun TranslateScreen(
             }
         }
     )
-
-    // Thực hiện nạp chữ thu âm real-time vào khung văn bản nguồn
-    LaunchedEffect(voiceState.spokenText) {
-        if (voiceState.spokenText.isNotBlank()) {
-            onEvent(TranslateEvent.OnTextChange(voiceState.spokenText))
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose { voiceToTextParser.stopListening() }
-    }
 
     Scaffold(
         containerColor = AppColors.AppBackground,
@@ -104,9 +94,10 @@ fun TranslateScreen(
                 titleContent = {
                     Text(
                         text = stringResource(R.string.title_translate),
-                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = AppColors.TitleColor
+                        fontSize = AppTextSizes.TextSizeTitle,
+                        textAlign = TextAlign.Center,
+                        color = AppColors.TextMain
                     )
                 }
             )
@@ -136,9 +127,8 @@ fun TranslateScreen(
                         hint = stringResource(R.string.hint_type_to_translate),
                         onValueChange = { onEvent(TranslateEvent.OnTextChange(it)) },
                         onClear = { onEvent(TranslateEvent.OnClearText) },
-                        onTranslate = {
-                            keyboardController?.hide()
-                        },
+                        onPlayAudio = { onEvent(TranslateEvent.OnPlaySourceAudio) },
+                        onTranslate = { keyboardController?.hide() },
                         onImageClick = { onEvent(TranslateEvent.OnImageClick) },
                         onCameraClick = {
                             val isCameraGranted = ContextCompat.checkSelfPermission(
@@ -154,11 +144,7 @@ fun TranslateScreen(
                         },
                         onMicClick = {
                             if (hasMicPermission) {
-                                if (voiceState.isSpeaking) {
-                                    voiceToTextParser.stopListening()
-                                } else {
-                                    voiceToTextParser.startListening()
-                                }
+                                onEvent(TranslateEvent.OnMicClick)
                             } else {
                                 micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
                             }
@@ -169,7 +155,6 @@ fun TranslateScreen(
                 }
             }
 
-            // Kết quả dịch hiển thị real-time kèm dấu "..." hoặc icon tải khi đang gõ
             item {
                 AnimatedVisibility(
                     visible = state.targetText.isNotEmpty() || state.isTranslating,
@@ -179,92 +164,97 @@ fun TranslateScreen(
                     Column {
                         ResultCard(
                             text = state.targetText,
-                            isTranslating = state.isTranslating
+                            isTranslating = state.isTranslating,
+                            onCopyClick = {
+                                clipboardManager.setText(AnnotatedString(state.targetText))
+                                onEvent(TranslateEvent.OnCopySuccess)
+                            },
+                            onPlayAudio = { onEvent(TranslateEvent.OnPlayTargetAudio) }
                         )
-                        Spacer(modifier = Modifier.height(Spaces.Space8))
+                        Spacer(modifier = Modifier.height(Spaces.Space7))
                     }
                 }
             }
 
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = Spaces.Space16, vertical = Spaces.Space8),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Rounded.History,
-                            contentDescription = null,
-                            tint = Color.Gray,
-                            modifier = Modifier.size(Spaces.Space20)
-                        )
-                        Spacer(modifier = Modifier.width(Spaces.Space8))
-                        Text(
-                            text = stringResource(R.string.label_recent_history),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = AppColors.TitleColor
-                        )
-                    }
-
-                    TextButton(
-                        onClick = { onEvent(TranslateEvent.OnSeeAllClick) }
-                    ) {
-                        Text(
-                            text = stringResource(R.string.label_see_all),
-                            color = AppColors.BluePrimary,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-            }
-
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = Spaces.Space16)
-                ) {
-                    StateWrapper(
-                        uiState = state.historyState,
-                        snackbarHostState = snackbarHostState,
-                        onRetry = { }
-                    ) { historyList ->
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(Spaces.Space10),
-                            modifier = Modifier.animateContentSize()
+            val hasHistoryData = !state.historyState.data.isNullOrEmpty()
+            if (hasHistoryData) {
+                item {
+                    Column {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = Spaces.Space16, vertical = Spaces.Space4),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            if (historyList.isNullOrEmpty()) {
-                                Text(
-                                    text = stringResource(R.string.label_no_history),
-                                    modifier = Modifier
-                                        .padding(vertical = Spaces.Space20)
-                                        .align(Alignment.CenterHorizontally),
-                                    color = Color.Gray
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Rounded.History,
+                                    contentDescription = null,
+                                    tint = Color.Gray,
+                                    modifier = Modifier.size(Spaces.Space20)
                                 )
-                            } else {
-                                historyList.forEach { item ->
-                                    key(item.id) {
-                                        AnimatedHistoryItem(
-                                            source = item.sourceText,
-                                            target = item.targetText,
-                                            onClick = { }
-                                        )
+                                Spacer(modifier = Modifier.width(Spaces.Space8))
+                                Text(
+                                    text = stringResource(R.string.label_recent_history),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = AppColors.TitleColor
+                                )
+                            }
+                            TextButton(
+                                onClick = { onEvent(TranslateEvent.OnClearAllClick) }
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.label_clear_all),
+                                    color = AppColors.BluePrimary,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = Spaces.Space16)
+                        ) {
+                            StateWrapper(
+                                uiState = state.historyState,
+                                snackbarHostState = snackbarHostState,
+                                onRetry = { }
+                            ) { historyList ->
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(Spaces.Space10),
+                                    modifier = Modifier.animateContentSize()
+                                ) {
+                                    historyList?.forEach { item ->
+                                        key(item.id) {
+                                            AnimatedHistoryItem(
+                                                source = item.sourceText,
+                                                target = item.targetText,
+                                                onClick = {
+                                                    keyboardController?.hide()
+                                                    focusManager.clearFocus()
+                                                    onEvent(
+                                                        TranslateEvent.OnHistoryItemClick(
+                                                            source = item.sourceText,
+                                                            target = item.targetText
+                                                        )
+                                                    )
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            item {
-                Spacer(modifier = Modifier.height(Spaces.Space32))
+                item {
+                    Spacer(modifier = Modifier.height(Spaces.Space32))
+                }
             }
         }
     }
 }
-

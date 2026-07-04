@@ -53,10 +53,6 @@ import com.codework.dailyenglish.presentation.screen.lessons.review.*
 import com.codework.dailyenglish.presentation.screen.lessons.review.mvi.QuizReviewEffect
 import com.codework.dailyenglish.presentation.screen.lessons.review.mvi.QuizReviewEvent
 import com.codework.dailyenglish.presentation.screen.lessons.review.mvi.QuizReviewState
-import com.codework.dailyenglish.presentation.screen.lessons.sentence_builder.*
-import com.codework.dailyenglish.presentation.screen.lessons.sentence_builder.mvi.SentenceBuilderEffect
-import com.codework.dailyenglish.presentation.screen.lessons.sentence_builder.mvi.SentenceBuilderEvent
-import com.codework.dailyenglish.presentation.screen.lessons.sentence_builder.mvi.SentenceBuilderState
 import com.codework.dailyenglish.presentation.screen.lessons.speaking.*
 import com.codework.dailyenglish.presentation.screen.lessons.speaking.mvi.SpeakingEffect
 import com.codework.dailyenglish.presentation.screen.lessons.speaking.mvi.SpeakingEvent
@@ -302,7 +298,7 @@ fun NavGraph(
                     is DictionaryEffect.NavigateToTopicWords -> {
                         navController.navigate(
                             Route.TopicWordsScreen(
-                                topicId = effect.topicPublicId,
+                                topicId = effect.topicId,
                                 topicName = effect.topicName
                             )
                         )
@@ -336,7 +332,6 @@ fun NavGraph(
         composableScreen<Route.TranslateScreen, TranslateViewModel, TranslateState, TranslateEvent, TranslateEffect>(
             onNavigate = { effect ->
                 when (effect) {
-                    TranslateEffect.NavigateToHistory -> TODO()
                     TranslateEffect.NavigateToCameraScanner -> TODO()
                     else -> {}
                 }
@@ -385,21 +380,21 @@ fun NavGraph(
                 onBackClick = { navController.popBackStack() })
         }
 
-        composableScreen<Route.SentenceBuilderScreen, SentenceBuilderViewModel, SentenceBuilderState, SentenceBuilderEvent, SentenceBuilderEffect>(
-            onNavigate = { effect ->
-                when (effect) {
-                    is SentenceBuilderEffect.NavigateBack -> navController.popBackStack()
-                    is SentenceBuilderEffect.NavigateToSpeaking -> navController.navigate(Route.SpeakingScreen)
-                    is SentenceBuilderEffect.ShowToast -> { /* Hiện Toast */
-                    }
-                }
-            }
-        ) { state, onEvent ->
-            SentenceBuilderScreen(
-                state = state,
-                onEvent = onEvent,
-                onBackClick = { navController.popBackStack() })
-        }
+//        composableScreen<Route.SentenceBuilderScreen, SentenceBuilderViewModel, SentenceBuilderState, SentenceBuilderEvent, SentenceBuilderEffect>(
+//            onNavigate = { effect ->
+//                when (effect) {
+//                    is SentenceBuilderEffect.NavigateBack -> navController.popBackStack()
+//                    is SentenceBuilderEffect.NavigateToSpeaking -> navController.navigate(Route.SpeakingScreen)
+//                    is SentenceBuilderEffect.ShowToast -> { /* Hiện Toast */
+//                    }
+//                }
+//            }
+//        ) { state, onEvent ->
+//            SentenceBuilderScreen(
+//                state = state,
+//                onEvent = onEvent,
+//                onBackClick = { navController.popBackStack() })
+//        }
 
         composableScreen<Route.SpeakingScreen, SpeakingViewModel, SpeakingState, SpeakingEvent, SpeakingEffect>(
             onNavigate = { effect ->
@@ -469,15 +464,10 @@ fun NavGraph(
                 }
             }
         ) { state, onEvent ->
-            // Lấy trạng thái Lifecycle của màn hình hiện tại trong Navigation Stack
             val currentBackStackEntry = navController.currentBackStackEntry
-
-            // Lắng nghe sự kiện khi màn hình này được "quay trở lại" và hoạt động (RESUMED)
             LaunchedEffect(currentBackStackEntry) {
                 currentBackStackEntry?.lifecycle?.addObserver(androidx.lifecycle.LifecycleEventObserver { _, event ->
                     if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-                        // Gửi sự kiện yêu cầu làm mới/tải lại danh sách từ vựng
-                        // Hãy thay VocabularyListEvent.OnRefresh bằng tên Event chuẩn trong file của bạn nhé
                         onEvent(VocabularyListEvent.OnRefresh)
                     }
                 })

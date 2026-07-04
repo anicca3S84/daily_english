@@ -36,9 +36,12 @@ import com.codework.dailyenglish.presentation.theme.Spaces
 import com.codework.dailyenglish.presentation.theme.AppTextSizes
 
 @Composable
-fun ResultCard(text: String, isTranslating: Boolean) {
-    val clipboardManager = LocalClipboardManager.current
-
+fun ResultCard(
+    text: String,
+    isTranslating: Boolean,
+    onCopyClick: () -> Unit,  // Thêm mới callback sao chép kết quả
+    onPlayAudio: () -> Unit   // Thêm mới callback phát âm thanh đích
+) {
     Card(
         shape = RoundedCornerShape(Spaces.Space24),
         elevation = CardDefaults.cardElevation(defaultElevation = Spaces.Space4),
@@ -53,7 +56,6 @@ fun ResultCard(text: String, isTranslating: Boolean) {
                 .fillMaxSize()
                 .padding(Spaces.Space20)
         ) {
-            // Header: Text & Copy
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Top
@@ -84,25 +86,29 @@ fun ResultCard(text: String, isTranslating: Boolean) {
                     }
                 }
 
-                Spacer(modifier = Modifier.width(Spaces.Space16))
-
-                AppCircleButton(
-                    icon = Icons.Rounded.ContentCopy,
-                    onClick = { clipboardManager.setText(AnnotatedString(text)) },
-                )
+                if (text.isNotEmpty() && !isTranslating) {
+                    Spacer(modifier = Modifier.width(Spaces.Space16))
+                    // Kích hoạt callback truyền chuỗi ra màn hình chính xử lý
+                    AppCircleButton(
+                        icon = Icons.Rounded.ContentCopy,
+                        onClick = onCopyClick
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AppCircleButton(
-                    icon = Icons.AutoMirrored.Filled.VolumeUp,
-                    onClick = { /* Speak Result */ },
-                )
+            if (text.isNotEmpty() && !isTranslating) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    AppCircleButton(
+                        icon = Icons.AutoMirrored.Filled.VolumeUp,
+                        onClick = onPlayAudio,
+                    )
+                }
             }
         }
     }

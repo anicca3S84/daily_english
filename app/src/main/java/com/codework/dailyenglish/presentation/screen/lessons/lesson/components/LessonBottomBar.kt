@@ -3,7 +3,6 @@ package com.codework.dailyenglish.presentation.screen.lessons.lesson.components
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -17,11 +16,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codework.dailyenglish.R
 import com.codework.dailyenglish.domain.lesson.model.LessonStep
 import com.codework.dailyenglish.domain.lesson.model.StepData
 
@@ -35,6 +32,7 @@ private val GrayText = Color(0xFFAFAFAF)
 @Composable
 fun LessonBottomBar(
     currentStep: LessonStep?,
+    isLastStep: Boolean, // Thêm tham số này
     onNextClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -43,10 +41,13 @@ fun LessonBottomBar(
         else -> true
     }
 
+    // Text mặc định sẽ là Finish nếu là bước cuối, ngược lại là Next
+    val nextOrFinishText = if (isLastStep) "Finish" else "Next"
+
+    // Logic quyết định text hiển thị trên button
     val buttonText = when (val data = currentStep?.data) {
-        is StepData.Vocab -> "TIẾP TỤC"
-        is StepData.Question -> if (data.isAnswerEvaluated) "TIẾP TỤC" else "KIỂM TRA"
-        else -> "TIẾP TỤC"
+        is StepData.Question -> if (data.isAnswerEvaluated) nextOrFinishText else "Check"
+        else -> nextOrFinishText
     }
 
     val topColor by animateColorAsState(
@@ -72,9 +73,9 @@ fun LessonBottomBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 24.dp),
+                .padding(start = 16.dp, end = 16.dp, bottom = 24.dp),
             contentAlignment = Alignment.Center
-        ) {
+        ){
             val interactionSource = remember { MutableInteractionSource() }
             val isPressed by interactionSource.collectIsPressedAsState()
             val topOffset by animateDpAsState(
@@ -111,7 +112,7 @@ fun LessonBottomBar(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = buttonText.uppercase(),
+                        text = buttonText,
                         color = textColor,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 16.sp,

@@ -20,6 +20,12 @@ class LessonRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun restartLesson(lessonId: String): AppResult<LessonPlay> {
+        return remoteDataSource.restartLesson(lessonId).map { dto ->
+            dto.toDomain()
+        }
+    }
+
     override suspend fun updateLessonProgress(
         lessonId: String,
         cursor: Int,
@@ -34,8 +40,8 @@ class LessonRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun completeLesson(lessonPublicId: String): AppResult<LessonResult> {
-        return remoteDataSource.completeLesson(lessonPublicId).map { dto ->
+    override suspend fun completeLesson(lessonId: String): AppResult<LessonResult> {
+        return remoteDataSource.completeLesson(lessonId).map { dto ->
             dto.toResultDomain()
         }
     }

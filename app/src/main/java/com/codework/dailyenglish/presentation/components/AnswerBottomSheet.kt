@@ -26,11 +26,12 @@ import androidx.compose.ui.unit.sp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnswerBottomSheet(
-    isCorrect: Boolean, // Biến quyết định màu sắc và giao diện
+    isCorrect: Boolean,
     message: String? = null,
-    correctAnswer: String? = null, // Dành cho lúc sai để hiện đáp án đúng
-    word: String? = null, // Dành cho lúc đúng để hiện từ vựng
+    correctAnswer: String? = null,
+    word: String? = null,
     meaning: String? = null,
+    isLastStep: Boolean,
     example: String? = null,
     exampleTranslation: String? = null,
     onNextClicked: () -> Unit
@@ -39,28 +40,29 @@ fun AnswerBottomSheet(
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
         confirmValueChange = { newValue ->
-            // Từ chối trạng thái Hidden -> Không thể vuốt xuống hay bấm back để tắt
             newValue != SheetValue.Hidden
         }
     )
 
-    // Xác định màu sắc động
     val sheetBgColor = if (isCorrect) Color(0xFFD7FFB8) else Color(0xFFFFE0E0)
     val mainColor = if (isCorrect) Color(0xFF58CC02) else Color(0xFFFF4B4B)
     val shadowColor = if (isCorrect) Color(0xFF58A700) else Color(0xFFEA2B2B)
     val textDarkColor = Color(0xFF4B4B4B)
 
-    // Text mặc định
-    val titleText = message ?: if (isCorrect) "Tuyệt vời!" else "Chưa chính xác!"
-    val btnText = if (isCorrect) "TIẾP TỤC" else "ĐÃ HIỂU"
+    val titleText = message ?: if (isCorrect) "Great!" else "Not quite!"
+
+    val btnText = if (isCorrect) {
+        if (isLastStep) "Finish" else "Continue"
+    } else {
+        "Got it"
+    }
 
     ModalBottomSheet(
-        // 🔥 CHIÊU THỨ 2: CHẶN CLICK RA NGOÀI VÀ NÚT BACK
-        onDismissRequest = { /* Không làm gì cả -> Bắt buộc phải bấm nút Tiếp tục */ },
+        onDismissRequest = {  },
         sheetState = sheetState,
-        scrimColor = Color.Transparent, // Không làm mờ nền
+        scrimColor = Color.Transparent,
         containerColor = Color.Transparent,
-        dragHandle = null, // Bỏ thanh ngang kéo ở trên cùng
+        dragHandle = null,
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Surface(

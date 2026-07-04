@@ -2,6 +2,7 @@ package com.codework.dailyenglish.presentation.screen.lessons.lesson.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.codework.dailyenglish.domain.dictionary.model.Word
 import com.codework.dailyenglish.domain.lesson.model.LessonStep
 import com.codework.dailyenglish.domain.lesson.model.QuestionContent
 import com.codework.dailyenglish.domain.lesson.model.StepData
@@ -16,13 +17,16 @@ fun LessonStepRenderer(
     modifier: Modifier = Modifier,
     step: LessonStep,
     onAnswerInput: (String, List<Int>) -> Unit,
-    onPlayAudio: (String?, String, Float) -> Unit   = { _, _, _ -> },
+    onPlayAudio: (String?, String, Float) -> Unit = { _, _, _ -> },
+    onToggleSaveWord: (String) -> Unit = {}
 ) {
     when (val stepData = step.data) {
         is StepData.Vocab -> {
             VocabCard(
                 data = stepData,
                 modifier = modifier,
+                isFavorite = stepData.isSaved ?: false,
+                onToggleFavorite = { onToggleSaveWord(stepData.id) },
                 onPlayAudio = onPlayAudio
             )
         }
@@ -62,7 +66,8 @@ fun LessonStepRenderer(
                         isCorrect = stepData.isCorrect,
                         onAnswerSelected = { indices, text ->
                             onAnswerInput(text, indices)
-                        }
+                        },
+                        onPlayAudio = onPlayAudio
                     )
                 }
 
@@ -87,8 +92,6 @@ fun LessonStepRenderer(
                 is QuestionContent.Dictation -> {
                     // TODO: UI cho Dictation
                 }
-
-
 
                 is QuestionContent.Matching -> {
                     // TODO: UI cho Matching

@@ -28,8 +28,16 @@ class LessonPreviewViewModel @Inject constructor(
             }
 
             is LessonPreviewEvent.OnStartLearningClick -> {
-                sendEffect(LessonPreviewEffect.NavigateToLearningSession(event.lessonId))
+                sendEffect(LessonPreviewEffect.NavigateToLearningSession(event.lessonId, isReview = false))
             }
+            is LessonPreviewEvent.OnReviewClick -> {
+                sendEffect(LessonPreviewEffect.NavigateToLearningSession(event.lessonId, isReview = true))
+            }
+            is LessonPreviewEvent.OnRestartClick -> {
+                sendEffect(LessonPreviewEffect.NavigateToLearningSession(event.lessonId, isReview = false))
+            }
+
+
             LessonPreviewEvent.OnCloseClick -> {
                 sendEffect(LessonPreviewEffect.CloseBottomSheet)
             }

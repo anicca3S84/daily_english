@@ -7,8 +7,10 @@ sealed interface TranslateEvent {
     data object OnCameraClick : TranslateEvent
     data object OnImageClick : TranslateEvent
     data object OnMicClick : TranslateEvent
-    data object OnSeeAllClick : TranslateEvent
-    // Sự kiện phục vụ tính năng "Nghe" (TTS)
+    data object OnClearAllClick : TranslateEvent
+    object OnCopySuccess : TranslateEvent
+    data class OnHistoryItemClick(val source: String, val target: String) : TranslateEvent
+    //  (TTS)
     data object OnPlaySourceAudio : TranslateEvent
     data object OnPlayTargetAudio : TranslateEvent
 }

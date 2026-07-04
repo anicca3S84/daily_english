@@ -1,5 +1,7 @@
 package com.codework.dailyenglish.di
 
+import com.codework.dailyenglish.data.dictionary.local.datasource.DictionaryLocalDataSource
+import com.codework.dailyenglish.data.dictionary.local.datasource.DictionaryLocalDataSourceImpl
 import com.codework.dailyenglish.data.dictionary.remote.DictionaryApi
 import com.codework.dailyenglish.data.dictionary.remote.datasource.DictionaryRemoteDataSource
 import com.codework.dailyenglish.data.dictionary.remote.datasource.DictionaryRemoteDataSourceImpl
@@ -36,4 +38,10 @@ abstract class DictionaryModule {
     abstract fun bindDictionaryRemoteDataSource(
         impl: DictionaryRemoteDataSourceImpl
     ): DictionaryRemoteDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindDictionaryLocalDataSource(
+        impl: DictionaryLocalDataSourceImpl
+    ): DictionaryLocalDataSource
 }

@@ -2,6 +2,8 @@ package com.codework.dailyenglish.domain.lesson.model
 
 sealed interface StepData {
     data class Vocab(
+        val id: String,
+        val type: String,
         val word: String,
         val meaning: String,
         val imageUrl: String?,
@@ -10,7 +12,8 @@ sealed interface StepData {
         val ukAudioUrl: String?,
         val usAudioUrl: String?,
         val examples: List<String>?,
-        val relatedWords: List<String>?
+        val relatedWords: List<String>?,
+        val isSaved: Boolean? = false
     ) : StepData
 
     data class Question(

@@ -10,7 +10,6 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun AutoScrollingSuggestionSection(suggestions: List<String>, onClick: (String) -> Unit) {
-    // Vẫn giữ logic tạo loopList để cuộn mượt
     val loopList = if (suggestions.size < 10) suggestions + suggestions + suggestions else suggestions
     val mid = loopList.size / 2
     val firstRow = loopList.take(mid)
@@ -20,14 +19,12 @@ fun AutoScrollingSuggestionSection(suggestions: List<String>, onClick: (String) 
         modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        // Hàng 1: Cuộn xuôi (reverseDirection = false)
         SuggestionRowWithAutoScroll(
             items = firstRow,
             reverseDirection = false,
             onClick = onClick
         )
 
-        // Hàng 2: Cuộn ngược (reverseDirection = true)
         SuggestionRowWithAutoScroll(
             items = secondRow,
             reverseDirection = true,

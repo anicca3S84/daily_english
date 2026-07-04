@@ -1,12 +1,12 @@
 package com.codework.dailyenglish.domain.lesson.repository
 
 import com.codework.dailyenglish.core.network.AppResult
-import com.codework.dailyenglish.data.lesson.remote.dto.LessonResultResponseDto
 import com.codework.dailyenglish.domain.lesson.model.LessonPlay
 import com.codework.dailyenglish.domain.lesson.model.LessonResult
 
 interface LessonRepository {
     suspend fun getLessonPlayData(lessonId: String): AppResult<LessonPlay>
+    suspend fun restartLesson(lessonId: String): AppResult<LessonPlay>
     suspend fun reviewLesson(lessonId: String): AppResult<LessonPlay>
     suspend fun updateLessonProgress(
         lessonId: String,
@@ -18,4 +18,4 @@ interface LessonRepository {
         isCorrect: Boolean?
     ): AppResult<Unit>
 
-    suspend fun completeLesson(lessonPublicId: String): AppResult<LessonResult>}
+    suspend fun completeLesson(lessonId: String): AppResult<LessonResult>}

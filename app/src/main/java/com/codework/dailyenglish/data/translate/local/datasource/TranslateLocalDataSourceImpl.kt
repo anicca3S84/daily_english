@@ -10,4 +10,5 @@ class TranslateLocalDataSourceImpl @Inject constructor(
     override suspend fun insert(entity: TranslationEntity) = dao.insertTranslation(entity)
     override fun getAllHistory() = dao.getAllHistory()
     override fun getRecentHistory() = dao.getRecentHistory()
+    override suspend fun clearAllHistory() = dao.clearAllHistory()
 }

@@ -16,6 +16,11 @@ interface LessonApi {
         @Path("lessonId") lessonId: String,
     ): BaseResponse<LessonPlayResponseDto>
 
+    @POST("lessons/{lessonId}/restart_lesson")
+    suspend fun restartLesson(
+        @Path("lessonId") lessonId: String,
+    ): BaseResponse<LessonPlayResponseDto>
+
     @PUT("lessons/{lessonId}/progress")
     suspend fun updateLessonProgress(
         @Path("lessonId") lessonId: String,

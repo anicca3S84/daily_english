@@ -20,6 +20,12 @@ class LessonRemoteDataSourceImpl @Inject constructor(
         }.unwrap()
     }
 
+    override suspend fun restartLesson(lessonId: String): AppResult<LessonPlayResponseDto> {
+        return safeApiCall {
+            api.restartLesson(lessonId)
+        }.unwrap()
+    }
+
     override suspend fun updateLessonProgress(
         lessonId: String,
         cursor: Int,

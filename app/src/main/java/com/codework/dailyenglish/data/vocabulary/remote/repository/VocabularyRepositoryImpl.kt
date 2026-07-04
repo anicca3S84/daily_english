@@ -3,7 +3,7 @@ package com.codework.dailyenglish.data.vocabulary.remote.repository
 import com.codework.dailyenglish.core.dispatchers.Dispatcher
 import com.codework.dailyenglish.core.network.AppResult
 import com.codework.dailyenglish.core.network.map
-import com.codework.dailyenglish.data.vocabulary.mapper.toDomain
+import com.codework.dailyenglish.data.dictionary.mapper.toDomain
 import com.codework.dailyenglish.data.vocabulary.remote.datasource.VocabularyRemoteDataSource
 import com.codework.dailyenglish.domain.dictionary.model.Word
 import com.codework.dailyenglish.domain.vocabulary.model.VocabTopic

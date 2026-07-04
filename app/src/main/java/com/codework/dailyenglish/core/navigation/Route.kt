@@ -33,7 +33,7 @@ sealed interface Route {
     data object GrammarScreen : Route
 
     @Serializable
-    data class LessonScreen(val lessonId: String, val isCompleted: Boolean) : Route
+    data class LessonScreen(val lessonId: String, val isCompleted: Boolean,val isReview: Boolean = false) : Route
 
     @Serializable
     data object VocabularyScreen : Route

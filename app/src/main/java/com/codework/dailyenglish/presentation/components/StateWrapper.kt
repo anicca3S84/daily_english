@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
@@ -13,6 +14,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.codework.dailyenglish.core.base.BaseUiState
 import com.codework.dailyenglish.presentation.theme.AppColors
@@ -34,7 +36,6 @@ fun <T> StateWrapper(
     val isLoading = uiState.isLoading
 
     Box(modifier = modifier) {
-
         if (enablePullToRefresh) {
             PullToRefreshBox(
                 isRefreshing = uiState.isRefreshing,
@@ -42,10 +43,30 @@ fun <T> StateWrapper(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.TopCenter
             ) {
-                WrapperInnerContent(uiState, errorString, isDataEmpty, isLoading, loadingType, shimmerContent, snackbarHostState, onRetry, content)
+                WrapperInnerContent(
+                    uiState = uiState,
+                    errorString = errorString,
+                    isDataEmpty = isDataEmpty,
+                    isLoading = isLoading,
+                    loadingType = loadingType,
+                    shimmerContent = shimmerContent,
+                    snackbarHostState = snackbarHostState,
+                    onRetry = onRetry,
+                    content = content
+                )
             }
-        }else {
-            WrapperInnerContent(uiState, errorString, isDataEmpty, isLoading, loadingType, shimmerContent, snackbarHostState, onRetry, content)
+        } else {
+            WrapperInnerContent(
+                uiState = uiState,
+                errorString = errorString,
+                isDataEmpty = isDataEmpty,
+                isLoading = isLoading,
+                loadingType = loadingType,
+                shimmerContent = shimmerContent,
+                snackbarHostState = snackbarHostState,
+                onRetry = onRetry,
+                content = content
+            )
         }
     }
 }
@@ -66,16 +87,20 @@ private fun <T> BoxScope.WrapperInnerContent(
         if (!(isLoading && isDataEmpty)) {
             content(uiState.data)
         }
+
+        // Màn hình Loading khi chưa có dữ liệu
         if (isLoading && isDataEmpty) {
             Box(
                 modifier = Modifier
                     .matchParentSize()
                     .zIndex(10f)
-                    .background(Color.White)
+                    .background(Color.White),
+                contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = AppColors.BluePrimary
+                    modifier = Modifier.size(36.dp), // Thu nhỏ kích thước
+                    color = AppColors.BluePrimary,    // Đổi màu
+                    strokeWidth = 3.dp               // Giảm độ dày nét vẽ cho thanh mảnh hơn
                 )
             }
         }

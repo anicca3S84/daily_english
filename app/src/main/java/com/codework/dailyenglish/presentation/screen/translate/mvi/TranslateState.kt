@@ -9,5 +9,6 @@ data class TranslateState(
     val targetText: String = "",
     val isTranslating: Boolean = false,
     val sourceLang: String = "en",
-    val targetLang: String = "vi"
+    val targetLang: String = "vi",
+    val isRecording: Boolean = false,
 )

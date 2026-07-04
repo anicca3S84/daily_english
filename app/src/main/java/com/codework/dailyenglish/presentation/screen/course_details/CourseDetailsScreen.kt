@@ -240,12 +240,13 @@ fun CourseDetailsScreen(
                         visible = true,
                         isCompleted = isCompleted,
                         onDismiss = { showPreview = false },
-                        onNavigateToLearn = { lessonId ->
+                        onNavigateToLearn = { lessonId, isReview ->
                             showPreview = false
                             navController.navigate(
                                 Route.LessonScreen(
                                     lessonId = lessonId,
-                                    isCompleted = isCompleted
+                                    isCompleted = isCompleted,
+                                    isReview = isReview
                                 )
                             )
                         },

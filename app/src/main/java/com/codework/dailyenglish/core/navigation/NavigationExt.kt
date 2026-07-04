@@ -1,8 +1,10 @@
 package com.codework.dailyenglish.core.navigation
 
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -10,6 +12,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.codework.dailyenglish.core.base.BaseEffect
 import com.codework.dailyenglish.core.base.BaseViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -39,8 +42,22 @@ inline fun <reified R : Route, reified VM : BaseViewModel<S, E, F>, S, E, F>
 ) {
     composable<R> {
         val viewModel = hiltViewModel<VM>()
-
         val state by viewModel.state.collectAsStateWithLifecycle()
+        val context = LocalContext.current
+
+        CollectEffect(viewModel.globalEffectFlow) { globalEffect ->
+            when (globalEffect) {
+                is BaseEffect.ShowToast -> {
+                    Toast.makeText(
+                        context,
+                        globalEffect.message.asString(context),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                is BaseEffect.ShowSnackbar -> {
+                }
+            }
+        }
 
         CollectEffect(viewModel.effectFlow) { effect ->
             onNavigate(effect)
@@ -49,5 +66,4 @@ inline fun <reified R : Route, reified VM : BaseViewModel<S, E, F>, S, E, F>
         content(state, viewModel::onEvent)
     }
 }
-
 

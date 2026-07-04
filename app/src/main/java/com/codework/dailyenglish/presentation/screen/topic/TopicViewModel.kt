@@ -38,6 +38,7 @@ class TopicViewModel @Inject constructor(
         }
     }
 
+
     private fun fetchTopics() {
         _state.update { it.copy(topics = it.topics.copy(isLoading = true)) }
         viewModelScope.launch {

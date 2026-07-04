@@ -5,4 +5,6 @@ sealed interface LessonPreviewEvent {
     data class OnStartLearningClick(val lessonId: String) : LessonPreviewEvent
     object OnCloseClick : LessonPreviewEvent
     object OnRefresh : LessonPreviewEvent
+    data class OnReviewClick(val lessonId: String) : LessonPreviewEvent
+    data class OnRestartClick(val lessonId: String) : LessonPreviewEvent
 }

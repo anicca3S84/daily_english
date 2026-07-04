@@ -32,6 +32,8 @@ fun LessonStepDto.toDomain(): LessonStep {
 
     val domainData: StepData = when (val dtoData = this.data) {
         is VocabDto -> StepData.Vocab(
+            id = dtoData.id.orEmpty(),
+            type = dtoData.type.orEmpty(),
             word = dtoData.word.orEmpty(),
             meaning = dtoData.meaning.orEmpty(),
             imageUrl = dtoData.imageUrl,
@@ -40,7 +42,8 @@ fun LessonStepDto.toDomain(): LessonStep {
             ukAudioUrl = dtoData.ukAudioUrl,
             usAudioUrl = dtoData.usAudioUrl,
             examples = dtoData.examples,
-            relatedWords = dtoData.relatedWords
+            relatedWords = dtoData.relatedWords,
+            isSaved = dtoData.isSaved
         )
         is QuestionDto -> {
             val domainContent = when (val dtoContent = dtoData.content) {
@@ -104,7 +107,7 @@ fun LessonStepDto.toDomain(): LessonStep {
                 type = dtoData.type.orEmpty(),
                 content = domainContent,
                 selectedOptionId = dtoData.selectedOptionId,
-                isAnswerEvaluated = dtoData.selectedOptionId != null,
+                isAnswerEvaluated = dtoData.isCorrect != null,
                 userAnswer = dtoData.userAnswer.orEmpty(),
                 selectedIndices = dtoData.selectedIndices ?: emptyList(),
                 isCorrect = dtoData.isCorrect,

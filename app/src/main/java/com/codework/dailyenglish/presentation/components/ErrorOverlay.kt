@@ -28,40 +28,29 @@ import com.codework.dailyenglish.presentation.theme.AppColors
 fun ErrorOverlay(
     errorType: ErrorVisual,
     message: String,
-    onRetry: (() -> Unit)?
+    onRetry: (() -> Unit)?,
+    modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = errorType.icon, fontSize = 80.sp)
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = errorType.title,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = AppColors.TextPrimary
-        )
+        Text(text = errorType.icon, style = MaterialTheme.typography.displayMedium)
         Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = AppColors.GrayText,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(32.dp))
+        Text(text = errorType.title, style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(text = message, textAlign = TextAlign.Center)
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         if (onRetry != null) {
             Button(
-                onClick = onRetry,
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = AppColors.BluePrimary)
+                onClick = { onRetry.invoke() }
             ) {
-                Icon(Icons.Default.Refresh, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Try Again")
+                Text(text = "Try again")
             }
         }
     }

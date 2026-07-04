@@ -13,5 +13,6 @@ data class WordDto(
     @SerializedName("usAudioUrl") val usAudioUrl: String?,
     @SerializedName("examples") val examples: List<String>?,
     @SerializedName("relatedWords") val relatedWords: List<String>?,
-    @SerializedName("isSaved") val isSaved: Boolean?
+    @SerializedName("isSaved") val isSaved: Boolean?,
+    @SerializedName("definitions") val definitions: List<DefinitionDetailDto>?
 )

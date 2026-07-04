@@ -12,18 +12,35 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 
 
-class TextToSpeechUtils(private val context: Context) {
 
+
+class TextToSpeechParser(context: Context) {
+    private val appContext = context.applicationContext
     private var mediaPlayer: MediaPlayer? = null
     private var textToSpeech: TextToSpeech? = null
     private var isTtsReady = false
     private var timeoutJob: Job? = null
 
+    private var pendingText: Triple<String, Float, Locale>? = null
+
     init {
-        textToSpeech = TextToSpeech(context) { status ->
+        initializeTTS()
+    }
+
+    private fun initializeTTS() {
+        isTtsReady = false
+        textToSpeech = TextToSpeech(appContext) { status ->
             if (status == TextToSpeech.SUCCESS) {
-                textToSpeech?.language = Locale.US
                 isTtsReady = true
+                Log.d("TTS_UTILS", "TextToSpeech engine đã sẵn sàng.")
+
+                pendingText?.let { (text, speed, locale) ->
+                    speakWithTTS(text, speed, locale)
+                    pendingText = null
+                }
+            } else {
+                isTtsReady = false
+                Log.e("TTS_UTILS", "Khởi tạo TTS thất bại. Status code: $status")
             }
         }
     }
@@ -32,13 +49,18 @@ class TextToSpeechUtils(private val context: Context) {
         url: String?,
         textToSpeak: String? = null,
         speed: Float = 1f,
+        locale: Locale = Locale.US,
         scope: CoroutineScope
     ) {
-        // Huỷ bộ đếm timeout cũ nếu có lệnh phát mới
         timeoutJob?.cancel()
 
+        // Nếu đối tượng tts đã bị giải phóng (null), tự động khởi tạo lại
+        if (textToSpeech == null) {
+            initializeTTS()
+        }
+
         if (url.isNullOrBlank()) {
-            speakWithTTS(textToSpeak, speed)
+            speakWithTTS(textToSpeak, speed, locale)
             return
         }
 
@@ -47,7 +69,6 @@ class TextToSpeechUtils(private val context: Context) {
                 if (mediaPlayer == null) {
                     mediaPlayer = MediaPlayer()
                 } else {
-                    // Xoá listeners cũ để tránh chồng chéo callback khi bấm nhanh
                     mediaPlayer?.setOnPreparedListener(null)
                     mediaPlayer?.setOnErrorListener(null)
                     mediaPlayer?.reset()
@@ -55,59 +76,57 @@ class TextToSpeechUtils(private val context: Context) {
 
                 mediaPlayer?.apply {
                     setDataSource(url)
-
                     setOnPreparedListener { mp ->
-                        // Nếu chuẩn bị xong -> Huỷ ngay bộ đếm timeout cứu cánh
                         timeoutJob?.cancel()
-                        Log.d("TTS_UTILS", "MediaPlayer chuẩn bị hoàn tất. Bắt đầu phát.")
                         try {
                             mp.start()
                             if (speed != 1f && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
                                 mp.playbackParams = mp.playbackParams.setSpeed(speed)
                             }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            try { mp.start() } catch (ex: Exception) {}
-                        }
+                        } catch (e: Exception) { e.printStackTrace() }
                     }
 
                     setOnErrorListener { _, what, extra ->
                         timeoutJob?.cancel()
-                        Log.e("TTS_UTILS", "MediaPlayer báo lỗi hệ thống: $what, $extra. Chuyển sang TTS.")
-                        speakWithTTS(textToSpeak, speed)
+                        speakWithTTS(textToSpeak, speed, locale)
                         true
                     }
 
-                    // Kích hoạt chuẩn bị bất đồng bộ
                     prepareAsync()
 
-                    // KÍCH HOẠT CƠ CHẾ CỨU CÁNH (TIMEOUT CHỜ 2.5 GIÂY)
-                    // Nếu quá 2.5s mã nguồn native của MediaPlayer vẫn treo ở `makeHTTPConnection`
-                    // Luồng này sẽ tự động ngắt Player và ép hệ thống phát giọng nói TTS ngay.
                     timeoutJob = scope.launch(Dispatchers.Main) {
                         delay(2500)
-                        Log.w("TTS_UTILS", "URL kết nối quá lâu hoặc bị treo luồng native. Tự động cứu cánh bằng TTS.")
                         try {
                             setOnPreparedListener(null)
                             setOnErrorListener(null)
-                            reset() // Giải phóng trạng thái đơ của MediaPlayer
+                            reset()
                         } catch (e: Exception) {}
-                        speakWithTTS(textToSpeak, speed)
+                        speakWithTTS(textToSpeak, speed, locale)
                     }
                 }
             } catch (e: Exception) {
                 timeoutJob?.cancel()
-                e.printStackTrace()
-                speakWithTTS(textToSpeak, speed)
+                speakWithTTS(textToSpeak, speed, locale)
             }
         }
     }
 
-    private fun speakWithTTS(text: String?, speed: Float) {
-        if (text.isNullOrBlank() || !isTtsReady) return
+    private fun speakWithTTS(text: String?, speed: Float, locale: Locale) {
+        if (text.isNullOrBlank()) return
+
+        if (!isTtsReady) {
+            pendingText = Triple(text, speed, locale)
+            return
+        }
+
         try {
             textToSpeech?.apply {
                 setSpeechRate(speed)
+                val result = setLanguage(locale)
+                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    Log.e("TTS_UTILS", "Không hỗ trợ ngôn ngữ $locale hoặc kết nối chưa sẵn sàng, thử fallback về English (US)")
+                    setLanguage(Locale.US)
+                }
                 speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
             }
         } catch (e: Exception) {
@@ -122,8 +141,9 @@ class TextToSpeechUtils(private val context: Context) {
             mediaPlayer = null
             textToSpeech?.stop()
             textToSpeech?.shutdown()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+            textToSpeech = null  // Gán null để báo hiệu cần khởi tạo lại nếu tái sử dụng
+            isTtsReady = false   // Reset trạng thái sẵn sàng
+            pendingText = null
+        } catch (e: Exception) { e.printStackTrace() }
     }
 }

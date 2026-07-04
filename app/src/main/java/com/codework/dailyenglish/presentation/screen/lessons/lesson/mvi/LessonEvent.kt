@@ -1,5 +1,8 @@
 package com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi
 
+import com.codework.dailyenglish.domain.dictionary.model.Word
+import com.codework.dailyenglish.presentation.screen.dictionary.mvi.DictionaryEvent
+
 sealed interface LessonEvent {
     data class LoadLesson(val lessonId: String) : LessonEvent
     data object OnNextStep : LessonEvent
@@ -13,4 +16,6 @@ sealed interface LessonEvent {
     data object OnQuitClick : LessonEvent
     data object OnDismissQuitDialog : LessonEvent
     data object OnConfirmQuit : LessonEvent
+    data class OnToggleSaveWord(val wordId: String) : LessonEvent
+
 }

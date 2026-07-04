@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codework.dailyenglish.domain.lesson_preview.model.LessonPreview
 import com.codework.dailyenglish.presentation.components.LoadingType
@@ -84,16 +85,20 @@ fun LessonPreviewSheet(
                 LessonPreviewMainContent(
                     preview = data,
                     theme = theme,
-                    isCompleted = isCompleted,
                     state = state,
+                    isCompleted = isCompleted,
                     onStartClick = { id ->
                         onEvent(LessonPreviewEvent.OnStartLearningClick(id))
+                    },
+                    onReviewClick = { id ->
+                        onEvent(LessonPreviewEvent.OnReviewClick(id))
+                    },
+                    onRestartClick = { id ->
+                        onEvent(LessonPreviewEvent.OnRestartClick(id))
                     }
                 )
             }
-
         }
-
     }
 }
 
@@ -103,7 +108,9 @@ private fun LessonPreviewMainContent(
     theme: CourseTheme,
     state: LessonPreviewState,
     isCompleted: Boolean,
-    onStartClick: (String) -> Unit
+    onStartClick: (String) -> Unit,
+    onReviewClick: (String) -> Unit,
+    onRestartClick: (String) -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -233,30 +240,90 @@ private fun LessonPreviewMainContent(
         }
 
         Surface(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             color = Color.White,
         ) {
             Box(modifier = Modifier.padding(Spaces.Space24)) {
-                Button(
-                    onClick = { onStartClick(preview.id) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(Spaces.Space56),
-                    shape = RoundedCornerShape(Spaces.Space16),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
-                ) {
-                    Icon(Icons.Rounded.PlayCircle, null, tint = Color.White)
-                    Spacer(Modifier.width(Spaces.Space8))
-                    Text(
-                        text = stringResource(
-                            if (!isCompleted) R.string.action_start_learning
-                            else R.string.label_review
-                        ),
-                        color = Color.White,
-                        fontWeight = FontWeight.W700,
-                        fontSize = AppTextSizes.TextSizeTitle
-                    )
+                if (isCompleted) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(Spaces.Space12)
+                    ) {
+                        // Nút Xem lại (Màu đỏ)
+                        Button(
+                            onClick = { onReviewClick(preview.id) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            shape = RoundedCornerShape(20.dp),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFFFF1F2),
+                                contentColor = Color(0xFFE11D48)
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Visibility,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+
+                            Spacer(modifier = Modifier.width(6.dp))
+
+                            Text(
+                                text = stringResource(R.string.label_review),
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = AppTextSizes.TextSizeMain
+                            )
+                        }
+
+                        // Học lại
+                        Button(
+                            onClick = { onRestartClick(preview.id) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            shape = RoundedCornerShape(20.dp),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFEFF6FF),
+                                contentColor = Color(0xFF2563EB)
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Replay,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+
+                            Spacer(modifier = Modifier.width(6.dp))
+
+                            Text(
+                                text = stringResource(R.string.label_restart),
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = AppTextSizes.TextSizeMain
+                            )
+                        }
+                    }
+                } else {
+                    // Nút Bắt đầu học bình thường
+                    Button(
+                        onClick = { onStartClick(preview.id) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(Spaces.Space56),
+                        shape = RoundedCornerShape(Spaces.Space16),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
+                    ) {
+                        Icon(Icons.Rounded.PlayCircle, null, tint = Color.White)
+                        Spacer(Modifier.width(Spaces.Space8))
+                        Text(
+                            text = stringResource(R.string.action_start_learning),
+                            color = Color.White,
+                            fontWeight = FontWeight.W700,
+                            fontSize = AppTextSizes.TextSizeTitle
+                        )
+                    }
                 }
             }
         }

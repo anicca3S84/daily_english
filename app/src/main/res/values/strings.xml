@@ -82,6 +82,7 @@
     <string name="label_confirm">Confirm</string>
     <string name="label_cancel">Cancel</string>
     <string name="label_exit">Exit</string>
+    <string name="label_restart">Restart</string>
     <string name="label_check">Check</string>
     <string name="label_review">Review</string>
 
@@ -123,6 +124,8 @@
     <string name="noti_correct">Great! That\'s the correct answer.</string>
     <string name="noti_incorrect">Oops! That\'s not quite right.</string>
     <string name="noti_success">Success</string>
+    <string name="noti_errorr">Error</string>
+    <string name="noti_copy_success">Copy success</string>
 
     <!--Format-->
     <string name="exp_format">%1$d Exp</string>
