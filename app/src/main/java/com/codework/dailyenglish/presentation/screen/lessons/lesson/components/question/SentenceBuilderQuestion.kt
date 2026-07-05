@@ -183,7 +183,6 @@ fun SentenceBuilderQuestion(
             )
         }
 
-        // CỤM 4: ĐƯỜNG CHIA WORD BANK
         Row(
             modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -232,7 +231,6 @@ fun SentenceBuilderQuestion(
             }
         }
 
-        // CỤM 6: ĐIỀU CHỈNH TỐC ĐỘ
         if (showSpeedControl) {
             Card(
                 modifier = Modifier

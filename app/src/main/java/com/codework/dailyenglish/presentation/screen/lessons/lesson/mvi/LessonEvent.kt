@@ -17,5 +17,7 @@ sealed interface LessonEvent {
     data object OnDismissQuitDialog : LessonEvent
     data object OnConfirmQuit : LessonEvent
     data class OnToggleSaveWord(val wordId: String) : LessonEvent
+    object OnStartSpeech : LessonEvent
+    object OnStopSpeech : LessonEvent
 
 }

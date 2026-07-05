@@ -2,6 +2,7 @@ package com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi
 
 import com.codework.dailyenglish.core.base.BaseUiState
 import com.codework.dailyenglish.domain.lesson.model.LessonStep
+import com.codework.dailyenglish.core.utils.VoiceToTextParserState // Import class State này vào đây
 import kotlin.collections.getOrNull
 
 data class LessonConfigUi(
@@ -9,7 +10,8 @@ data class LessonConfigUi(
     val steps: List<LessonStep>,
     val currentIndex: Int,
     val isQuitDialogVisible: Boolean = false,
-    val showResultStepIndex: Int? = null
+    val showResultStepIndex: Int? = null,
+    val voiceState: VoiceToTextParserState = VoiceToTextParserState()
 ) {
     val currentStep: LessonStep?
         get() = steps.getOrNull(currentIndex)

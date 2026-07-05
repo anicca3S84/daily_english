@@ -46,6 +46,19 @@ class VoiceToTextParser(private val app: Application) : RecognitionListener {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, languageCode)
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+
+            // =========================================================================
+            // VIẾT LOGIC TRỄ NGẮT VÀO ĐÂY:
+            // =========================================================================
+            // 1. Chờ đúng 2000ms (2 giây) im lặng hoàn toàn sau khi dừng nói rồi mới ngắt hẳn
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 2000L) //
+
+            // 2. Chờ 2000ms im lặng tạm thời (ví dụ người dùng ngắt giọng nhẹ giữa câu)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 2000L) //
+
+            // 3. Đặt thời lượng thu âm tối thiểu là 2000ms để tránh việc vừa bấm đã tự động tắt
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 2000L) //
+            // =========================================================================
         }
 
         recognizer?.startListening(intent)
@@ -68,7 +81,9 @@ class VoiceToTextParser(private val app: Application) : RecognitionListener {
     override fun onBeginningOfSpeech() {}
     override fun onRmsChanged(rmsdB: Float) {}
     override fun onBufferReceived(buffer: ByteArray?) {}
+
     override fun onEndOfSpeech() {
+        // Hệ thống sẽ chỉ kích hoạt onEndOfSpeech sau khi đã vượt qua 2000ms im lặng như cấu hình ở trên
         _state.update { it.copy(isListening = false) }
     }
 

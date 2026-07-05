@@ -2,6 +2,7 @@ package com.codework.dailyenglish.presentation.screen.lessons.lesson.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.codework.dailyenglish.core.utils.VoiceToTextParserState
 import com.codework.dailyenglish.domain.dictionary.model.Word
 import com.codework.dailyenglish.domain.lesson.model.LessonStep
 import com.codework.dailyenglish.domain.lesson.model.QuestionContent
@@ -11,12 +12,16 @@ import com.codework.dailyenglish.presentation.screen.lessons.lesson.components.q
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.components.question.SentenceBuilderQuestion
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.components.question.SpeakingQuestion
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.components.vocab.VocabCard
+import com.codework.dailyenglish.presentation.utils.calculateSimilarity
 
 @Composable
 fun LessonStepRenderer(
     modifier: Modifier = Modifier,
     step: LessonStep,
+    voiceState: VoiceToTextParserState, // Thêm tham số nhận voiceState
     onAnswerInput: (String, List<Int>) -> Unit,
+    onStartSpeech: () -> Unit, // Callback start
+    onStopSpeech: () -> Unit,   // Callback stop
     onPlayAudio: (String?, String, Float) -> Unit = { _, _, _ -> },
     onToggleSaveWord: (String) -> Unit = {}
 ) {
@@ -50,9 +55,12 @@ fun LessonStepRenderer(
                         sentenceWithBlank = content.sentenceWithBlank,
                         hintMask = content.hintMask,
                         initialAnswer = stepData.userAnswer,
+                        onPlayAudio = onPlayAudio,
                         onAnswerSelected = { answer ->
                             onAnswerInput(answer, emptyList())
-                        }
+                        },
+                        isCorrect = stepData.isCorrect,
+
                     )
                 }
 
@@ -72,6 +80,15 @@ fun LessonStepRenderer(
                 }
 
                 is QuestionContent.Speaking -> {
+                    val answerText = stepData.userAnswer ?: ""
+                    val scoreVal = if (stepData.isAnswerEvaluated && answerText.isNotBlank()) {
+                        if (answerText == "PASSED") {
+                            100
+                        } else {
+                            (answerText.calculateSimilarity(content.targetText) * 100).toInt().coerceIn(0, 100)
+                        }
+                    } else null
+
                     SpeakingQuestion(
                         prompt = content.prompt,
                         targetText = content.targetText,
@@ -80,12 +97,20 @@ fun LessonStepRenderer(
                         initialAnswer = stepData.userAnswer,
                         isEvaluated = stepData.isAnswerEvaluated,
                         isCorrect = stepData.isCorrect,
+                        score = scoreVal, // TRUYỀN ĐIỂM SỐ ĐÃ TÍNH TOÁN VÀO ĐÂY
+                        voiceState = voiceState,
+                        onStartSpeech = onStartSpeech,
+                        onStopSpeech = onStopSpeech,
                         onAnswerSelected = { text ->
                             onAnswerInput(text, emptyList())
                         },
                         onPlayAudio = {
                             onPlayAudio(null, content.targetText, 1.0f)
-                        }
+                        },
+                        onPlayAudioSlow = {
+                            onPlayAudio(null, content.targetText, 0.5f)
+                        },
+                        modifier = modifier
                     )
                 }
 

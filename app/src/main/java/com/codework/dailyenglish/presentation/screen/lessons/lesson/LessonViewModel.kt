@@ -22,6 +22,7 @@ import android.app.Application
 import com.codework.dailyenglish.R
 import com.codework.dailyenglish.core.base.BaseEffect
 import com.codework.dailyenglish.core.utils.TextToSpeechParser
+import com.codework.dailyenglish.core.utils.VoiceToTextParser
 import com.codework.dailyenglish.domain.dictionary.usecase.RestartLessonUseCase
 import com.codework.dailyenglish.domain.dictionary.usecase.ToggleSaveWordUseCase
 import com.codework.dailyenglish.presentation.utils.UiText
@@ -40,6 +41,7 @@ class LessonViewModel @Inject constructor(
     private val updateLessonProgressUseCase: UpdateLessonProgressUseCase,
     private val completeLessonUseCase: CompleteLessonUseCase,
     private val textToSpeechParser: TextToSpeechParser,
+    private val speachToTextParser: VoiceToTextParser,
     private val toggleSaveWordUseCase: ToggleSaveWordUseCase,
     savedStateHandle: SavedStateHandle
 ) : BaseViewModel<LessonState, LessonEvent, LessonEffect>(
@@ -52,6 +54,7 @@ class LessonViewModel @Inject constructor(
 
     init {
         loadLessonData()
+        observeSpeechToText()
     }
 
     override fun onEvent(event: LessonEvent) {
@@ -90,6 +93,8 @@ class LessonViewModel @Inject constructor(
                     }
                 }
             }
+            is LessonEvent.OnStartSpeech -> speachToTextParser.startListening()
+            is LessonEvent.OnStopSpeech -> speachToTextParser.stopListening()
             else -> {}
         }
     }
@@ -344,4 +349,27 @@ class LessonViewModel @Inject constructor(
         super.onCleared()
         textToSpeechParser.release()
     }
+
+    private fun observeSpeechToText() {
+        viewModelScope.launch {
+            speachToTextParser.state.collect { voiceState ->
+                _state.update { currentState ->
+                    val currentData = currentState.data
+                    if (currentData != null) {
+                        currentState.copy(
+                            data = currentData.copy(voiceState = voiceState)
+                        )
+                    } else {
+                        currentState
+                    }
+                }
+
+                if (voiceState.spokenText.isNotBlank()) {
+                    updateUserAnswer(voiceState.spokenText, emptyList())
+                }
+            }
+        }
+    }
+
+
 }

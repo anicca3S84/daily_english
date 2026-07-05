@@ -47,17 +47,14 @@ fun LessonScreen(
         bottomBar = {
             if (data != null) {
                 val isLastStep = data.currentIndex == data.steps.size - 1
-                // Hoặc nếu data đã có sẵn: val isLastStep = data.isLastStep
 
                 LessonBottomBar(
                     currentStep = data.currentStep,
-                    isLastStep = isLastStep, // Truyền biến vào đây
+                    isLastStep = isLastStep,
                     onNextClick = {
                         val stepData = data.currentStep?.data
                         if (stepData is StepData.Question) {
                             if (stepData.isAnswerEvaluated) {
-                                // Nếu là câu cuối cùng thì có thể gọi event Finish
-                                // if (isLastStep) onEvent(LessonEvent.OnFinishLesson) else
                                 onEvent(LessonEvent.OnNextStep)
                             } else {
                                 if (stepData.isUserAnswered) {
@@ -65,8 +62,6 @@ fun LessonScreen(
                                 }
                             }
                         } else {
-                            // Nếu là câu cuối cùng thì có thể gọi event Finish
-                            // if (isLastStep) onEvent(LessonEvent.OnFinishLesson) else
                             onEvent(LessonEvent.OnNextStep)
                         }
                     },
@@ -92,11 +87,6 @@ fun LessonScreen(
                 AnimatedContent(
                     targetState = validData.currentIndex,
                     modifier = Modifier.fillMaxSize(),
-                    transitionSpec = {
-                        (slideInHorizontally { it } + fadeIn()).togetherWith(
-                            slideOutHorizontally { -it } + fadeOut()
-                        )
-                    },
                     label = "LessonStepAnimation"
                 ) { index ->
                     val step = validData.steps.getOrNull(index)
@@ -104,16 +94,19 @@ fun LessonScreen(
                     if (step != null) {
                         LessonStepRenderer(
                             step = step,
+                            voiceState = validData.voiceState,
                             onAnswerInput = { answer, indices ->
                                 onEvent(LessonEvent.OnAnswerInput(answer = answer, indices = indices))
                             },
+                            onStartSpeech = { onEvent(LessonEvent.OnStartSpeech) },
+                            onStopSpeech = { onEvent(LessonEvent.OnStopSpeech) },
                             onPlayAudio = { url, word, speed ->
                                 onEvent(LessonEvent.OnPlayAudio(url, word, speed))
                             },
-                            modifier = Modifier.fillMaxSize(),
                             onToggleSaveWord = { wordId ->
                                 onEvent(LessonEvent.OnToggleSaveWord(wordId))
-                            }
+                            },
+                            modifier = Modifier.fillMaxSize(),
                         )
                     }
                 }
