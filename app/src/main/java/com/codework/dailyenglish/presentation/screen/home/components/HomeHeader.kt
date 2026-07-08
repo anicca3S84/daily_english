@@ -1,16 +1,21 @@
+// FILE: presentation/screen/home/components/HomeHeader.kt
 package com.codework.dailyenglish.presentation.screen.home.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.rounded.MilitaryTech // Sử dụng biểu tượng vương miện/huy chương có sẵn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,13 +24,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage // Sử dụng Coil để load ảnh từ URL
+import coil.compose.AsyncImage
 import com.codework.dailyenglish.presentation.theme.AppColors
 
 @Composable
 fun HomeHeader(
     name: String,
     avatarUrl: String?,
+    isPremium: Boolean,
+    onPremiumClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -34,26 +41,37 @@ fun HomeHeader(
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 1. Avatar tròn và nhỏ hơn
         AsyncImage(
             model = avatarUrl ?: "",
             contentDescription = "User Avatar",
             modifier = Modifier
-                .size(46.dp) // Kích thước nhỏ gọn
-                .clip(CircleShape), // Hình tròn
+                .size(46.dp)
+                .clip(CircleShape),
             contentScale = ContentScale.Crop
         )
 
         Spacer(modifier = Modifier.width(16.dp))
 
-        // 2. Nội dung Text (Màu xanh chủ đạo)
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = name,
-                style = MaterialTheme.typography.titleLarge,
-                color = AppColors.BluePrimary, // Màu xanh của app
-                fontWeight = FontWeight.Bold
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = AppColors.BluePrimary,
+                    fontWeight = FontWeight.Bold
+                )
+                // Nếu đã nâng cấp VIP, đính kèm luôn một cái Badge nhỏ cạnh tên cho uy tín
+                if (isPremium) {
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Box(
+                        modifier = Modifier
+                            .background(Color(0xFFFFD700), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                    ) {
+                        Text("PRO", fontSize = 9.sp, fontWeight = FontWeight.Black, color = Color.Black)
+                    }
+                }
+            }
             Text(
                 text = "Are you ready for focus?",
                 style = MaterialTheme.typography.bodyMedium,
@@ -61,35 +79,62 @@ fun HomeHeader(
             )
         }
 
-        Box(
-            modifier = Modifier.padding(end = 4.dp, top = 4.dp),
-            contentAlignment = Alignment.TopEnd
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 1. Icon thông báo (To hơn và màu tối hiện đại)
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = "Notifications",
-                tint = AppColors.Slate800, // Màu xám đen sang trọng
-                modifier = Modifier.size(36.dp) // Tăng kích thước icon lên 36dp
-            )
-
-            // 2. Badge thông báo
+            // NÚT VƯƠNG MIỆN PREMIUM 3D
             Box(
                 modifier = Modifier
-                    .size(20.dp) // Badge cũng to hơn một chút cho cân đối
-                    .background(AppColors.Rose500, CircleShape)
-                    .border(2.dp, Color.White, CircleShape),
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isPremium) Color(0xFFFFF9E6) else AppColors.Slate100
+                    )
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null // Tắt hiệu ứng mặc định để giữ chuẩn 3D của dự án
+                    ) {
+                        onPremiumClick()
+                    },
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "1",
-                    color = Color.White,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    // Thêm offset để căn chỉnh lại nếu font chữ bị lệch so với tâm hình tròn
-                    modifier = Modifier.offset(y = (-0.5).dp),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                Icon(
+                    imageVector = Icons.Rounded.MilitaryTech, // Render hình tượng vương miện/quyền lực
+                    contentDescription = "Premium Status",
+                    tint = if (isPremium) Color(0xFFFFB300) else Color.Gray, // Phát sáng vàng nếu là VIP
+                    modifier = Modifier.size(28.dp)
                 )
+            }
+
+            // NÚT THÔNG BÁO GIỮ NGUYÊN LOGIC CŨ
+            Box(
+                modifier = Modifier.padding(end = 4.dp, top = 4.dp),
+                contentAlignment = Alignment.TopEnd
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = "Notifications",
+                    tint = AppColors.Slate800,
+                    modifier = Modifier.size(36.dp)
+                )
+
+                Box(
+                    modifier = Modifier
+                        .size(20.dp)
+                        .background(AppColors.Rose500, CircleShape)
+                        .border(2.dp, Color.White, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "1",
+                        color = Color.White,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.offset(y = (-0.5).dp),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
             }
         }
     }

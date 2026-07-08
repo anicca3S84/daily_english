@@ -49,8 +49,8 @@ fun InputCard(
     hint: String,
     onValueChange: (String) -> Unit,
     onClear: () -> Unit,
-    onPlayAudio: () -> Unit,   // Giữ nguyên sự kiện loa nguồn
-    onTranslate: () -> Unit,   // Thêm lại tham số bị thiếu ở đây!
+    onPlayAudio: () -> Unit,
+    onTranslate: () -> Unit,
     onImageClick: () -> Unit,
     onCameraClick: () -> Unit,
     onMicClick: () -> Unit

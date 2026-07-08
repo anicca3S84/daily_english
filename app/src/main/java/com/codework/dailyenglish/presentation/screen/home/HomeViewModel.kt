@@ -37,8 +37,7 @@ class HomeViewModel @Inject constructor(
             HomeEvent.OnQuickActionDictionary -> sendEffect(HomeEffect.NavigateToDictionary)
             HomeEvent.OnQuickActionSavedWord -> sendEffect(HomeEffect.NavigateToSavedWord)
             HomeEvent.OnQuickActionTranslate -> sendEffect(HomeEffect.NavigateToTranslate)
-            // Event lưu giờ học đã được MainActivity xử lý trực tiếp via UseCase,
-            // không cần đưa vào đây nữa để ViewModel được gọn nhẹ
+            HomeEvent.OnPremiumCrownClick -> {sendEffect(HomeEffect.NavigateToTranslate)}
             else -> {}
         }
     }

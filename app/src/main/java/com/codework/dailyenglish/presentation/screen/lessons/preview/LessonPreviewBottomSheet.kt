@@ -241,7 +241,7 @@ private fun LessonPreviewMainContent(
 
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = Color.White,
+            color = Color.Transparent,
         ) {
             Box(modifier = Modifier.padding(Spaces.Space24)) {
                 if (isCompleted) {
@@ -249,7 +249,6 @@ private fun LessonPreviewMainContent(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(Spaces.Space12)
                     ) {
-                        // Nút Xem lại (Màu đỏ)
                         Button(
                             onClick = { onReviewClick(preview.id) },
                             modifier = Modifier
@@ -277,7 +276,6 @@ private fun LessonPreviewMainContent(
                             )
                         }
 
-                        // Học lại
                         Button(
                             onClick = { onRestartClick(preview.id) },
                             modifier = Modifier
@@ -306,7 +304,6 @@ private fun LessonPreviewMainContent(
                         }
                     }
                 } else {
-                    // Nút Bắt đầu học bình thường
                     Button(
                         onClick = { onStartClick(preview.id) },
                         modifier = Modifier

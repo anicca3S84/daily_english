@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -27,25 +28,69 @@ import com.codework.dailyenglish.presentation.screen.ai.mvi.AiState
 import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.AppTextSizes
 import kotlinx.coroutines.launch
+import android.Manifest
+import android.content.pm.PackageManager
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+
 @Composable
 fun AiScreen(
     state: AiState,
     onEvent: (AiEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
+    val context = LocalContext.current
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     var inputText by remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
-    val suggestions = listOf(
-        "Correct my grammar ✍️", "Practice Speaking 🗣️", "Translate to English 🌐",
-        "Explain Idioms 💡", "Write an email 📧", "IELTS Writing tips 📝",
-        "Daily conversation 👋", "Vocabulary quiz 🧠", "Roleplay interview 👔"
-    )
+    // Khởi tạo bộ Launcher để xin quyền ghi âm
+    val recordAudioPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Nếu người dùng đồng ý cấp quyền, kích hoạt bật mic
+            onEvent(AiEvent.OnMicToggle)
+        } else {
+            // Nếu từ chối, hiển thị thông báo nhắc nhở
+            Toast.makeText(context, "Vui lòng cấp quyền ghi âm để sử dụng tính năng này", Toast.LENGTH_SHORT).show()
+        }
+    }
 
-    LaunchedEffect(state.messages.size, state.isTyping) {
+    // Hàm kiểm tra quyền trước khi toggle mic
+    val handleMicClick = {
+        val hasPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (hasPermission) {
+            onEvent(AiEvent.OnMicToggle)
+        } else {
+            // Nếu chưa có quyền, tiến hành xin quyền
+            recordAudioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
+    // Đồng bộ chữ thu âm lên khung nhập liệu
+    LaunchedEffect(state.voiceCapturedText) {
+        if (state.voiceCapturedText.isNotBlank()) {
+            inputText = state.voiceCapturedText
+        }
+    }
+
+    // Tự động cuộn và ẩn bàn phím khi có tin nhắn mới
+    LaunchedEffect(state.messages.size) {
         if (state.messages.isNotEmpty()) {
+            if (state.messages.last().isUser) {
+                inputText = ""
+                keyboardController?.hide()
+            }
             listState.animateScrollToItem(state.messages.size)
         }
     }
@@ -66,13 +111,7 @@ fun AiScreen(
                     onBackClick = onBackClick,
                     onMenuClick = { scope.launch { drawerState.open() } },
                     titleContent = {
-                            Text(
-                                text = "Anicca AI",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = AppTextSizes.TextSizeTitle,
-                                textAlign = TextAlign.Center,
-                                color = AppColors.TextMain
-                            )
+                        Text(text = "Anicca AI", fontWeight = FontWeight.Bold, color = AppColors.TextMain)
                     }
                 )
             },
@@ -85,16 +124,27 @@ fun AiScreen(
                         .padding(bottom = 24.dp)
                 ) {
                     if (state.messages.isEmpty()) {
-                        AutoScrollingSuggestionSection(suggestions) { onEvent(AiEvent.OnSuggestionClick(it)) }
+                        AutoScrollingSuggestionSection(suggestions = listOf(
+                            "Correct my grammar ✍️", "Practice Speaking 🗣️", "Translate to English 🌐"
+                        )) { onEvent(AiEvent.OnSuggestionClick(it)) }
                     }
 
                     ModernInputBar(
                         value = inputText,
                         onValueChange = { inputText = it },
-                        onSend = { onEvent(AiEvent.OnSendMessage(inputText)); inputText = "" },
+                        onSend = {
+                            if (state.isVoiceRecording) {
+                                handleMicClick()
+                            } else if (inputText.isNotBlank()) {
+                                onEvent(AiEvent.OnSendMessage(inputText))
+                            } else {
+                                handleMicClick() // Nếu ô nhập trống thì bấm nút gửi sẽ kích hoạt xin quyền/bật Mic
+                            }
+                        },
                         isEnabled = !state.isTyping,
+                        isVoiceRecording = state.isVoiceRecording,
                         onAttachClick = { onEvent(AiEvent.OnImageClick) },
-                        onMicClick = { onEvent(AiEvent.OnMicClick) }
+                        onMicClick = { handleMicClick() } // Gọi hàm kiểm tra quyền ở đây thay vì onMicToggle trực tiếp
                     )
                 }
             }
@@ -105,12 +155,7 @@ fun AiScreen(
                     .background(AppColors.AppBackground)
                     .padding(innerPadding)
             ) {
-                AnimatedVisibility(
-                    visible = state.messages.isEmpty(),
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                    modifier = Modifier.align(Alignment.Center)
-                ) {
+                if (state.messages.isEmpty()) {
                     EmptyChatPlaceholder()
                 }
 

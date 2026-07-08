@@ -7,4 +7,5 @@ sealed interface AiEvent {
     data object OnImageClick : AiEvent
     data object OnMicClick : AiEvent
     data class OnSuggestionClick(val text: String) : AiEvent
+    object OnMicToggle : AiEvent
 }

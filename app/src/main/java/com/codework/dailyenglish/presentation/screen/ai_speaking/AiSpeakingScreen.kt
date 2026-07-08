@@ -1,25 +1,28 @@
 package com.codework.dailyenglish.presentation.screen.ai_speaking
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.codework.dailyenglish.presentation.components.StateWrapper
 import com.codework.dailyenglish.presentation.screen.ai.components.EnhancedMessageBubble
 import com.codework.dailyenglish.presentation.screen.ai.components.ModernTypingIndicator
 import com.codework.dailyenglish.presentation.screen.ai_speaking.components.SpeakingInputBar
 import com.codework.dailyenglish.presentation.screen.ai_speaking.components.SuggestionDropdown
 import com.codework.dailyenglish.presentation.screen.ai_speaking.mvi.AiSpeakingEvent
 import com.codework.dailyenglish.presentation.screen.ai_speaking.mvi.AiSpeakingState
-import com.codework.dailyenglish.presentation.theme.AppColors
-import com.codework.dailyenglish.presentation.theme.AppTextSizes
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AiSpeakingScreen(
@@ -27,75 +30,99 @@ fun AiSpeakingScreen(
     onEvent: (AiSpeakingEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
-    var showSuggestions by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val listState = rememberLazyListState() // Quản lý trạng thái cuộn của LazyColumn
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Color(0xFFF8FAFC),
         topBar = {
-                CenterAlignedTopAppBar(
-                    title = {
-                        Text(
-                            text = "Speaking",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = AppTextSizes.TextSizeTitle,
-                            textAlign = TextAlign.Center,
-                            color = AppColors.TextMain
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { onBackClick() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
-                                tint = AppColors.TextMain
-                            )
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = { }) {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert,
-                                contentDescription = "More",
-                                tint = AppColors.TextMain
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.White.copy(alpha = 0.9f)
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = state.uiState.data?.topicName.orEmpty().ifBlank { "Speaking Partner" },
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color(0xFF1E293B)
                     )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { onBackClick() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color(0xFF1E293B)
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "More",
+                            tint = Color(0xFF1E293B)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.White
                 )
+            )
         },
         bottomBar = {
-            Column {
-                // Dropdown hiện ra khi bấm bóng đèn
-                if (showSuggestions) {
-                    SuggestionDropdown(
-                        onDismiss = { showSuggestions = false },
-                        onSelect = {
-                            onEvent(AiSpeakingEvent.OnSendMessage(it))
-                            showSuggestions = false
-                        }
+            state.uiState.data?.let { data ->
+                Column(modifier = Modifier.navigationBarsPadding()) {
+                    if (state.isSuggestionsVisible && data.suggestions.isNotEmpty()) {
+                        SuggestionDropdown(
+                            suggestions = data.suggestions,
+                            onDismiss = { onEvent(AiSpeakingEvent.OnToggleSuggestions) },
+                            onSelect = { selectedText ->
+                                onEvent(AiSpeakingEvent.OnSendMessage(selectedText))
+                            }
+                        )
+                    }
+
+                    SpeakingInputBar(
+                        isRecording = state.isRecording,
+                        onToggleRecording = { onEvent(AiSpeakingEvent.OnToggleRecording) },
+                        onShowSuggestions = { onEvent(AiSpeakingEvent.OnToggleSuggestions) },
+                        onSendText = { onEvent(AiSpeakingEvent.OnSendMessage(it)) }
                     )
                 }
-
-                SpeakingInputBar(
-                    isRecording = state.isRecording,
-                    onToggleRecording = { onEvent(AiSpeakingEvent.OnToggleRecording) },
-                    onShowSuggestions = { showSuggestions = !showSuggestions }, // Mở gợi ý
-                    onSendText = { onEvent(AiSpeakingEvent.OnSendMessage(it)) }
-                )
             }
         }
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(state.messages) { msg ->
-                EnhancedMessageBubble(message = msg)
+        StateWrapper(
+            uiState = state.uiState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            snackbarHostState = snackbarHostState,
+            onRetry = { onEvent(AiSpeakingEvent.OnRetryChat) }
+        ) { config ->
+            val data = config ?: return@StateWrapper
+
+            LaunchedEffect(key1 = data.messages.size, key2 = state.uiState.isRefreshing) {
+                if (data.messages.isNotEmpty()) {
+                    // Nếu AI đang gõ (isRefreshing), cuộn hẳn xuống để lộ Typing Indicator
+                    val targetIndex = if (state.uiState.isRefreshing) data.messages.size else data.messages.size - 1
+                    listState.animateScrollToItem(targetIndex)
+                }
             }
-            if (state.isTyping) {
-                item { ModernTypingIndicator() }
+
+            LazyColumn(
+                state = listState, // Gán listState vào đây
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(data.messages) { msg ->
+                    EnhancedMessageBubble(message = msg)
+                }
+
+                if (state.uiState.isRefreshing) {
+                    item { ModernTypingIndicator() }
+                }
             }
         }
     }

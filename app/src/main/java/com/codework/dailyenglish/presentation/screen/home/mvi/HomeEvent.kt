@@ -9,4 +9,5 @@ sealed interface HomeEvent {
     data object OnQuickActionDictionary : HomeEvent
     data object OnQuickActionSavedWord : HomeEvent
     data object OnQuickActionTranslate : HomeEvent
+    data object OnPremiumCrownClick : HomeEvent
 }

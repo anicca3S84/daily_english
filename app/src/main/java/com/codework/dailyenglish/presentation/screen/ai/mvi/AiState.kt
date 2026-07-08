@@ -7,5 +7,7 @@ data class AiState(
     val messages: List<ChatMessage> = emptyList(),
     val historySessions: List<ChatSession> = emptyList(),
     val isTyping: Boolean = false,
-    val currentSessionId: String? = null
+    val currentSessionId: String? = null,
+    val isVoiceRecording: Boolean = false,
+    val voiceCapturedText: String = ""
 )

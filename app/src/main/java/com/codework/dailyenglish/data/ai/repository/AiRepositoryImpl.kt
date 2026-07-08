@@ -23,9 +23,22 @@ class AiRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun sendMessage(sessionId: String, message: String): AppResult<ChatMessage> = withContext(dispatchers.io) {
-        remoteDataSource.sendMessage(ChatRequestDto(sessionId, message)).map { dto ->
-            ChatMessage(text = dto.aiReply, isUser = false)
+    override suspend fun sendMessage(
+        sessionId: String,
+        message: String,
+        topicId: String?,
+        topicName: String?,
+        isNeedSuggestions: Boolean // Thêm biến điều khiển luồng động từ UseCase đẩy xuống
+    ): AppResult<ChatMessage> = withContext(dispatchers.io) {
+        val requestDto = ChatRequestDto(
+            sessionId = sessionId,
+            message = message,
+            topicId = topicId,
+            topicName = topicName,
+            isNeedSuggestions = isNeedSuggestions
+        )
+        remoteDataSource.sendMessage(requestDto).map { dto ->
+            AiMapper.mapToDomain(dto) // Sử dụng hàm map đã nâng cấp để giữ trọn vẹn list gợi ý
         }
     }
 }

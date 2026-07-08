@@ -57,6 +57,8 @@ fun HomeContent(
             HomeHeader(
                 name = state.userName,
                 avatarUrl = state.avatarUrl,
+                isPremium = state.isPremium,
+                onPremiumClick  = { onEvent(HomeEvent.OnPremiumCrownClick) }
             )
         }
 

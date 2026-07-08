@@ -6,8 +6,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 
 @Composable
-fun SuggestionDropdown(onDismiss: () -> Unit, onSelect: (String) -> Unit) {
-    val suggestions = listOf("Can I order a coffee?", "How's your day?", "What do you think?")
+fun SuggestionDropdown(suggestions: List<String>,
+                       onDismiss: () -> Unit,
+                       onSelect: (String) -> Unit) {
 
     DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
         suggestions.forEach { text ->
