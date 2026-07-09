@@ -11,4 +11,6 @@ data class HomeState(
     val isDailyQuestFinished: Boolean = false,
     val weeklyStatsState: BaseUiState<List<DailyStudyTime>> = BaseUiState(),
     val isPremium: Boolean = false,
+    val showSubscriptionPopup: Boolean = false // Trạng thái kiểm soát ẩn hiện popup Premium
+
 )

@@ -30,4 +30,8 @@ class SubscriptionRepositoryImpl @Inject constructor(
             dto.toDomain()
         }
     }
+
+    override suspend fun checkPaymentStatus(transactionRef: String): AppResult<String> = withContext(dispatchers.io) {
+        remoteDataSource.checkPaymentStatus(transactionRef)
+    }
 }

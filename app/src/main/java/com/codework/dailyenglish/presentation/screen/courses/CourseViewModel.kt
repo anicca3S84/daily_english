@@ -7,6 +7,8 @@ import com.codework.dailyenglish.core.base.BaseViewModel
 import com.codework.dailyenglish.core.network.onError
 import com.codework.dailyenglish.core.network.onSuccess
 import com.codework.dailyenglish.domain.course.usecase.GetDashboardDataUseCase
+import com.codework.dailyenglish.domain.user.usecase.GetUserInfoUseCase // BỔ SUNG
+import com.codework.dailyenglish.domain.auth.usecase.GetMyProfileUseCase // BỔ SUNG (Đồng bộ ngầm)
 import com.codework.dailyenglish.presentation.screen.courses.mapper.toUiModels
 import com.codework.dailyenglish.presentation.screen.courses.mvi.CourseEffect
 import com.codework.dailyenglish.presentation.screen.courses.mvi.CourseEffect.*
@@ -21,7 +23,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CourseViewModel @Inject constructor(
-    private val getDashboardDataUseCase: GetDashboardDataUseCase
+    private val getDashboardDataUseCase: GetDashboardDataUseCase,
+    private val getUserInfoUseCase: GetUserInfoUseCase,
+    private val getMyProfileUseCase: GetMyProfileUseCase
 ) : BaseViewModel<CourseState, CourseEvent, CourseEffect>(
     initialState = CourseState()
 ) {
@@ -33,13 +37,28 @@ class CourseViewModel @Inject constructor(
     override fun onEvent(event: CourseEvent) {
         when (event) {
             is CourseEvent.OnCourseClick -> {
-                if (event.isLocked) {
-                    sendGlobalEffect(ShowToast(UiText.StringResource(R.string.noti_course_looked)))
-                } else {
+                if (event.isLocked) { // Đọc trực tiếp trạng thái khóa từ Server trả về
+                        _state.update { it.copy(showSubscriptionPopup = true) }
+                    } else {
                     sendEffect(NavigateToCourseDetails(event.courseId, event.courseCode))
+
                 }
             }
+
             CourseEvent.OnRefreshData -> loadDashboardData()
+
+            CourseEvent.OnDismissSubscriptionPopup -> {
+                _state.update { it.copy(showSubscriptionPopup = false) }
+                loadDashboardData() // Refresh lại danh sách để mở khóa lập tức nếu vừa mua VIP thành công
+            }
+
+
+            is CourseEvent.OnRefreshData -> loadDashboardData()
+
+            is CourseEvent.OnDismissSubscriptionPopup -> {
+                _state.update { it.copy(showSubscriptionPopup = false) }
+                loadDashboardData()
+            }
         }
     }
 
@@ -47,6 +66,15 @@ class CourseViewModel @Inject constructor(
         _state.update { it.copy(dashboardState = it.dashboardState.copy(isLoading = true, error = null)) }
 
         viewModelScope.launch {
+            val localUser = getUserInfoUseCase()
+            _state.update { it.copy(isPremium = localUser?.isPremium ?: false) }
+
+            launch {
+                getMyProfileUseCase().onSuccess { freshUser ->
+                    _state.update { it.copy(isPremium = freshUser.isPremium) }
+                }
+            }
+
             getDashboardDataUseCase()
                 .onSuccess { result ->
                     _state.update { state ->

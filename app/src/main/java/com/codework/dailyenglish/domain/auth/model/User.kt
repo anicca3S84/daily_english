@@ -6,5 +6,6 @@ data class User(
     val fullName: String,
     val displayName: String,
     val avatarUrl: String,
-    val isPremium: Boolean
+    val isPremium: Boolean,
+    val premiumExpiresAt: String?
 )

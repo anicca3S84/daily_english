@@ -12,4 +12,8 @@ interface SubscriptionRemoteDataSource {
         subscriptionPublicId: String,
         paymentMethod: String
     ): AppResult<PaymentResponseDto>
+
+    suspend fun checkPaymentStatus(transactionRef: String): AppResult<String>
+
+
 }

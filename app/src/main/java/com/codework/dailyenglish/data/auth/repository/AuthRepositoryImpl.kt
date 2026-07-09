@@ -62,4 +62,18 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun logout() = withContext(dispatchers.io) {
         localDataSource.clearSession()
     }
+
+    override suspend fun getMyProfile(): AppResult<User> = withContext(dispatchers.io) {
+        try {
+            val responseResult = remoteDataSource.getMyProfile()
+            responseResult.map { dto ->
+                val userDomain = dto.toDomain()
+                localDataSource.saveUser(userDomain)
+
+                userDomain
+            }
+        } catch (e: Exception) {
+            AppResult.Error(AppError.Unknown(e))
+        }
+    }
 }

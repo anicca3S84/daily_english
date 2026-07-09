@@ -70,6 +70,8 @@ sealed interface Route {
 
     @Serializable
     data object FlashcardScreen : Route
+    @Serializable
+    data object SubscriptionScreen : Route
 
     @Serializable
     data object LeaderboardScreen : Route

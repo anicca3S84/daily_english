@@ -12,4 +12,7 @@ interface SubscriptionRepository {
         subscriptionPublicId: String,
         paymentMethod: String
     ): AppResult<PaymentDetails>
+
+    suspend fun checkPaymentStatus(transactionRef: String): AppResult<String>
+
 }

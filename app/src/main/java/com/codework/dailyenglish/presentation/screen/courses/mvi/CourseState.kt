@@ -10,4 +10,6 @@ data class CourseState(
     val lessonsDone: Int = 0,
     val wordsLearned: Int = 0,
     val dashboardState: BaseUiState<List<CourseUi>> = BaseUiState(),
+    val isPremium: Boolean = false,
+    val showSubscriptionPopup: Boolean = false
 )

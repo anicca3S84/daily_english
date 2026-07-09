@@ -6,6 +6,7 @@ import com.codework.dailyenglish.core.network.unwrap
 import com.codework.dailyenglish.data.auth.remote.AuthApi
 import com.codework.dailyenglish.data.auth.remote.dto.AuthDto
 import com.codework.dailyenglish.data.auth.remote.dto.GoogleLoginDto
+import com.codework.dailyenglish.data.auth.remote.dto.UserDto
 import javax.inject.Inject
 
 class AuthRemoteDataSourceImpl @Inject constructor(
@@ -14,5 +15,9 @@ class AuthRemoteDataSourceImpl @Inject constructor(
 
     override suspend fun loginWithGoogle(idToken: String): AppResult<AuthDto> {
          return safeApiCall { api.loginWithGoogle(GoogleLoginDto(idToken)) }.unwrap()
+    }
+
+    override suspend fun getMyProfile(): AppResult<UserDto> {
+        return safeApiCall { api.getMyProfile() }.unwrap()
     }
 }

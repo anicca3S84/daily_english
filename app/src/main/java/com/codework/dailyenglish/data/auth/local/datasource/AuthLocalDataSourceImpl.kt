@@ -25,17 +25,13 @@ class AuthLocalDataSourceImpl @Inject constructor(
         User(
             id = userId,
             email = authPreferences.getEmail().orEmpty(),
-            // Nếu tên rỗng, hiển thị "Guest"
             fullName = authPreferences.getFullName() ?: "Guest",
-            // Nếu displayName không có trong Prefs, mặc định là fullName
             displayName = authPreferences.getFullName() ?: "Guest",
-            // AvatarUrl là String? trong Prefs, nếu null truyền chuỗi rỗng hoặc giá trị mặc định
             avatarUrl = authPreferences.getAvatarUrl().orEmpty(),
-            // isPremium thường mặc định là false
-            isPremium = false
+            isPremium = authPreferences.getPremiumStatus(),
+            premiumExpiresAt = authPreferences.getPremiumExpiresAt()
         )
     }
-
     override suspend fun saveRefreshToken(token: String) = withContext(dispatchers.io) {
         authPreferences.saveRefreshToken(token)
     }
@@ -45,7 +41,9 @@ class AuthLocalDataSourceImpl @Inject constructor(
             userId = user.id,
             email = user.email,
             fullName = user.fullName,
-            avatarUrl = user.avatarUrl
+            avatarUrl = user.avatarUrl,
+            isPremium = user.isPremium,
+            premiumExpiresAt = user.premiumExpiresAt
         )
     }
 

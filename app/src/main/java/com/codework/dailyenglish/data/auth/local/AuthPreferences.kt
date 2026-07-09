@@ -14,6 +14,8 @@ class AuthPreferences @Inject constructor(
         private const val KEY_USER_EMAIL = "PREF_KEY_USER_EMAIL"
         private const val KEY_USER_NAME = "PREF_KEY_USER_NAME"
         private const val KEY_USER_AVATAR = "PREF_KEY_USER_AVATAR"
+        private const val KEY_USER_PREMIUM = "PREF_KEY_USER_PREMIUM"
+        private const val KEY_USER_PREMIUM_DATE_EXPIRES = "KEY_USER_PREMIUM_DATE_EXPIRES"
     }
 
     // Lưu cả cặp (Dùng khi Login mới)
@@ -34,14 +36,21 @@ class AuthPreferences @Inject constructor(
         sharedPreferences.edit { putString(KEY_REFRESH_TOKEN, token) }
     }
 
-    fun saveUser(userId: String, email: String, fullName: String?, avatarUrl: String?) {
+    fun saveUser(userId: String, email: String, fullName: String?, avatarUrl: String?, isPremium: Boolean, premiumExpiresAt: String?) {
         sharedPreferences.edit {
             putString(KEY_USER_ID, userId)
             putString(KEY_USER_EMAIL, email)
             putString(KEY_USER_NAME, fullName)
             putString(KEY_USER_AVATAR, avatarUrl)
+            putBoolean(KEY_USER_PREMIUM, isPremium) // Lưu Boolean
+            putString(KEY_USER_PREMIUM_DATE_EXPIRES, premiumExpiresAt) // Lưu Boolean
         }
     }
+
+    fun getPremiumStatus(): Boolean = sharedPreferences.getBoolean(KEY_USER_PREMIUM, false)
+
+    fun getPremiumExpiresAt(): String? = sharedPreferences.getString(KEY_USER_PREMIUM_DATE_EXPIRES, null)
+
 
     fun getAccessToken(): String? = sharedPreferences.getString(KEY_ACCESS_TOKEN, null)
 

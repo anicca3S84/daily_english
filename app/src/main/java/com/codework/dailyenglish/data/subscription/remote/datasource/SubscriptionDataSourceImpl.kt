@@ -26,4 +26,8 @@ class SubscriptionRemoteDataSourceImpl @Inject constructor(
             api.buyPremium(PaymentRequestDto(subscriptionPublicId, paymentMethod))
         }.unwrap()
     }
+
+    override suspend fun checkPaymentStatus(transactionRef: String): AppResult<String> {
+        return safeApiCall { api.checkPaymentStatus(transactionRef) }.unwrap()
+    }
 }

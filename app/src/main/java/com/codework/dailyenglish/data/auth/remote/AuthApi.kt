@@ -2,11 +2,13 @@ package com.codework.dailyenglish.data.auth.remote
 
 import com.codework.dailyenglish.data.auth.remote.dto.AuthDto
 import com.codework.dailyenglish.data.auth.remote.dto.GoogleLoginDto
+import com.codework.dailyenglish.data.auth.remote.dto.UserDto
 import com.codework.dailyenglish.data.remote.response.BaseResponse
 import retrofit2.http.Body
 import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.Call
+import retrofit2.http.GET
 
 interface AuthApi {
     @POST("auth/google")
@@ -26,4 +28,7 @@ interface AuthApi {
 
     @POST("auth/refresh")
     fun refreshToken(@Header("Authorization") refreshToken: String): Call<AuthDto>
+
+    @GET("users/me")
+    suspend fun getMyProfile(): BaseResponse<UserDto>
 }

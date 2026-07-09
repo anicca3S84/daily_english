@@ -18,5 +18,6 @@ data class UserDto(
     @SerializedName("fullName") val fullName: String?,
     @SerializedName("avatarUrl") val avatarUrl: String?,
     @SerializedName("role") val role: String?,
-    @SerializedName("premium") val isPremium: Boolean?
+    @SerializedName("premium") val isPremium: Boolean?,
+    @SerializedName("premiumExpiresAt") val premiumExpiresAt: String?
 )

@@ -16,6 +16,7 @@ import com.codework.dailyenglish.presentation.screen.home.components.HomeHeader
 import com.codework.dailyenglish.presentation.screen.home.model.QuickActionItem
 import com.codework.dailyenglish.presentation.screen.home.mvi.HomeEvent
 import com.codework.dailyenglish.presentation.screen.home.mvi.HomeState
+import com.codework.dailyenglish.presentation.screen.subscription.SubscriptionPopup
 
 @Composable
 fun HomeScreen(
@@ -38,6 +39,11 @@ fun HomeScreen(
                 state = state,
                 onEvent = onEvent,
                 snackbarHostState = snackbarHostState // Truyền xuống
+            )
+
+            SubscriptionPopup(
+                visible = state.showSubscriptionPopup,
+                onDismiss = { onEvent(HomeEvent.OnDismissSubscriptionPopup) }
             )
         }
     }

@@ -7,4 +7,5 @@ sealed interface HomeEffect: BaseEffect {
     data object NavigateToDictionary : HomeEffect
     data object NavigateToSavedWord : HomeEffect
     data object NavigateToTranslate : HomeEffect
+    data object NavigateToSubscription : HomeEffect
 }

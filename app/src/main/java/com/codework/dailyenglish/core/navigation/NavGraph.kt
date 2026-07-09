@@ -135,6 +135,9 @@ fun NavGraph(
                     is HomeEffect.NavigateToDictionary -> navController.navigate(Route.DictionaryScreen)
                     is HomeEffect.NavigateToSavedWord -> navController.navigate(Route.VocabularyListScreen)
                     is HomeEffect.NavigateToTranslate -> navController.navigate(Route.TranslateScreen)
+                    is HomeEffect.NavigateToSubscription -> navController.navigate(Route.SubscriptionScreen)
+                    else -> {}
+
                 }
             }
         ) { state, onEvent ->
@@ -610,9 +613,6 @@ fun NavGraph(
                 onBackClick = { navController.popBackStack() }
             )
         }
-
-
     }
-
 
 }

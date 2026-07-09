@@ -7,6 +7,7 @@ import com.codework.dailyenglish.data.subscription.remote.dto.SubscriptionDto
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface SubscriptionApi {
     @GET("subscriptions")
@@ -16,4 +17,9 @@ interface SubscriptionApi {
     suspend fun buyPremium(
         @Body request: PaymentRequestDto
     ): BaseResponse<PaymentResponseDto>
+
+    @GET("subscriptions/status/{transactionRef}")
+    suspend fun checkPaymentStatus(
+        @Path("transactionRef") transactionRef: String
+    ): BaseResponse<String>
 }

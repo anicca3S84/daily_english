@@ -36,7 +36,6 @@
         state: PracticeState,
         onEvent: (PracticeEvent) -> Unit
     ) {
-
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -46,55 +45,21 @@
             ) {
                 // 1. Header & Stats
                 item {
-                    CurvedHeaderWrapper(
-                        content = {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 24.dp)
-                            ) {
-                                Text(
-                                    text = "Practice Arena",
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Surface(
-                                    color = Color.White.copy(alpha = 0.2f),
-                                    shape = CircleShape
-                                ) {
-                                    IconButton(onClick = { onEvent(PracticeEvent.OnClickLeaderboard) }) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.EmojiEvents,
-                                            contentDescription = "Leaderboard",
-                                            tint = Color.White
-                                        )
-                                    }
-                                }
-                            }
-                            Text(
-                                text = "Let's boost your skills!",
-                                color = Color.White.copy(0.8f),
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(horizontal = 24.dp)
+                }
+
+                item{
+                    Surface(
+                        color = Color.White.copy(alpha = 0.2f),
+                        shape = CircleShape
+                    ) {
+                        IconButton(onClick = { onEvent(PracticeEvent.OnClickLeaderboard) }) {
+                            Icon(
+                                imageVector = Icons.Rounded.EmojiEvents,
+                                contentDescription = "Leaderboard",
+                                tint = Color.White
                             )
-                        },
-                        bottomCardContent = {
-    //                        HeaderStatItem(
-    //                            value = "${data.totalPoints}",
-    //                            label = "Total XP",
-    //                            icon = Icons.Default.EmojiEvents,
-    //                            iconColor = Color(0xFFFFC107)
-    //                        )
-                            Divider(modifier = Modifier.height(40.dp).width(1.dp), color = Color.LightGray)
-    //                        HeaderStatItem(
-    //                            value = "${data.streak}",
-    //                            label = "Day Streak",
-    //                            icon = Icons.Default.LocalFireDepartment,
-    //                            iconColor = Color(0xFFFF5722)
-    //                        )
                         }
-                    )
+                    }
                 }
 
                 item {
@@ -142,35 +107,6 @@
                                 }
                             }
                         }
-                    }
-                }
-                item {
-                    PaddingSectionTitle(title = "Game Arena 🎮", subtitle = "Fun way to master skills")
-                }
-
-                val games = listOf(
-                    GameItem("Word Match", "Vocabulary", Icons.Default.Extension, Color(0xFFFF9800)),
-                    GameItem("Speed Quiz", "Grammar", Icons.Default.Timer, Color(0xFF4CAF50)),
-                    GameItem("Listening Hero", "Listening", Icons.Default.Headset, Color(0xFF2196F3)),
-                    GameItem("Sentence Builder", "Writing", Icons.Default.Build, Color(0xFF9C27B0))
-                )
-
-                items(games.chunked(2)) { pair ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        repeat(pair.count()) { index ->
-                            val game = pair[index]
-                            GameCardPro(
-                                game = game,
-                                modifier = Modifier.weight(1f),
-                                onClick = { onEvent(PracticeEvent.OnGameClick(game.name)) } // Nối Event
-                            )
-                        }
-                        if (pair.count() < 2) Spacer(modifier = Modifier.weight(1f))
                     }
                 }
 

@@ -11,4 +11,6 @@ interface AuthRepository {
     suspend fun getAccessToken(): String?
     suspend fun isUserLoggedIn(): Boolean
     suspend fun logout()
+    suspend fun getMyProfile(): AppResult<User>
+
 }

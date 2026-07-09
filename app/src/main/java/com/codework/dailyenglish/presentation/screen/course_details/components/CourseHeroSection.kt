@@ -37,15 +37,15 @@ fun CourseHeroSection(state: CourseDetailState) {
         state.courseTitle.contains("Fluent", ignoreCase = true) -> R.drawable.img_course_b2
         state.courseTitle.contains("Master", ignoreCase = true) -> R.drawable.img_course_c1
         state.courseTitle.contains("Legendary", ignoreCase = true) -> R.drawable.img_course_c2
-        else -> R.drawable.img_course_a1 // Ảnh mặc định nếu không khớp
+        else -> R.drawable.img_course_a1
     }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(Spaces.Space200 + Spaces.Space20) // Diện tích/kích thước vẫn giữ nguyên
+            .height(Spaces.Space200 + Spaces.Space20)
             .clip(RoundedCornerShape(AppRadius.RadiusExtraLarge))
-            .background(state.courseTheme.primaryColor) // Giữ lại màu nền làm màu lót
+            .background(state.courseTheme.primaryColor)
     ) {
         Image(
             painter = painterResource(id = backgroundImageRes),
@@ -53,7 +53,5 @@ fun CourseHeroSection(state: CourseDetailState) {
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
-
-
     }
 }

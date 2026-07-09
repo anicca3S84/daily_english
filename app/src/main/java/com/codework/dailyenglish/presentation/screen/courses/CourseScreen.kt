@@ -27,6 +27,7 @@ import com.codework.dailyenglish.presentation.components.StateWrapper
 import com.codework.dailyenglish.presentation.screen.courses.components.CourseCard
 import com.codework.dailyenglish.presentation.screen.courses.mvi.CourseEvent
 import com.codework.dailyenglish.presentation.screen.courses.mvi.CourseState
+import com.codework.dailyenglish.presentation.screen.subscription.SubscriptionPopup
 import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.Spaces
 import com.codework.dailyenglish.presentation.theme.AppTextSizes
@@ -44,9 +45,8 @@ fun CourseScreen(
         snackbarHost = { SnackbarHost(snackBar) },
         containerColor = AppColors.AppBackground
     ) { _ ->
-    Box(
-            modifier = Modifier
-                .fillMaxSize()
+        Box(
+            modifier = Modifier.fillMaxSize()
         ) {
             StateWrapper(
                 uiState = state.dashboardState,
@@ -65,6 +65,7 @@ fun CourseScreen(
                     verticalArrangement = Arrangement.spacedBy(Spaces.Space16),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // Phần header Curves giữ nguyên ...
                     stickyHeader {
                         CurvedHeaderWrapper(
                             content = {
@@ -175,10 +176,14 @@ fun CourseScreen(
                             horizontalArrangement = Arrangement.spacedBy(Spaces.Space16)
                         ) {
                             for (course in rowCourses) {
+                                // Phân loại xem có phải gói VIP hay không để vẽ nhãn PRO
+                                val isPremiumCourse = course.code.uppercase() in listOf("B2", "C1", "C2")
+
                                 CourseCard(
                                     course = course,
+                                    isPremium = isPremiumCourse, // Dùng để hiển thị nhãn "PRO" màu vàng cao cấp
                                     modifier = Modifier.weight(1f),
-                                    isLocked = course.isLocked,
+                                    isLocked = course.isLocked, // ĐÃ TỐI ƯU: Đọc trực tiếp trạng thái khóa từ Server trả về!
                                     onClick = {
                                         onEvent(CourseEvent.OnCourseClick(course.id, course.code, course.isLocked))
                                     }
@@ -190,6 +195,14 @@ fun CourseScreen(
                         }
                     }
                 }
+            }
+
+            // POPUP BOTTOM SHEET MUA VIP
+            if (state.showSubscriptionPopup) {
+                SubscriptionPopup(
+                    visible = true,
+                    onDismiss = { onEvent(CourseEvent.OnDismissSubscriptionPopup) }
+                )
             }
         }
     }

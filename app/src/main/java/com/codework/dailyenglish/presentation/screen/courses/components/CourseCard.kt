@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp // BỔ SUNG: Xử lý font chữ .sp
 import com.codework.dailyenglish.R
 import com.codework.dailyenglish.presentation.components.AppProgressBar
 import com.codework.dailyenglish.presentation.screen.courses.model.CourseUi
@@ -43,11 +44,18 @@ fun CourseCard(
     modifier: Modifier = Modifier,
     isLocked: Boolean = false,
     isCompleted: Boolean = false,
+    isPremium: Boolean = false, // BỔ SUNG: Xác định khóa học có yêu cầu VIP hay không
     onClick: () -> Unit = {},
 ) {
     val progressPercent = (course.progress * 100).toInt()
     val safeProgress = course.progress.coerceIn(0f, 1f)
-    val activeColor = if (isLocked) Color.Gray else course.themeColor.primaryColor
+
+    // ĐỔI MỚI: Nếu khóa Premium bị khóa, dùng màu vàng hổ phách thay vì xám để kích thích nâng cấp
+    val activeColor = when {
+        isLocked && isPremium -> Color(0xFFF59E0B) // Màu Amber/Vàng kim cho khóa VIP
+        isLocked -> Color.Gray
+        else -> course.themeColor.primaryColor
+    }
 
     Card(
         onClick = onClick,
@@ -82,7 +90,7 @@ fun CourseCard(
                     isLocked -> Icon(
                         Icons.Rounded.Lock,
                         contentDescription = null,
-                        tint = Color.Gray
+                        tint = if (isPremium) Color(0xFFD97706) else Color.Gray // Ổ khóa vàng sang trọng cho khóa Premium
                     )
                 }
             }
@@ -91,7 +99,7 @@ fun CourseCard(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(start = Spaces.Space16, top = Spaces.Space16, bottom = Spaces.Space16, end = Spaces.Space48)
-                    .alpha(if (isLocked) 0.6f else 1f)
+                    .alpha(if (isLocked) 0.75f else 1f) // Giảm độ mờ một chút để thẻ VIP trông vẫn sắc nét thu hút
             ) {
                 Icon(
                     imageVector = course.icon,
@@ -102,14 +110,39 @@ fun CourseCard(
 
                 Spacer(modifier = Modifier.height(Spaces.Space12))
 
-                Text(
-                    text = course.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                // ĐỔI MỚI: Đặt thẻ tiêu đề kết hợp nhãn PRO
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = course.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false) // Nhường không gian cho nhãn PRO kế bên
+                    )
+
+                    if (isPremium) {
+                        Spacer(modifier = Modifier.width(Spaces.Space6))
+                        // Nhãn dán "PRO" nhỏ gọn màu vàng kim tinh tế
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFFFEF3C7), shape = RoundedCornerShape(Spaces.Space4))
+                                .padding(horizontal = Spaces.Space6, vertical = Spaces.Space2)
+                        ) {
+                            Text(
+                                text = "PRO",
+                                color = Color(0xFFD97706),
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontSize = 10.sp
+                            )
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(Spaces.Space2))
 
