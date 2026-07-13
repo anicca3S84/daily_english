@@ -2,7 +2,7 @@ package com.codework.dailyenglish.domain.ai.model
 
 data class ChatSession(
     val id: String,
-    val title: String, // Ví dụ: "Học thì quá khứ", "Sửa lỗi ngữ pháp"...
-    val lastMessage: String,
-    val date: String
+    val title: String,
+    val lastMessage: String? = "",
+    val date: String? = ""
 )

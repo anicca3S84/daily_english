@@ -49,7 +49,6 @@ fun ActiveVIPDashboardContent(
     val textDark = Color(0xFF1E293B)
     val textLight = Color(0xFF64748B)
 
-    // ĐỪNG QUÊN: Thay đổi số điện thoại hỗ trợ thực tế của bạn ở đây
     val mySupportPhoneNumber = "0764930000"
 
     Column(
@@ -58,7 +57,6 @@ fun ActiveVIPDashboardContent(
             .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Biểu tượng VIP Crown
         Box(
             modifier = Modifier
                 .size(80.dp)
@@ -94,7 +92,6 @@ fun ActiveVIPDashboardContent(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Khối hiển thị ngày hết hạn
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -123,7 +120,6 @@ fun ActiveVIPDashboardContent(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // NÚT 1: Chuyển hướng người dùng quay lại trang 1 chọn gói để mua tiếp
         Button(
             onClick = onBuyMoreClick,
             modifier = Modifier

@@ -14,8 +14,8 @@ class AuthInterceptor @Inject constructor(
         val originalRequest = chain.request()
         val requestUrl = originalRequest.url.encodedPath
 
-        var currentLanguage = Locale.getDefault().language.uppercase()
-
+//        var currentLanguage = Locale.getDefault().language.uppercase()
+        var currentLanguage = "EN" //TODO(Multiple Languages)
         if (currentLanguage != "VI" && currentLanguage != "EN") {
             currentLanguage = "EN"
         }

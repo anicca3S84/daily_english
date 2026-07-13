@@ -11,5 +11,6 @@ sealed interface HomeEvent {
     data object OnQuickActionTranslate : HomeEvent
     data object OnPremiumCrownClick : HomeEvent
     data object OnDismissSubscriptionPopup : HomeEvent
+    data object OnEnterHomeScreen : HomeEvent
 
 }

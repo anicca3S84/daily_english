@@ -8,4 +8,5 @@ sealed interface SubscriptionEvent {
     data object OnPaymentSuccessMock : SubscriptionEvent
     data object OnBackClick : SubscriptionEvent
     data object OnShowPacksClick : SubscriptionEvent
+    data object OnCopySuccess : SubscriptionEvent
 }

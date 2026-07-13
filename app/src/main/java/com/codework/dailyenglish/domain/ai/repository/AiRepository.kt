@@ -14,4 +14,5 @@ interface AiRepository {
         topicName: String? = null,
         isNeedSuggestions: Boolean      
     ): AppResult<ChatMessage>
+    suspend fun getSessionMessages(sessionId: String): AppResult<List<ChatMessage>>
 }

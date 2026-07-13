@@ -16,3 +16,8 @@ inline fun <T, R> AppResult<T>.map(transform: (T) -> R): AppResult<R> {
         is AppResult.Error -> this
     }
 }
+
+inline fun <T> AppResult<T>.onErrorDetails(action: (error: AppError, message: String?) -> Unit): AppResult<T> {
+    if (this is AppResult.Error) action(error, message)
+    return this
+}

@@ -10,4 +10,5 @@ data class DictionaryState(
     val searchResults: BaseUiState<List<Word>> = BaseUiState(),
     val topicsState: BaseUiState<List<VocabTopic>> = BaseUiState(),
     val recentSearches: List<RecentWord> = emptyList(),
+    val isPremium: Boolean = false
 )

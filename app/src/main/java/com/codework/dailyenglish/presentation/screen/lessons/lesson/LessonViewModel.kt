@@ -93,7 +93,7 @@ class LessonViewModel @Inject constructor(
                     }
                 }
             }
-            is LessonEvent.OnStartSpeech -> speachToTextParser.startListening()
+            is LessonEvent.OnStartSpeech -> speachToTextParser.startListening(event.context)
             is LessonEvent.OnStopSpeech -> speachToTextParser.stopListening()
             else -> {}
         }

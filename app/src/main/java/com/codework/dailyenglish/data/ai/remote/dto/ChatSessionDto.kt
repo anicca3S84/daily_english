@@ -1,8 +1,10 @@
 package com.codework.dailyenglish.data.ai.remote.dto
 
+import kotlinx.serialization.SerialName
+
 data class ChatSessionDto(
-    val id: Long,
-    val title: String,
-    val lastMessage: String?, // Dấu ? cho phép null từ BE
-    val date: String?         // Dấu ? cho phép null từ BE
+    @SerialName("id") val id: String,
+    @SerialName("title") val title: String? = "New Chat",
+    @SerialName("lastMessage") val lastMessage: String? = null,
+    @SerialName("date") val date: String? = null
 )

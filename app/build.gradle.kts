@@ -167,4 +167,7 @@ dependencies {
 
 
     implementation(libs.compose)
+
+    implementation(libs.play.services.ads)
+
 }

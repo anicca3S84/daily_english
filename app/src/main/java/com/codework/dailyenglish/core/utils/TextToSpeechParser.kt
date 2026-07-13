@@ -11,9 +11,6 @@ import android.util.Log
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 
-
-
-
 class TextToSpeechParser(context: Context) {
     private val appContext = context.applicationContext
     private var mediaPlayer: MediaPlayer? = null
@@ -29,18 +26,55 @@ class TextToSpeechParser(context: Context) {
 
     private fun initializeTTS() {
         isTtsReady = false
+        val engines = try {
+            TextToSpeech(appContext) {}.engines
+        } catch (e: Exception) {
+            emptyList()
+        }
+
+        val hasGoogleTts = engines.any { it.name == "com.google.android.tts" }
+
+        if (hasGoogleTts) {
+            Log.d("TTS_UTILS", "Google TTS khả dụng. Khởi tạo bằng Google TTS.")
+            textToSpeech = try {
+                TextToSpeech(appContext, { status ->
+                    if (status == TextToSpeech.SUCCESS) {
+                        isTtsReady = true
+                        pendingText?.let { (text, speed, locale) ->
+                            speakWithTTS(text, speed, locale)
+                            pendingText = null
+                        }
+                    } else {
+                        Log.w("TTS_UTILS", "Khởi tạo Google TTS không thành công. Chuyển sang mặc định.")
+                        createDefaultTTS()
+                    }
+                }, "com.google.android.tts")
+            } catch (e: Exception) {
+                createDefaultTTS()
+                null
+            }
+        } else {
+            Log.d("TTS_UTILS", "Không tìm thấy Google TTS. Khởi tạo mặc định hệ thống (Oppo/Samsung OEM).")
+            createDefaultTTS()
+        }
+    }
+
+    private fun createDefaultTTS() {
+        try {
+            textToSpeech?.shutdown()
+        } catch (e: Exception) {}
+
         textToSpeech = TextToSpeech(appContext) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 isTtsReady = true
-                Log.d("TTS_UTILS", "TextToSpeech engine đã sẵn sàng.")
-
+                Log.d("TTS_UTILS", "Default TTS sẵn sàng.")
                 pendingText?.let { (text, speed, locale) ->
                     speakWithTTS(text, speed, locale)
                     pendingText = null
                 }
             } else {
                 isTtsReady = false
-                Log.e("TTS_UTILS", "Khởi tạo TTS thất bại. Status code: $status")
+                Log.e("TTS_UTILS", "Khởi tạo default TTS thất bại. Mã lỗi: $status")
             }
         }
     }
@@ -53,8 +87,6 @@ class TextToSpeechParser(context: Context) {
         scope: CoroutineScope
     ) {
         timeoutJob?.cancel()
-
-        // Nếu đối tượng tts đã bị giải phóng (null), tự động khởi tạo lại
         if (textToSpeech == null) {
             initializeTTS()
         }
@@ -124,7 +156,6 @@ class TextToSpeechParser(context: Context) {
                 setSpeechRate(speed)
                 val result = setLanguage(locale)
                 if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    Log.e("TTS_UTILS", "Không hỗ trợ ngôn ngữ $locale hoặc kết nối chưa sẵn sàng, thử fallback về English (US)")
                     setLanguage(Locale.US)
                 }
                 speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
@@ -141,8 +172,8 @@ class TextToSpeechParser(context: Context) {
             mediaPlayer = null
             textToSpeech?.stop()
             textToSpeech?.shutdown()
-            textToSpeech = null  // Gán null để báo hiệu cần khởi tạo lại nếu tái sử dụng
-            isTtsReady = false   // Reset trạng thái sẵn sàng
+            textToSpeech = null
+            isTtsReady = false
             pendingText = null
         } catch (e: Exception) { e.printStackTrace() }
     }

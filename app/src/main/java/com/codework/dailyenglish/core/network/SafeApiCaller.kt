@@ -2,6 +2,8 @@ package com.codework.dailyenglish.core.network
 
 import com.codework.dailyenglish.data.lesson.remote.dto.LessonPlayResponseDto
 import com.codework.dailyenglish.data.remote.response.BaseResponse
+import com.google.gson.Gson // Thêm import này để parse JSON từ errorBody
+import com.google.gson.JsonObject
 import com.google.gson.JsonSyntaxException
 import retrofit2.HttpException
 import java.io.IOException
@@ -21,22 +23,34 @@ suspend inline fun <T> safeApiCall(
  * 🔥 Map tất cả exception -> AppError (clean + reusable)
  */
 fun Exception.toAppError(): AppResult.Error {
+    var serverMessage: String? = null
+
     val error = when (this) {
         is IOException -> AppError.Network
-
         is SocketTimeoutException -> AppError.Timeout
 
-        is HttpException -> AppError.Http(
-            code = code(),
-            message = message()
-        )
+        is HttpException -> {
+            val errorBodyString = response()?.errorBody()?.string()
+            serverMessage = try {
+                val jsonObject = Gson().fromJson(errorBodyString, JsonObject::class.java)
+                jsonObject.get("message")?.asString
+            } catch (e: Exception) {
+                null
+            }
+            AppError.Http(
+                code = code(),
+                message = serverMessage ?: message()
+            )
+        }
 
         is JsonSyntaxException -> AppError.Parsing(this)
-
         else -> AppError.Unknown(this)
     }
 
-    return AppResult.Error(error, message = this.message)
+    return AppResult.Error(
+        error = error,
+        message = serverMessage ?: this.message ?: ""
+    )
 }
 
 fun <T> AppResult<BaseResponse<T>>.unwrap(): AppResult<T> {

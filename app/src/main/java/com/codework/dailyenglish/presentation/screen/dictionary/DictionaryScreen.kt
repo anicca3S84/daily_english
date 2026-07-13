@@ -19,22 +19,16 @@ import com.codework.dailyenglish.presentation.screen.dictionary.components.*
 import com.codework.dailyenglish.presentation.screen.dictionary.mvi.DictionaryEvent
 import com.codework.dailyenglish.presentation.screen.dictionary.mvi.DictionaryState
 import androidx.compose.ui.platform.LocalFocusManager
-import com.codework.dailyenglish.domain.dictionary.model.RecentWord
-import com.codework.dailyenglish.domain.vocabulary.model.VocabTopic
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import com.codework.dailyenglish.domain.dictionary.model.Word
 import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.AppTextSizes
+
+
+import com.codework.dailyenglish.presentation.components.BannerAd
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,7 +40,7 @@ fun DictionaryScreen(
     val focusManager = LocalFocusManager.current
 
     Scaffold(
-        containerColor = Color(0xFFF8FAFC), // Nền xám nhạt nhẹ giống thiết kế thực tế
+        containerColor = Color(0xFFF8FAFC),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             CenterAlignedTopAppBar(
@@ -72,6 +66,16 @@ fun DictionaryScreen(
                     containerColor = Color.White
                 )
             )
+        },
+        bottomBar = {
+            if (!state.isPremium) {
+                BannerAd(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White)
+                        .navigationBarsPadding()
+                )
+            }
         }
     ) { paddingValues ->
         Box(
@@ -82,7 +86,6 @@ fun DictionaryScreen(
             Column(modifier = Modifier.fillMaxSize()) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Thanh tìm kiếm
                 DictionarySearchBar(
                     query = state.query,
                     onQueryChange = { onEvent(DictionaryEvent.OnSearchQueryChange(it)) },
@@ -103,7 +106,6 @@ fun DictionaryScreen(
                     ) {
 
                         if (state.query.isNotEmpty()) {
-                            // Khi đang GÕ TÌM KIẾM
                             if (currentList.isEmpty()) {
                                 item {
                                     EmptySearchResult(state.query)
@@ -117,9 +119,7 @@ fun DictionaryScreen(
                                             focusManager.clearFocus()
                                             onEvent(DictionaryEvent.OnWordClick(word))
                                         },
-                                        onPlayAudioUk = {
-
-                                        },
+                                        onPlayAudioUk = {},
                                         onPlayAudioUs = {
                                             onEvent(DictionaryEvent.OnPlayAudio(word, "US"))
                                         },
@@ -167,7 +167,6 @@ fun DictionaryScreen(
                             }
 
                             item {
-                                Spacer(modifier = Modifier.height(8.dp))
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -218,23 +217,8 @@ fun DictionaryScreen(
                                 }
                             }
 
-
                             item {
-//                                WordOfTheDayCard(
-//                                    word = "Serendipity",
-//                                    ipa = "/,ser.ən'dɪp.ə.ti/",
-//                                    definition = "n. The occurrence of events by chance in a happy or beneficial way.",
-//                                    onPlayAudio = {
-//                                        onEvent(DictionaryEvent.OnPlayAudio(Word(), "US"))
-//                                    },
-//                                    onLearnMoreClick = {
-//                                        onEvent(DictionaryEvent.OnWordOfTheDayClick("Serendipity"))
-//                                    }
-//                                )
-                            }
-
-                            // 4. Daily Inspiration (Trước đây là DailyQuoteCard)
-                            item {
+                                Spacer(modifier = Modifier.height(12.dp))
                                 DailyInspirationCard(
                                     quote = "Learning never exhausts the mind.",
                                     author = "Leonardo da Vinci"
@@ -250,7 +234,6 @@ fun DictionaryScreen(
         }
     }
 }
-
 
 
 

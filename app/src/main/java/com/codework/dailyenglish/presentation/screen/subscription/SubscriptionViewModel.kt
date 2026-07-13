@@ -1,8 +1,10 @@
 package com.codework.dailyenglish.presentation.screen.subscription
 
 import androidx.lifecycle.viewModelScope
+import com.codework.dailyenglish.R
 import com.codework.dailyenglish.core.base.BaseViewModel
 import com.codework.dailyenglish.core.base.BaseEffect
+import com.codework.dailyenglish.core.base.BaseEffect.ShowToast
 import com.codework.dailyenglish.core.base.BaseUiState
 import com.codework.dailyenglish.core.network.onError
 import com.codework.dailyenglish.core.network.onSuccess
@@ -12,6 +14,8 @@ import com.codework.dailyenglish.domain.subscription.usecase.BuyPremiumUseCase
 import com.codework.dailyenglish.domain.subscription.usecase.GetSubscriptionPacksUseCase
 import com.codework.dailyenglish.domain.user.usecase.GetUserInfoUseCase
 import com.codework.dailyenglish.presentation.screen.subscription.mvi.*
+import com.codework.dailyenglish.presentation.screen.translate.mvi.TranslateEvent
+import com.codework.dailyenglish.presentation.utils.UiText
 import com.codework.dailyenglish.presentation.utils.asUiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -52,34 +56,34 @@ class SubscriptionViewModel @Inject constructor(
                     it.copy(
                         paymentUiState = BaseUiState(),
                         isPaymentSuccess = false,
-                        forceShowPacks = false // ĐÃ SỬA: Đưa cờ forceShowPacks về false khi đóng Popup
+                        forceShowPacks = false
                     )
                 }
             }
 
-            // BỔ SUNG: Xử lý sự kiện ép hiển thị gói cước cho VIP mua thêm
             SubscriptionEvent.OnShowPacksClick -> {
                 _state.update { it.copy(forceShowPacks = true) }
             }
 
-            is SubscriptionEvent.OnPaymentSuccessMock -> {
-                _state.update { it.copy(isPaymentSuccess = true) }
+            is SubscriptionEvent.OnCopySuccess -> {
+                sendGlobalEffect(ShowToast(UiText.StringResource(R.string.noti_copy_success)))
             }
         }
     }
 
     private fun fetchSubscriptionPacks() {
-        // =========================================================================
-        // --- BỔ SUNG: Đọc trạng thái VIP từ bộ nhớ Local ngay khi khởi tạo ---
-        // =========================================================================
         viewModelScope.launch {
             val localUser = getUserInfoUseCase()
             if (localUser != null) {
-                _state.update { it.copy(isPremium = localUser.isPremium) }
+                _state.update {
+                    it.copy(
+                        isPremium = localUser.isPremium,
+                        premiumExpiresAt = localUser.premiumExpiresAt ?: "December 12, 2026"
+                    )
+                }
             }
         }
 
-        // Luồng lấy gói cước từ API giữ nguyên
         _state.update { it.copy(packsUiState = it.packsUiState.copy(isLoading = true, error = null)) }
         viewModelScope.launch {
             getSubscriptionPacksUseCase()
@@ -135,7 +139,6 @@ class SubscriptionViewModel @Inject constructor(
                         }
                     }
                     .onError {
-                        // Bỏ qua lỗi mạng cục bộ trong lúc polling
                     }
             }
         }

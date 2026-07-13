@@ -34,6 +34,6 @@ fun EmptyChatPlaceholder() {
         Spacer(modifier = Modifier.height(24.dp))
         Text(text = "Anicca English Tutor", style = MaterialTheme.typography.headlineSmall.copy(brush = AppColors.MainGradient, fontWeight = FontWeight.ExtraBold, fontSize = 24.sp, textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(12.dp))
-        Text(text = "Your intelligent assistant for everything.\nAsk me anything, from learning languages to solving complex problems!", style = MaterialTheme.typography.bodyLarge, color = Color.Gray, textAlign = TextAlign.Center, lineHeight = 22.sp)
+        Text(text = "Ask me anything, from learning languages to solving complex problems!", style = MaterialTheme.typography.bodyLarge, color = Color.Gray, textAlign = TextAlign.Center, lineHeight = 22.sp)
     }
 }

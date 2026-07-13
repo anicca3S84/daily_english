@@ -9,13 +9,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.Spaces
 
 @Composable
 fun CurvedHeaderWrapper(
     modifier: Modifier = Modifier,
-    fixedHeaderHeight: Dp = Spaces.Space200 + Spaces.Space5,
+    fixedHeaderHeight: Dp = 190.dp,
     backgroundBrush: Brush = Brush.horizontalGradient(
         colors = listOf(AppColors.BluePrimary, AppColors.IndigoPurple)
     ),
@@ -60,7 +61,7 @@ fun CurvedHeaderWrapper(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = Spaces.Space16, horizontal = Spaces.Space20),
+                    .padding(vertical = Spaces.Space16, horizontal = Spaces.Space16),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {

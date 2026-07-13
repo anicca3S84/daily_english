@@ -20,6 +20,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -56,11 +59,10 @@ fun HomeHeader(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = name,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = AppColors.BluePrimary,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = AppColors.TitleColor,
                     fontWeight = FontWeight.Bold
                 )
-                // Nếu đã nâng cấp VIP, đính kèm luôn một cái Badge nhỏ cạnh tên cho uy tín
                 if (isPremium) {
                     Spacer(modifier = Modifier.width(4.dp))
                     Box(
@@ -93,21 +95,20 @@ fun HomeHeader(
                     )
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = null // Tắt hiệu ứng mặc định để giữ chuẩn 3D của dự án
+                        indication = null
                     ) {
                         onPremiumClick()
                     },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.MilitaryTech, // Render hình tượng vương miện/quyền lực
+                    imageVector = CrownIcon,
                     contentDescription = "Premium Status",
-                    tint = if (isPremium) Color(0xFFFFB300) else Color.Gray, // Phát sáng vàng nếu là VIP
+                    tint = if (isPremium) Color(0xFFFFB300) else Color.Gray,
                     modifier = Modifier.size(28.dp)
                 )
             }
 
-            // NÚT THÔNG BÁO GIỮ NGUYÊN LOGIC CŨ
             Box(
                 modifier = Modifier.padding(end = 4.dp, top = 4.dp),
                 contentAlignment = Alignment.TopEnd
@@ -139,3 +140,46 @@ fun HomeHeader(
         }
     }
 }
+
+
+val CrownIcon: ImageVector
+    get() = ImageVector.Builder(
+        name = "Crown",
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f
+    ).path(fill = SolidColor(Color.White)) {
+        moveTo(2f, 17f)
+        lineTo(4f, 9f)
+        lineTo(9f, 13f)
+        lineTo(12f, 5f)
+        lineTo(15f, 13f)
+        lineTo(20f, 9f)
+        lineTo(22f, 17f)
+        close()
+
+        moveTo(2f, 19f)
+        lineTo(22f, 19f)
+        lineTo(22f, 20.5f)
+        lineTo(2f, 20.5f)
+        close()
+
+        moveTo(12f, 2f)
+        lineTo(13.5f, 3.5f)
+        lineTo(12f, 5f)
+        lineTo(10.5f, 3.5f)
+        close()
+
+        moveTo(4f, 6f)
+        lineTo(5.5f, 7.5f)
+        lineTo(4f, 9f)
+        lineTo(2.5f, 7.5f)
+        close()
+
+        moveTo(20f, 6f)
+        lineTo(21.5f, 7.5f)
+        lineTo(20f, 9f)
+        lineTo(18.5f, 7.5f)
+        close()
+    }.build()

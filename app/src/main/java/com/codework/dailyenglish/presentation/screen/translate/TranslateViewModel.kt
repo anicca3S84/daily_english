@@ -243,7 +243,7 @@ class TranslateViewModel @Inject constructor(
                     sourceTextFlow.value = TranslationRequest("", shouldTranslate = false)
 
                     val langCode = getLocaleFromLangCode(_state.value.sourceLang).language
-                    voiceToTextParser.startListening(langCode)
+                    voiceToTextParser.startListening(event.context, langCode)
                 }
             }
 

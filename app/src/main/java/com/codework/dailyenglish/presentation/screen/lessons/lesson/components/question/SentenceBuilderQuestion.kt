@@ -52,7 +52,6 @@ fun SentenceBuilderQuestion(
     var ttsSpeed by remember { mutableFloatStateOf(1.0f) }
     val selectedSet = remember(selectedIndices) { selectedIndices.toSet() }
 
-    // Tách câu đúng thành danh sách các từ để tính toán chính xác số lượng ô cần hiển thị
     val correctWordsCount = remember(correctSentence) {
         if (correctSentence.isBlank()) 0
         else correctSentence.trim().split("\\s+".toRegex()).size
@@ -73,20 +72,17 @@ fun SentenceBuilderQuestion(
             modifier = Modifier.padding(bottom = 20.dp)
         )
 
-        // CỤM 2: KHU VỰC PHÁT ÂM THANH & CÂU HỎI
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 24.dp)
         ) {
-            // Lớp bóng đổ 3D mềm mại phía dưới khung chứa
             Box(
                 modifier = Modifier
                     .matchParentSize()
                     .offset(y = 4.dp)
                     .background(Color(0xFFF3F4F6), RoundedCornerShape(20.dp))
             )
-            // Lớp thẻ chính màu trắng với viền tinh tế
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),

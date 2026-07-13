@@ -151,7 +151,7 @@ fun WordResultCard(
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF1E293B),
-                                fontSize = 18.sp
+                                fontSize = 15.sp
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Surface(
@@ -175,6 +175,7 @@ fun WordResultCard(
                             Text(
                                 text = word.usPhonetic.ifEmpty { word.ukPhonetic },
                                 style = MaterialTheme.typography.bodyMedium,
+                                fontSize = 12.sp,
                                 color = Color(0xFF64748B)
                             )
                             Text(
@@ -186,6 +187,7 @@ fun WordResultCard(
                                 text = word.meaning,
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium,
+                                fontSize = 12.sp,
                                 color = Color(0xFF475569)
                             )
                         }
@@ -284,6 +286,7 @@ fun WordResultCard(
                             Text(
                                 text = exampleEn,
                                 style = MaterialTheme.typography.bodyMedium,
+                                fontSize = 11.sp,
                                 color = Color(0xFF1E293B),
                                 lineHeight = 18.sp
                             )

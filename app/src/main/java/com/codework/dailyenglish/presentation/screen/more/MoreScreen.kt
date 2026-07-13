@@ -49,6 +49,15 @@ fun MoreScreen(
         }
         item {
             Column(modifier = Modifier.padding(16.dp)) {
+                SettingsGroupTitle("Gamification")
+                ProfileMenuItem(
+                    icon = Icons.Filled.EmojiEvents,
+                    title = "Leaderboard",
+                    onClick = { onEvent(MoreEvent.OnClickLeaderboard) }
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
                 SettingsGroupTitle("Account Settings")
                 ProfileMenuItem(
                     icon = Icons.Outlined.Person,

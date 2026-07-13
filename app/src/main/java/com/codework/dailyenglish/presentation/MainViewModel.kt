@@ -1,22 +1,27 @@
-package com.codework.dailyenglish.presentation.main
+package com.codework.dailyenglish.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.codework.dailyenglish.core.base.BaseViewModel
 import com.codework.dailyenglish.core.dispatchers.Dispatcher
 import com.codework.dailyenglish.core.navigation.Route
 import com.codework.dailyenglish.domain.auth.usecase.CheckSessionUseCase
-import com.codework.dailyenglish.presentation.MainState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.update // BẮT BUỘC IMPORT DÒNG NÀY
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import com.codework.dailyenglish.core.session.SessionEvent
+import com.codework.dailyenglish.core.session.SessionEventBus
+import kotlinx.coroutines.flow.SharedFlow
+
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val checkSessionUseCase: CheckSessionUseCase,
-    private val dispatchers: Dispatcher
+    private val dispatchers: Dispatcher,
+    private val sessionEventBus: SessionEventBus 
 ) : BaseViewModel<MainState, Unit, Unit>(MainState()) {
+    val sessionEvents: SharedFlow<SessionEvent> = sessionEventBus.events
 
     init {
         checkSession()
@@ -28,7 +33,6 @@ class MainViewModel @Inject constructor(
                 checkSessionUseCase()
             }
 
-            // Dùng trực tiếp _state.update, không cần hàm ở Base
             _state.update { currentState ->
                 currentState.copy(
                     isLoading = false,

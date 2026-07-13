@@ -35,6 +35,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import com.codework.dailyenglish.presentation.screen.courses.mvi.CourseEvent
+import com.codework.dailyenglish.presentation.screen.subscription.SubscriptionPopup
 
 @Composable
 fun AiScreen(
@@ -55,7 +57,7 @@ fun AiScreen(
     ) { isGranted ->
         if (isGranted) {
             // Nếu người dùng đồng ý cấp quyền, kích hoạt bật mic
-            onEvent(AiEvent.OnMicToggle)
+            onEvent(AiEvent.OnMicToggle(context))
         } else {
             // Nếu từ chối, hiển thị thông báo nhắc nhở
             Toast.makeText(context, "Vui lòng cấp quyền ghi âm để sử dụng tính năng này", Toast.LENGTH_SHORT).show()
@@ -70,21 +72,19 @@ fun AiScreen(
         ) == PackageManager.PERMISSION_GRANTED
 
         if (hasPermission) {
-            onEvent(AiEvent.OnMicToggle)
+            onEvent(AiEvent.OnMicToggle(context))
         } else {
             // Nếu chưa có quyền, tiến hành xin quyền
             recordAudioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
         }
     }
 
-    // Đồng bộ chữ thu âm lên khung nhập liệu
     LaunchedEffect(state.voiceCapturedText) {
         if (state.voiceCapturedText.isNotBlank()) {
-            inputText = state.voiceCapturedText
+            inputText = state.voiceCapturedText.take(state.maxCharLimit)
         }
     }
 
-    // Tự động cuộn và ẩn bàn phím khi có tin nhắn mới
     LaunchedEffect(state.messages.size) {
         if (state.messages.isNotEmpty()) {
             if (state.messages.last().isUser) {
@@ -111,7 +111,13 @@ fun AiScreen(
                     onBackClick = onBackClick,
                     onMenuClick = { scope.launch { drawerState.open() } },
                     titleContent = {
-                        Text(text = "Anicca AI", fontWeight = FontWeight.Bold, color = AppColors.TextMain)
+                        Text(
+                            text = "Anicca AI",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = AppTextSizes.TextSizeTitle,
+                            textAlign = TextAlign.Center,
+                            color = AppColors.TextMain
+                        )
                     }
                 )
             },
@@ -131,20 +137,22 @@ fun AiScreen(
 
                     ModernInputBar(
                         value = inputText,
-                        onValueChange = { inputText = it },
+                        onValueChange = { newValue ->
+                            inputText = newValue.take(state.maxCharLimit)
+                        },
                         onSend = {
                             if (state.isVoiceRecording) {
                                 handleMicClick()
                             } else if (inputText.isNotBlank()) {
                                 onEvent(AiEvent.OnSendMessage(inputText))
                             } else {
-                                handleMicClick() // Nếu ô nhập trống thì bấm nút gửi sẽ kích hoạt xin quyền/bật Mic
+                                handleMicClick()
                             }
                         },
                         isEnabled = !state.isTyping,
                         isVoiceRecording = state.isVoiceRecording,
                         onAttachClick = { onEvent(AiEvent.OnImageClick) },
-                        onMicClick = { handleMicClick() } // Gọi hàm kiểm tra quyền ở đây thay vì onMicToggle trực tiếp
+                        onMicClick = { handleMicClick() }
                     )
                 }
             }
@@ -176,4 +184,12 @@ fun AiScreen(
             }
         }
     }
+    if (state.isShowPremiumUpgradeDialog) {
+        SubscriptionPopup(
+            visible = true,
+            onDismiss = { onEvent(AiEvent.OnDismissSubscriptionPopup) }
+        )
+    }
+
+
 }

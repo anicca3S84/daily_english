@@ -21,7 +21,9 @@ class TopicViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : BaseViewModel<TopicState, TopicEvent, TopicEffect>(TopicState()) {
     val origin = savedStateHandle.toRoute<Route.TopicScreen>().origin
+
     init {
+        _state.update { it.copy(isDictionary = origin == "DICTIONARY") }
         onEvent(TopicEvent.LoadTopics)
     }
 
@@ -35,9 +37,11 @@ class TopicViewModel @Inject constructor(
                     sendEffect(TopicEffect.NavigateToAiPractice(event.topic.id, event.topic.name))
                 }
             }
+            is TopicEvent.OnSearchQueryChange -> {
+                _state.update { it.copy(searchQuery = event.query) }
+            }
         }
     }
-
 
     private fun fetchTopics() {
         _state.update { it.copy(topics = it.topics.copy(isLoading = true)) }

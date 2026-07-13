@@ -26,6 +26,7 @@ import com.codework.dailyenglish.presentation.theme.AppColors
 @Composable
 fun TopicItemCard(
     topic: VocabTopic,
+    showWordCount: Boolean,
     onClick: () -> Unit
 ) {
 
@@ -67,7 +68,7 @@ fun TopicItemCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.45f)
+                    .weight(0.4f)
                     .background(bgColor),
                 contentAlignment = Alignment.Center
             ) {
@@ -88,7 +89,6 @@ fun TopicItemCard(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-
                 Text(
                     text = topic.name,
                     fontSize = 18.sp,
@@ -98,14 +98,16 @@ fun TopicItemCard(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(6.dp))
+                if (showWordCount) {
+                    Spacer(modifier = Modifier.height(6.dp))
 
-                Text(
-                    text = "${topic.totalWords} words",
-                    fontSize = 14.sp,
-                    color = Color(0xFF94A3B8),
-                    fontWeight = FontWeight.Medium
-                )
+                    Text(
+                        text = "${topic.totalWords} words",
+                        fontSize = 14.sp,
+                        color = Color(0xFF94A3B8),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
     }

@@ -22,17 +22,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.codework.dailyenglish.domain.vocabulary.model.VocabTopic
+import com.codework.dailyenglish.presentation.theme.AppColors
+
 
 @Composable
 fun AiTopicCard(
     topic: VocabTopic,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
+    val bgColor = when (topic.name.lowercase()) {
+        "business"   -> Color(0xFFEEF2FF)
+        "travel"     -> Color(0xFFE0F2FE)
+        "food"       -> Color(0xFFFFF7D6)
+        "animals"    -> Color(0xFFDCFCE7)
+        "technology" -> Color(0xFFF3E8FF)
+        "health"     -> Color(0xFFFFE4E6)
+        "sports"     -> Color(0xFFFFEDD5)
+        "education"  -> Color(0xFFCCFBF1)
+        else         -> Color(0xFFF8FAFC)
+    }
+
     Card(
-        modifier = Modifier
-            .width(140.dp)
-            .height(170.dp)
-            .padding(bottom = 8.dp) // Tránh cắt bóng đổ
+        modifier = modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .padding(bottom = 8.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -47,24 +62,23 @@ fun AiTopicCard(
         ) {
             // 1. Khối Hình ảnh & Icon Micro
             Box(modifier = Modifier.size(68.dp)) {
-                // Ảnh chủ đề
                 AsyncImage(
                     model = topic.imageUrl,
                     contentDescription = topic.name,
                     modifier = Modifier
                         .size(64.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFF1F5F9)), // Màu nền chờ
-                    contentScale = ContentScale.Crop
+                        .background(bgColor) // Cập nhật màu nền động tại đây
+                        .padding(8.dp), // Padding này giúp icon thu nhỏ lại bên trong hình tròn, không lo bị chạm viền
+                    contentScale = ContentScale.Fit // Thay đổi từ Crop sang Fit để hiển thị toàn bộ icon
                 )
 
-                // Huy hiệu Micro góc dưới phải
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .size(22.dp)
                         .background(
-                            brush = Brush.linearGradient(listOf(Color(0xFF8E2DE2), Color(0xFF4A00E0))),
+                            brush = AppColors.MainGradient,
                             shape = CircleShape
                         ),
                     contentAlignment = Alignment.Center
@@ -78,7 +92,6 @@ fun AiTopicCard(
                 }
             }
 
-            // 2. Tên chủ đề
             Text(
                 text = topic.name,
                 fontWeight = FontWeight.Bold,
@@ -93,14 +106,16 @@ fun AiTopicCard(
             // 3. Chip "Talk to AI"
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = Color(0xFFEEF2FF) // Xanh nhạt
+                color = Color(0xFFEEF2FF)
             ) {
                 Text(
                     text = "Talk to AI",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF4F46E5), // Xanh đậm
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                    style = LocalTextStyle.current.copy(
+                        brush = AppColors.MainGradient
+                    ),
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
                 )
             }
         }

@@ -21,14 +21,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.codework.dailyenglish.domain.user.usecase.GetUserInfoUseCase
 
 @HiltViewModel
 class PracticeViewModel @Inject constructor(
-    private val getVocabTopicsUseCase: GetVocabTopicsUseCase
+    private val getVocabTopicsUseCase: GetVocabTopicsUseCase,
+    private val getUserInfoUseCase: GetUserInfoUseCase // BỔ SUNG
 ) : BaseViewModel<PracticeState, PracticeEvent, PracticeEffect>(
     initialState = PracticeState()
-)
-{
+) {
     init {
         loadPracticeContent()
     }
@@ -38,7 +39,6 @@ class PracticeViewModel @Inject constructor(
             is PracticeEvent.LoadData -> loadPracticeContent()
             is PracticeEvent.OnRetry -> loadPracticeContent()
             is PracticeEvent.OnGameClick -> sendEffect(PracticeEffect.NavigateToGame(event.gameName))
-            is PracticeEvent.OnClickLeaderboard -> sendEffect(PracticeEffect.NavigateToLeaderBoard)
             is PracticeEvent.OnExploreMoreAiTopics ->
                 sendEffect(PracticeEffect.NavigateToTopicSelection(origin = "AI_PRACTICE"))
 
@@ -50,6 +50,10 @@ class PracticeViewModel @Inject constructor(
     private fun loadPracticeContent() {
         _state.update { it.copy(topicsState = it.topicsState.copy(isLoading = true)) }
         viewModelScope.launch {
+            // Đọc trạng thái Premium từ Local
+            val localUser = getUserInfoUseCase()
+            _state.update { it.copy(isPremium = localUser?.isPremium ?: false) }
+
             getVocabTopicsUseCase()
                 .onSuccess { topics ->
                     _state.update { it.copy(topicsState = it.topicsState.copy(data = topics, isLoading = false)) }

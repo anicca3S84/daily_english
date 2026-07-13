@@ -19,22 +19,38 @@ class AuthRepositoryImpl @Inject constructor(
 ) : AuthRepository {
 
     override suspend fun loginWithGoogle(idToken: String): AppResult<User> = withContext(dispatchers.io) {
-        try {
-            val responseResult = remoteDataSource.loginWithGoogle(idToken)
+        // Gọi API qua RemoteDataSource (Đã được bọc safeApiCall bên trong)
+        val responseResult = remoteDataSource.loginWithGoogle(idToken)
 
-            responseResult.map { dto ->
-                val userDomain = dto.user?.toDomain() ?: throw Exception("User data is missing")
-                val accessToken = dto.accessToken ?: throw Exception("Access Token is missing")
-                val refreshToken = dto.refreshToken ?: throw Exception("Refresh Token is missing")
+        // Phân rã kết quả trả về bằng when để kiểm soát hoàn toàn luồng dữ liệu
+        when (responseResult) {
+            is AppResult.Success -> {
+                try {
+                    val dto = responseResult.data
+                    val userDomain = dto.user?.toDomain() ?: return@withContext AppResult.Error(
+                        AppError.Validation("User data is missing")
+                    )
+                    val accessToken = dto.accessToken ?: return@withContext AppResult.Error(
+                        AppError.Validation("Access Token is missing")
+                    )
+                    val refreshToken = dto.refreshToken ?: return@withContext AppResult.Error(
+                        AppError.Validation("Refresh Token is missing")
+                    )
 
-                localDataSource.saveTokens(accessToken, refreshToken)
+                    // Lưu local
+                    localDataSource.saveTokens(accessToken, refreshToken)
+                    localDataSource.saveUser(userDomain)
 
-                localDataSource.saveUser(userDomain)
-
-                userDomain
+                    AppResult.Success(userDomain)
+                } catch (e: Exception) {
+                    // Bắt các lỗi xảy ra trong quá trình lưu local hoặc lỗi xử lý logic cục bộ
+                    AppResult.Error(AppError.Unknown(e), message = "Lỗi xử lý dữ liệu nội bộ")
+                }
             }
-        } catch (e: Exception) {
-            AppResult.Error(AppError.Unknown(e))
+            is AppResult.Error -> {
+                // 🎯 TRẢ VỀ NGUYÊN VẸN: Giữ nguyên AppError.Http và cái "message" từ server (Ví dụ: Bạn đã hết lượt...)
+                responseResult
+            }
         }
     }
 
@@ -64,16 +80,20 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getMyProfile(): AppResult<User> = withContext(dispatchers.io) {
-        try {
-            val responseResult = remoteDataSource.getMyProfile()
-            responseResult.map { dto ->
-                val userDomain = dto.toDomain()
-                localDataSource.saveUser(userDomain)
-
-                userDomain
+        val responseResult = remoteDataSource.getMyProfile()
+        when (responseResult) {
+            is AppResult.Success -> {
+                try {
+                    val userDomain = responseResult.data.toDomain()
+                    localDataSource.saveUser(userDomain)
+                    AppResult.Success(userDomain)
+                } catch (e: Exception) {
+                    AppResult.Error(AppError.Unknown(e), message = "Không thể lưu thông tin tài khoản")
+                }
             }
-        } catch (e: Exception) {
-            AppResult.Error(AppError.Unknown(e))
+            is AppResult.Error -> {
+                responseResult
+            }
         }
     }
 }

@@ -71,7 +71,7 @@ fun TranslateScreen(
         onResult = { isGranted ->
             hasMicPermission = isGranted
             if (isGranted) {
-                onEvent(TranslateEvent.OnMicClick)
+                onEvent(TranslateEvent.OnMicClick(context))
             }
         }
     )
@@ -144,7 +144,7 @@ fun TranslateScreen(
                         },
                         onMicClick = {
                             if (hasMicPermission) {
-                                onEvent(TranslateEvent.OnMicClick)
+                                onEvent(TranslateEvent.OnMicClick(context))
                             } else {
                                 micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
                             }

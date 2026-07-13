@@ -1,6 +1,5 @@
 package com.codework.dailyenglish.di
 
-import android.app.Application
 import android.content.Context
 import com.codework.dailyenglish.core.utils.TextToSpeechParser
 import com.codework.dailyenglish.core.utils.VoiceToTextParser
@@ -32,9 +31,7 @@ object ViewModelManagerModule {
 
     @Provides
     @ViewModelScoped
-    fun provideVoiceToTextParser(
-        application: Application
-    ): VoiceToTextParser {
-        return VoiceToTextParser(application)
+    fun provideVoiceToTextParser(): VoiceToTextParser {
+        return VoiceToTextParser()
     }
 }

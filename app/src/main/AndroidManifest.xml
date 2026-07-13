@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+<uses-permission android:name="android.permission.BLUETOOTH_SCAN"
         android:usesPermissionFlags="neverForLocation"
         tools:targetApi="31" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -20,6 +20,10 @@
         <intent>
             <action android:name="android.speech.RecognitionService" />
         </intent>
+
+        <!-- 2. Khai báo hiển thị tường minh cho 2 gói Google Speech & Google TTS trên Android 11+ -->
+        <package android:name="com.google.android.tts" />
+        <package android:name="com.google.android.googlequicksearchbox" />
     </queries>
 
 
@@ -29,11 +33,17 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
+        tools:replace="android:allowBackup"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Daily_english">
+
+<!--        id test-->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-8186829695328038~3692884290"/>
 
         <activity
             android:name=".MainActivity"

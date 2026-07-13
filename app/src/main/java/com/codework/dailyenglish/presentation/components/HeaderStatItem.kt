@@ -51,7 +51,7 @@ fun HeaderStatItem(
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodySmall.copy(
-                    fontSize = AppTextSizes.TextSizeLabel
+                    fontSize = AppTextSizes.TextSizeSmall
                 ),
                 color = Color.Gray
             )

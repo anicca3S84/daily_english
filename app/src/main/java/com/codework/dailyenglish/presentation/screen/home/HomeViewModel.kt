@@ -16,24 +16,22 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+import com.codework.dailyenglish.domain.user_statistic.usecase.StudyTimeManagerUseCase
+
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getWeeklyStatsUseCase: GetWeeklyStatsUseCase,
     private val getUserInfoUseCase: GetUserInfoUseCase,
-    // ==========================================
-    // --- BỔ SUNG: Tiêm UseCase lấy Profile ---
-    // ==========================================
-    private val getMyProfileUseCase: GetMyProfileUseCase
+    private val getMyProfileUseCase: GetMyProfileUseCase,
+    private val studyTimeManager: StudyTimeManagerUseCase
 ) : BaseViewModel<HomeState, HomeEvent, HomeEffect>(
     initialState = HomeState()
 ) {
 
-    init {
-        loadHomeData()
-    }
 
     override fun onEvent(event: HomeEvent) {
         when(event) {
+            HomeEvent.OnEnterHomeScreen -> loadHomeData()
             HomeEvent.OnContinueLesson -> { /* TODO */ }
             HomeEvent.OnDailyQuestClick -> toggleDailyQuest()
             HomeEvent.OnProfileClick -> {}
@@ -47,9 +45,8 @@ class HomeViewModel @Inject constructor(
             }
             is HomeEvent.OnDismissSubscriptionPopup -> {
                 _state.update { it.copy(showSubscriptionPopup = false) }
-                loadHomeData() // Làm mới dữ liệu màn hình chính sau khi đóng popup mua VIP
+                loadHomeData()
             }
-            else -> {}
         }
     }
 
@@ -68,9 +65,11 @@ class HomeViewModel @Inject constructor(
                 )
             }
 
-            // 2. ĐỒNG BỘ NGẦM (SILENT SYNC & CACHE WRITE)
-            // Gọi API mạng lấy dữ liệu tươi mới nhất từ Server.
-            // Khi gọi thành công, Repository tự ghi đè lưu trạng thái mới nhất vào Cache (SharedPreferences).
+            try {
+                studyTimeManager.syncIfEnoughTime()
+            } catch (e: Exception) {
+            }
+
             launch {
                 getMyProfileUseCase()
                     .onSuccess { freshUser ->
@@ -78,16 +77,13 @@ class HomeViewModel @Inject constructor(
                             it.copy(
                                 userName = freshUser.fullName,
                                 avatarUrl = freshUser.avatarUrl,
-                                isPremium = freshUser.isPremium // Tự động đồng bộ mất VIP nếu hết hạn trên Server
+                                isPremium = freshUser.isPremium
                             )
                         }
                     }
-                    .onError {
-                        // Thất bại ngầm (Ví dụ mất mạng) thì bỏ qua, người dùng vẫn xem được giao diện từ Cache cũ
-                    }
+                    .onError { }
             }
 
-            // 3. TẢI SỐ LIỆU THỐNG KÊ TUẦN
             getWeeklyStatsUseCase()
                 .onSuccess { stats ->
                     _state.update { state ->

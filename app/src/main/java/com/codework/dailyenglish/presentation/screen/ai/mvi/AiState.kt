@@ -9,5 +9,12 @@ data class AiState(
     val isTyping: Boolean = false,
     val currentSessionId: String? = null,
     val isVoiceRecording: Boolean = false,
-    val voiceCapturedText: String = ""
+    val voiceCapturedText: String = "",
+
+    val isPremium: Boolean = false,
+    val remainingMessages: Int = 10,
+    val maxCharLimit: Int = 150,
+
+    val isShowPremiumUpgradeDialog: Boolean = false
+
 )

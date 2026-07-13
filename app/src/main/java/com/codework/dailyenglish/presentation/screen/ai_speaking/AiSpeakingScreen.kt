@@ -9,10 +9,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.codework.dailyenglish.presentation.components.StateWrapper
@@ -31,7 +33,14 @@ fun AiSpeakingScreen(
     onBackClick: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    val listState = rememberLazyListState() // Quản lý trạng thái cuộn của LazyColumn
+    val listState = rememberLazyListState()
+    val context = LocalContext.current
+
+    DisposableEffect(context) {
+        onDispose {
+            onEvent(AiSpeakingEvent.OnStopRecording)
+        }
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -84,7 +93,7 @@ fun AiSpeakingScreen(
 
                     SpeakingInputBar(
                         isRecording = state.isRecording,
-                        onToggleRecording = { onEvent(AiSpeakingEvent.OnToggleRecording) },
+                        onToggleRecording = { onEvent(AiSpeakingEvent.OnToggleRecording(context)) },
                         onShowSuggestions = { onEvent(AiSpeakingEvent.OnToggleSuggestions) },
                         onSendText = { onEvent(AiSpeakingEvent.OnSendMessage(it)) }
                     )

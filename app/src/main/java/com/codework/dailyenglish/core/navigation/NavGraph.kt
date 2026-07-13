@@ -1,11 +1,18 @@
 package com.codework.dailyenglish.core.navigation
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -53,10 +60,6 @@ import com.codework.dailyenglish.presentation.screen.lessons.review.*
 import com.codework.dailyenglish.presentation.screen.lessons.review.mvi.QuizReviewEffect
 import com.codework.dailyenglish.presentation.screen.lessons.review.mvi.QuizReviewEvent
 import com.codework.dailyenglish.presentation.screen.lessons.review.mvi.QuizReviewState
-import com.codework.dailyenglish.presentation.screen.lessons.speaking.*
-import com.codework.dailyenglish.presentation.screen.lessons.speaking.mvi.SpeakingEffect
-import com.codework.dailyenglish.presentation.screen.lessons.speaking.mvi.SpeakingEvent
-import com.codework.dailyenglish.presentation.screen.lessons.speaking.mvi.SpeakingState
 import com.codework.dailyenglish.presentation.screen.more.*
 import com.codework.dailyenglish.presentation.screen.more.mvi.MoreEffect
 import com.codework.dailyenglish.presentation.screen.more.mvi.MoreEvent
@@ -98,13 +101,47 @@ import com.codework.dailyenglish.presentation.screen.word_detail.mvi.WordDetailE
 import com.codework.dailyenglish.presentation.screen.word_detail.mvi.WordDetailEvent
 import com.codework.dailyenglish.presentation.screen.word_detail.mvi.WordDetailState
 import kotlinx.coroutines.delay
+import com.codework.dailyenglish.core.session.SessionEvent
+import com.codework.dailyenglish.presentation.MainViewModel
 
 
 @Composable
 fun NavGraph(
     navController: NavHostController,
-    startDestination: Any // Thay đổi: nhận startDestination động từ ngoài truyền vào
+    startDestination: Any,
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
+
+    var showSessionExpiredDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        mainViewModel.sessionEvents.collect { event ->
+            if (event is SessionEvent.ForceLogout) {
+                showSessionExpiredDialog = true
+            }
+        }
+    }
+
+    if (showSessionExpiredDialog) {
+        AlertDialog(
+            onDismissRequest = { /* Không cho tắt khi bấm ra ngoài */ },
+            title = { Text(text = "Phiên đăng nhập hết hạn") },
+            text = { Text(text = "Phiên làm việc của bạn đã kết thúc. Vui lòng đăng nhập lại để tiếp tục học tập.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showSessionExpiredDialog = false
+                        navController.navigate(Route.LoginScreen) {
+                            popUpTo(navController.graph.id) { inclusive = true }
+                        }
+                    }
+                ) {
+                    Text(text = "Đăng nhập lại")
+                }
+            }
+        )
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination, // Áp dụng ở đây
@@ -215,7 +252,6 @@ fun NavGraph(
             )
         }
 
-        // Trong file NavGraph.kt của bạn
         composableScreen<
                 Route.PracticeScreen,
                 PracticeViewModel,
@@ -237,11 +273,6 @@ fun NavGraph(
                     is PracticeEffect.NavigateToTopicSelection -> {
                         navController.navigate(Route.TopicScreen(origin = effect.origin))
                     }
-
-                    is PracticeEffect.NavigateToLeaderBoard -> {
-                        navController.navigate(Route.LeaderboardScreen)
-                    }
-
                     else -> {}
                 }
             }
@@ -266,6 +297,11 @@ fun NavGraph(
 
                     is MoreEffect.ShowToast -> { /* Hiện toast */
                     }
+
+                    is MoreEffect.NavigateToLeaderBoard -> {
+                        navController.navigate(Route.LeaderboardScreen)
+                    }
+
                 }
             }
         ) { state, onEvent ->
@@ -275,13 +311,7 @@ fun NavGraph(
         composableScreen<Route.AIScreen, AiViewModel, AiState, AiEvent, AiEffect>(
             onNavigate = { effect ->
                 when (effect) {
-                    is AiEffect.ShowToast -> { /* TODO: Xử lý hiện Toast hoặc Snackbar báo lỗi mạng */
-                    }
-
                     is AiEffect.OpenGallery -> { /* TODO: Gọi intent mở thư viện ảnh */
-                    }
-
-                    is AiEffect.OpenMicrophone -> { /* TODO: Gọi intent mở Voice Input Google */
                     }
                 }
             }
@@ -399,27 +429,6 @@ fun NavGraph(
 //                onBackClick = { navController.popBackStack() })
 //        }
 
-        composableScreen<Route.SpeakingScreen, SpeakingViewModel, SpeakingState, SpeakingEvent, SpeakingEffect>(
-            onNavigate = { effect ->
-                when (effect) {
-                    is SpeakingEffect.NavigateBack -> navController.popBackStack()
-                    is SpeakingEffect.NavigateToFinish -> {
-                        navController.popBackStack(Route.CourseScreen, inclusive = false)
-                    }
-
-                    is SpeakingEffect.PlayTtsAudio -> {
-                    }
-
-                    is SpeakingEffect.ShowToast -> {
-                    }
-                }
-            }
-        ) { state, onEvent ->
-            SpeakingScreen(
-                state = state,
-                onEvent = onEvent,
-                onBackClick = { navController.popBackStack() })
-        }
 
         composableScreen<Route.CourseDetailScreen, CourseDetailViewModel, CourseDetailState, CourseDetailEvent, CourseDetailEffect>(
             onNavigate = { effect ->

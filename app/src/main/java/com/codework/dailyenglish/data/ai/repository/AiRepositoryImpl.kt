@@ -28,7 +28,7 @@ class AiRepositoryImpl @Inject constructor(
         message: String,
         topicId: String?,
         topicName: String?,
-        isNeedSuggestions: Boolean // Thêm biến điều khiển luồng động từ UseCase đẩy xuống
+        isNeedSuggestions: Boolean
     ): AppResult<ChatMessage> = withContext(dispatchers.io) {
         val requestDto = ChatRequestDto(
             sessionId = sessionId,
@@ -38,7 +38,13 @@ class AiRepositoryImpl @Inject constructor(
             isNeedSuggestions = isNeedSuggestions
         )
         remoteDataSource.sendMessage(requestDto).map { dto ->
-            AiMapper.mapToDomain(dto) // Sử dụng hàm map đã nâng cấp để giữ trọn vẹn list gợi ý
+            AiMapper.mapToDomain(dto)
+        }
+    }
+
+    override suspend fun getSessionMessages(sessionId: String): AppResult<List<ChatMessage>> = withContext(dispatchers.io) {
+        remoteDataSource.getSessionMessages(sessionId).map { listDto ->
+            listDto.map { AiMapper.mapToDomain(it, sessionId) }
         }
     }
 }

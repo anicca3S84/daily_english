@@ -50,9 +50,8 @@ fun CourseCard(
     val progressPercent = (course.progress * 100).toInt()
     val safeProgress = course.progress.coerceIn(0f, 1f)
 
-    // ĐỔI MỚI: Nếu khóa Premium bị khóa, dùng màu vàng hổ phách thay vì xám để kích thích nâng cấp
     val activeColor = when {
-        isLocked && isPremium -> Color(0xFFF59E0B) // Màu Amber/Vàng kim cho khóa VIP
+        isLocked && isPremium -> Color(0xFFF59E0B)
         isLocked -> Color.Gray
         else -> course.themeColor.primaryColor
     }
@@ -148,7 +147,9 @@ fun CourseCard(
 
                 Text(
                     text = course.description,
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontSize = 10.sp
+                    ),
                     color = Color.Gray,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis

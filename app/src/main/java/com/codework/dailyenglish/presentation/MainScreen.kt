@@ -14,13 +14,23 @@ import com.codework.dailyenglish.core.navigation.AppBottomNavigation
 import com.codework.dailyenglish.core.navigation.NavGraph
 import com.codework.dailyenglish.core.navigation.Route
 
+
+import com.codework.dailyenglish.core.utils.AppTimeTracker
+
 @Composable
 fun MainScreen(
-    startDestination: Any
+    startDestination: Any,
+    onSaveSessionTime: (Int) -> Unit
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+
+    val isUserLoggedIn = currentDestination != null && !currentDestination.hasRoute<Route.LoginScreen>()
+
+    if (isUserLoggedIn) {
+        AppTimeTracker(onSaveSessionTime = onSaveSessionTime)
+    }
 
     val showBottomBar = currentDestination?.hasRoute<Route.HomeScreen>() == true ||
             currentDestination?.hasRoute<Route.CourseScreen>() == true ||

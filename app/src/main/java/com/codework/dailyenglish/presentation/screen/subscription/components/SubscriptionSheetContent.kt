@@ -23,14 +23,15 @@ import androidx.compose.ui.unit.dp
 import com.codework.dailyenglish.presentation.components.StateWrapper
 import com.codework.dailyenglish.presentation.screen.subscription.mvi.SubscriptionEvent
 import com.codework.dailyenglish.presentation.screen.subscription.mvi.SubscriptionState
+import com.codework.dailyenglish.presentation.theme.AppColors
 
 @Composable
 fun SubscriptionSheetContent(
     state: SubscriptionState,
     onEvent: (SubscriptionEvent) -> Unit,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    onCopySuccess:() -> Unit
 ) {
-    val BluePrimary = Color(0xFF2196F3)
     val textDark = Color(0xFF1E293B)
     val textLight = Color(0xFF64748B)
 
@@ -43,9 +44,12 @@ fun SubscriptionSheetContent(
             )
     ) {
         Box(
-            modifier = Modifier
+            Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp
+                )
         ) {
             Box(
                 modifier = Modifier
@@ -69,9 +73,9 @@ fun SubscriptionSheetContent(
             state.isPremium && !state.forceShowPacks -> {
                 ActiveVIPDashboardContent(
                     expiryDate = state.premiumExpiresAt,
-                    onBuyMoreClick = { onEvent(SubscriptionEvent.OnShowPacksClick) }, // Nhấn nút này sẽ kích hoạt OnShowPacksClick
+                    onBuyMoreClick = { onEvent(SubscriptionEvent.OnShowPacksClick) },
                     onClose = onClose,
-                    BluePrimary = BluePrimary
+                    BluePrimary = AppColors.BluePrimary
                 )
             }
             state.paymentUiState.data != null || state.paymentUiState.isLoading -> {
@@ -85,13 +89,13 @@ fun SubscriptionSheetContent(
                             isPaymentSuccess = state.isPaymentSuccess,
                             onBackToSelection = { onEvent(SubscriptionEvent.OnDismissBottomSheet) },
                             onClose = onClose,
-                            BluePrimary = BluePrimary
+                            BluePrimary = AppColors.BluePrimary,
+                            onCopyClick = { onCopySuccess() }
                         )
                     }
                 }
             }
             else -> {
-                // Điểm đích: Màn giới thiệu và chọn gói (Trang 1)
                 StateWrapper(
                     uiState = state.packsUiState,
                     onRetry = { onEvent(SubscriptionEvent.OnInitLoad) }
@@ -99,7 +103,6 @@ fun SubscriptionSheetContent(
                     IntroAndPacksSectionContent(
                         state = state,
                         onEvent = onEvent,
-                        BluePrimary = BluePrimary,
                         textDark = textDark,
                         textLight = textLight
                     )

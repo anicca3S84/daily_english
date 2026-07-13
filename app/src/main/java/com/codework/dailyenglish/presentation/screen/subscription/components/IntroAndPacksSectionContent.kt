@@ -54,11 +54,12 @@ import androidx.compose.ui.unit.sp
 import com.codework.dailyenglish.R
 import com.codework.dailyenglish.presentation.screen.subscription.mvi.SubscriptionEvent
 import com.codework.dailyenglish.presentation.screen.subscription.mvi.SubscriptionState
+import com.codework.dailyenglish.presentation.theme.AppColors
+
 @Composable
 fun IntroAndPacksSectionContent(
     state: SubscriptionState,
     onEvent: (SubscriptionEvent) -> Unit,
-    BluePrimary: Color,
     textDark: Color,
     textLight: Color
 ) {
@@ -99,7 +100,6 @@ fun IntroAndPacksSectionContent(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Khối quyền lợi VIP
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -181,10 +181,9 @@ fun IntroAndPacksSectionContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Danh sách gói thành viên hiển thị động dựa trên API
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(7.dp)
         ) {
             val subscriptionPacks = state.packsUiState.data.orEmpty()
 
@@ -206,7 +205,7 @@ fun IntroAndPacksSectionContent(
                 val borderColor by animateColorAsState(
                     targetValue = when {
                         isSelected && isBestValuePack -> Color(0xFFD97706)
-                        isSelected -> BluePrimary
+                        isSelected -> AppColors.BluePrimary
                         isBestValuePack -> Color(0xFFF59E0B).copy(alpha = 0.5f)
                         else -> Color(0xFFE2E8F0)
                     },
@@ -216,7 +215,7 @@ fun IntroAndPacksSectionContent(
                 val backgroundColor by animateColorAsState(
                     targetValue = when {
                         isSelected && isBestValuePack -> Color(0xFFFFFDF5)
-                        isSelected -> BluePrimary.copy(alpha = 0.04f)
+                        isSelected -> AppColors.BluePrimary.copy(alpha = 0.04f)
                         else -> Color.White
                     },
                     label = "backgroundColor"
@@ -237,6 +236,14 @@ fun IntroAndPacksSectionContent(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
+                        val nameParts = pack.name.split("-")
+                        val displayName = nameParts.firstOrNull()?.trim() ?: pack.name
+                        val displayDuration = if (nameParts.size > 1) {
+                            "/ ${nameParts.subList(1, nameParts.size).joinToString("-").trim()}"
+                        } else {
+                            "/ ${pack.durationDays} days"
+                        }
+
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.weight(1f)
@@ -255,18 +262,20 @@ fun IntroAndPacksSectionContent(
                                 )
                             }
                             Spacer(modifier = Modifier.width(16.dp))
-                            Column {
+                            Column(
+                                modifier = Modifier.weight(1f)
+                            ) {
                                 Text(
-                                    text = pack.name,
+                                    text = displayName,
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF0F172A),
-                                        fontSize = 16.sp
+                                        fontSize = 13.sp
                                     )
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "/ ${pack.durationDays} days",
+                                    text = displayDuration,
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         color = textLight,
                                         fontSize = 14.sp
@@ -288,9 +297,9 @@ fun IntroAndPacksSectionContent(
                                 append(rawPriceText)
                             },
                             style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Black,
+                                fontWeight = FontWeight.W500,
                                 color = priceColor,
-                                fontSize = 18.sp
+                                fontSize = 15.sp
                             )
                         )
                     }
@@ -328,11 +337,11 @@ fun IntroAndPacksSectionContent(
             onClick = { onEvent(SubscriptionEvent.OnBuyClick) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp)
+                .padding(bottom = 16.dp)
                 .height(56.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = BluePrimary,
-                disabledContainerColor = BluePrimary.copy(alpha = 0.4f)
+                containerColor = AppColors.BluePrimary,
+                disabledContainerColor = AppColors.BluePrimary.copy(alpha = 0.4f)
             ),
             shape = RoundedCornerShape(16.dp),
             enabled = !isInitiatingPayment && state.selectedPackId.isNotEmpty()

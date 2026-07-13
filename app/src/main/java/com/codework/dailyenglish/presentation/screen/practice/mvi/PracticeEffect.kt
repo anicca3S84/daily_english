@@ -5,5 +5,4 @@ import com.codework.dailyenglish.core.base.BaseEffect
 sealed interface PracticeEffect: BaseEffect{
     data class NavigateToAiSpeaking(val topicId: String, val topicName: String) : PracticeEffect
     data class NavigateToGame(val gameName: String) : PracticeEffect
-    data object NavigateToLeaderBoard : PracticeEffect
     data class NavigateToTopicSelection(val origin: String) : PracticeEffect}

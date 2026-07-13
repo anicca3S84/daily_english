@@ -54,7 +54,8 @@ fun SubscriptionPopup(
         SubscriptionSheetContent(
             state = state,
             onEvent = viewModel::onEvent,
-            onClose = animateClose
+            onClose = animateClose,
+            onCopySuccess = { viewModel.onEvent(SubscriptionEvent.OnCopySuccess) }
         )
     }
 }

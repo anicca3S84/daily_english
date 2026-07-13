@@ -9,12 +9,14 @@ import com.codework.dailyenglish.core.base.BaseViewModel
 import com.codework.dailyenglish.core.network.onError
 import com.codework.dailyenglish.core.network.onSuccess
 import com.codework.dailyenglish.core.utils.TextToSpeechParser
+import com.codework.dailyenglish.domain.auth.usecase.GetMyProfileUseCase
 import com.codework.dailyenglish.domain.dictionary.usecase.ClearRecentSearchesUseCase
 import com.codework.dailyenglish.domain.dictionary.usecase.DeleteRecentSearchUseCase
 import com.codework.dailyenglish.domain.dictionary.usecase.GetRecentSearchesUseCase
 import com.codework.dailyenglish.domain.dictionary.usecase.SaveRecentSearchUseCase
 import com.codework.dailyenglish.domain.dictionary.usecase.ToggleSaveWordUseCase
 import com.codework.dailyenglish.domain.dictionary.usecase.SearchWordUseCase
+import com.codework.dailyenglish.domain.user.usecase.GetUserInfoUseCase
 import com.codework.dailyenglish.domain.vocabulary.usecase.GetVocabTopicsUseCase
 import com.codework.dailyenglish.presentation.screen.dictionary.mvi.DictionaryEffect
 import com.codework.dailyenglish.presentation.screen.dictionary.mvi.DictionaryEvent
@@ -37,7 +39,10 @@ class DictionaryViewModel @Inject constructor(
     private val deleteRecentSearchUseCase: DeleteRecentSearchUseCase,
     private val clearRecentSearchesUseCase: ClearRecentSearchesUseCase,
     private val textToSpeechParser: TextToSpeechParser,
-) : BaseViewModel<DictionaryState, DictionaryEvent, DictionaryEffect>(
+    private val getUserInfoUseCase: GetUserInfoUseCase,
+    private val getMyProfileUseCase: GetMyProfileUseCase,
+
+    ) : BaseViewModel<DictionaryState, DictionaryEvent, DictionaryEffect>(
     initialState = DictionaryState()
 ) {
 
@@ -47,6 +52,20 @@ class DictionaryViewModel @Inject constructor(
     init {
         fetchVocabTopics()
         observeRecentSearches()
+        checkUserPremiumStatus()
+    }
+
+    private fun checkUserPremiumStatus() {
+        viewModelScope.launch {
+            // Đọc từ bộ nhớ Local
+            val localUser = getUserInfoUseCase()
+            _state.update { it.copy(isPremium = localUser?.isPremium ?: false) }
+
+            // Đồng bộ ngầm thông tin mới nhất từ API
+            getMyProfileUseCase().onSuccess { freshUser ->
+                _state.update { it.copy(isPremium = freshUser.isPremium) }
+            }
+        }
     }
 
     private fun observeRecentSearches() {

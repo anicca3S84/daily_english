@@ -43,7 +43,7 @@ fun CourseHeroSection(state: CourseDetailState) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(Spaces.Space200 + Spaces.Space20)
+            .height(Spaces.Space200)
             .clip(RoundedCornerShape(AppRadius.RadiusExtraLarge))
             .background(state.courseTheme.primaryColor)
     ) {

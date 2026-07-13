@@ -8,6 +8,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.codework.dailyenglish.domain.lesson.model.StepData
 import com.codework.dailyenglish.presentation.components.AppConfirmDialog
@@ -30,6 +31,7 @@ fun LessonScreen(
 ) {
     val snackBar = remember { SnackbarHostState() }
     val data = state.data
+    val context = LocalContext.current
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackBar) },
@@ -98,7 +100,7 @@ fun LessonScreen(
                             onAnswerInput = { answer, indices ->
                                 onEvent(LessonEvent.OnAnswerInput(answer = answer, indices = indices))
                             },
-                            onStartSpeech = { onEvent(LessonEvent.OnStartSpeech) },
+                            onStartSpeech = { onEvent(LessonEvent.OnStartSpeech(context)) },
                             onStopSpeech = { onEvent(LessonEvent.OnStopSpeech) },
                             onPlayAudio = { url, word, speed ->
                                 onEvent(LessonEvent.OnPlayAudio(url, word, speed))

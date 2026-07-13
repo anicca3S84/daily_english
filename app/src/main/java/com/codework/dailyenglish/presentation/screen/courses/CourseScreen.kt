@@ -65,7 +65,6 @@ fun CourseScreen(
                     verticalArrangement = Arrangement.spacedBy(Spaces.Space16),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Phần header Curves giữ nguyên ...
                     stickyHeader {
                         CurvedHeaderWrapper(
                             content = {
@@ -197,7 +196,6 @@ fun CourseScreen(
                 }
             }
 
-            // POPUP BOTTOM SHEET MUA VIP
             if (state.showSubscriptionPopup) {
                 SubscriptionPopup(
                     visible = true,

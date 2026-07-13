@@ -6,5 +6,6 @@ import com.codework.dailyenglish.presentation.screen.practice.model.PracticeCate
 
 data class PracticeState(
     val categories: List<PracticeCategory> = emptyList(),
+    val isPremium: Boolean = false,
     val topicsState: BaseUiState<List<VocabTopic>> = BaseUiState(),
 )
