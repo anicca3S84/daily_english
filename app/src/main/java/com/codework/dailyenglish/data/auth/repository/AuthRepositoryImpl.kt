@@ -10,6 +10,7 @@ import com.codework.dailyenglish.data.auth.remote.datasource.AuthRemoteDataSourc
 import com.codework.dailyenglish.domain.auth.model.User
 import com.codework.dailyenglish.domain.auth.repository.AuthRepository
 import kotlinx.coroutines.withContext
+import java.io.File
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
@@ -89,6 +90,24 @@ class AuthRepositoryImpl @Inject constructor(
                     AppResult.Success(userDomain)
                 } catch (e: Exception) {
                     AppResult.Error(AppError.Unknown(e), message = "Không thể lưu thông tin tài khoản")
+                }
+            }
+            is AppResult.Error -> {
+                responseResult
+            }
+        }
+    }
+
+    override suspend fun updateMyProfile(fullName: String, avatarFile: File?): AppResult<User> = withContext(dispatchers.io) {
+        val responseResult = remoteDataSource.updateMyProfile(fullName, avatarFile)
+        when (responseResult) {
+            is AppResult.Success -> {
+                try {
+                    val userDomain = responseResult.data.toDomain()
+                    localDataSource.saveUser(userDomain)
+                    AppResult.Success(userDomain)
+                } catch (e: Exception) {
+                    AppResult.Error(AppError.Unknown(e), message = "Không thể lưu thông tin tài khoản mới")
                 }
             }
             is AppResult.Error -> {

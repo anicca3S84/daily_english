@@ -36,6 +36,7 @@ class MoreViewModel @Inject constructor(
             is MoreEvent.OnRetry -> loadProfile()
             is MoreEvent.OnLogout -> handleLogout()
             is MoreEvent.OnClickLeaderboard -> sendEffect(MoreEffect.NavigateToLeaderBoard)
+            is MoreEvent.OnRefreshData -> loadProfile()
         }
     }
 

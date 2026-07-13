@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import java.util.Calendar
+
 class ReminderManager(private val context: Context) {
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -33,79 +34,78 @@ class ReminderManager(private val context: Context) {
     }
 
     fun rescheduleDailyReminders() {
+        // Hủy bỏ lịch hẹn cũ trước đó để tránh trùng lặp
         cancelAllReminders()
 
-        for (i in 1..7) {
-            val calendar = Calendar.getInstance().apply {
-                add(Calendar.SECOND, 5 * i)
-            }
+        // 1. Chỉ lên lịch duy nhất 1 lần sau 5 giây nữa
+        val calendar = Calendar.getInstance().apply {
+            add(Calendar.SECOND, 5)
+        }
 
-            val intent = Intent(context, ReminderReceiver::class.java).apply {
-                // Đưa ID của thông báo vào intent để Receiver có thể nhận được
-                putExtra("notification_id", i)
-            }
+        val intent = Intent(context, ReminderReceiver::class.java).apply {
+            // Fix cứng ID thông báo là 100
+            putExtra("notification_id", 100)
+        }
 
-            val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                i, // RequestCode vẫn giữ nguyên để không bị ghi đè báo thức
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
-            )
+        // 2. Fix cứng requestCode là 100 (Không cần vòng lặp nữa)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            100,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
-            try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    val canSchedule = alarmManager.canScheduleExactAlarms()
-                    // Ghi log kiểm tra xem quyền thực sự đang là True hay False
-                    android.util.Log.d("DailyEnglishDebug", "Quyền canScheduleExactAlarms: $canSchedule")
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val canSchedule = alarmManager.canScheduleExactAlarms()
+                android.util.Log.d("DailyEnglishDebug", "Quyền canScheduleExactAlarms: $canSchedule")
 
-                    if (canSchedule) {
-                        alarmManager.setExactAndAllowWhileIdle(
-                            AlarmManager.RTC_WAKEUP,
-                            calendar.timeInMillis,
-                            pendingIntent
-                        )
-                        android.util.Log.d("DailyEnglishDebug", "Đã lên lịch báo thức chính xác cho mốc ${5 * i} giây")
-                    } else {
-                        alarmManager.setAndAllowWhileIdle(
-                            AlarmManager.RTC_WAKEUP,
-                            calendar.timeInMillis,
-                            pendingIntent
-                        )
-                        android.util.Log.d("DailyEnglishDebug", "Quyền bị từ chối, hạ cấp xuống báo thức thông thường")
-                    }
-                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (canSchedule) {
                     alarmManager.setExactAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
                         calendar.timeInMillis,
                         pendingIntent
                     )
+                    android.util.Log.d("DailyEnglishDebug", "Đã lên lịch test thông báo sau 5 giây")
                 } else {
-                    alarmManager.set(
+                    alarmManager.setAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
                         calendar.timeInMillis,
                         pendingIntent
                     )
+                    android.util.Log.d("DailyEnglishDebug", "Quyền bị từ chối, hạ cấp xuống báo thức thông thường")
                 }
-            } catch (e: SecurityException) {
-                android.util.Log.e("DailyEnglishDebug", "Lỗi bảo mật khi đặt báo thức: ${e.message}")
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    calendar.timeInMillis,
+                    pendingIntent
+                )
+            } else {
+                alarmManager.set(
+                    AlarmManager.RTC_WAKEUP,
+                    calendar.timeInMillis,
+                    pendingIntent
+                )
             }
+        } catch (e: SecurityException) {
+            android.util.Log.e("DailyEnglishDebug", "Lỗi bảo mật khi đặt báo thức: ${e.message}")
         }
     }
 
-    // Hủy bỏ toàn bộ báo thức của 7 ngày đã lên lịch trước đó
+    // Hàm hủy lịch hẹn cũng được cập nhật để dọn dẹp đúng ID số 100
     private fun cancelAllReminders() {
-        for (i in 1..7) {
-            val intent = Intent(context, ReminderReceiver::class.java)
-            val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                i,
-                intent,
-                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
-            )
-            if (pendingIntent != null) {
-                alarmManager.cancel(pendingIntent)
-                pendingIntent.cancel()
-            }
+        val intent = Intent(context, ReminderReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            100, // Khớp với ID lúc tạo
+            intent,
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        )
+        if (pendingIntent != null) {
+            alarmManager.cancel(pendingIntent)
+            pendingIntent.cancel()
+            android.util.Log.d("DailyEnglishDebug", "Đã hủy lịch test cũ thành công")
         }
     }
 }

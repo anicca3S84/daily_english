@@ -1,177 +1,193 @@
 package com.codework.dailyenglish.presentation.screen.lessons.lesson.components.question.components
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.animation.animateColorAsState
-
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FillBlankInputArea(
     hintMask: List<String?>,
-    initialAnswer: String? = null,
+    initialAnswer: String?,
     onAnswerSelected: (String) -> Unit,
-    isCorrect: Boolean? = null // Nhận trạng thái chấm điểm
+    isCorrect: Boolean?,
+    modifier: Modifier = Modifier
 ) {
-    val focusManager = LocalFocusManager.current
-    val focusRequester = remember { FocusRequester() }
-    val totalBoxes = hintMask.size
-    val currentText = initialAnswer?.lowercase() ?: ""
-
-    val isEvaluated = isCorrect != null
-    val isActive = currentText.isNotEmpty()
-
-    // 1. Màu nền động
-    val surfaceBgColor by animateColorAsState(
-        targetValue = when {
-            isEvaluated && isCorrect == true -> Color(0xFFD7FFB8)  // Xanh lá dịu
-            isEvaluated && isCorrect == false -> Color(0xFFFFE0E0) // Đỏ hồng dịu
-            isActive -> Color(0xFFEFF6FF)                         // Xanh dương khi đang soạn thảo
-            else -> Color.White
-        },
-        label = "bg"
-    )
-
-    // 2. Màu viền động
-    val surfaceBorderColor by animateColorAsState(
-        targetValue = when {
-            isEvaluated && isCorrect == true -> Color(0xFF58CC02)  // Viền xanh lá
-            isEvaluated && isCorrect == false -> Color(0xFFFF4B4B) // Viền đỏ
-            isActive -> Color(0xFF93C5FD)                         // Viền xanh dương khi đang soạn thảo
-            else -> Color(0xFFF3F4F6)
-        },
-        label = "border"
-    )
-
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
-                enabled = !isEvaluated, // Vô hiệu hóa tính năng bấm khi đã chấm điểm xong
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null
-            ) {
-                focusRequester.requestFocus()
-            },
-        shape = RoundedCornerShape(16.dp),
-        color = surfaceBgColor,
-        border = BorderStroke(1.dp, surfaceBorderColor)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 32.dp, horizontal = 16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            BasicTextField(
-                value = currentText,
-                onValueChange = { newValue ->
-                    if (!isEvaluated) { // Chặn chỉnh sửa nội dung sau khi chấm điểm
-                        val filtered = newValue.replace(Regex("[^a-zA-Z0-9]"), "").lowercase()
-                        if (filtered.length <= totalBoxes) {
-                            onAnswerSelected(filtered)
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .focusRequester(focusRequester)
-                    .fillMaxWidth(),
-                enabled = !isEvaluated, // Ngăn việc gọi bàn phím ảo lên
-                readOnly = isEvaluated, // Cấu hình chỉ đọc
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = { focusManager.clearFocus() }
-                ),
-                decorationBox = { innerTextField ->
-                    Box(contentAlignment = Alignment.Center) {
-                        Box(modifier = Modifier.alpha(0f).size(0.dp)) {
-                            innerTextField()
-                        }
-
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(24.dp)
-                        ) {
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                for (index in 0 until totalBoxes) {
-                                    val isTyped = index < currentText.length
-
-                                    val charToShow = if (isTyped) {
-                                        currentText[index].toString()
-                                    } else {
-                                        hintMask.getOrNull(index)?.lowercase() ?: ""
-                                    }
-
-                                    CharacterSlot(
-                                        char = charToShow,
-                                        isHint = !isTyped && charToShow.isNotEmpty()
-                                    )
-                                }
-                            }
-
-                            // Chỉ hiển thị dòng chữ hướng dẫn "Tap here to type" khi chưa đánh giá kết quả
-                            if (!isEvaluated) {
-                                Text(
-                                    text = "Tap here to type",
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    fontStyle = FontStyle.Italic,
-                                    color = Color(0xFF9CA3AF)
-                                )
-                            }
-                        }
-                    }
+    // 1. Nhóm các chỉ mục (index) thành các "từ" riêng biệt dựa trên khoảng trắng " "
+    // Cách này giúp hiển thị FlowRow đẹp mắt, tự động xuống dòng theo nguyên từ.
+    val words = remember(hintMask) {
+        val result = mutableListOf<List<Int>>()
+        var currentWord = mutableListOf<Int>()
+        for (i in hintMask.indices) {
+            if (hintMask[i] == " ") {
+                if (currentWord.isNotEmpty()) {
+                    result.add(currentWord)
+                    currentWord = mutableListOf()
                 }
-            )
+            } else {
+                currentWord.add(i)
+            }
+        }
+        if (currentWord.isNotEmpty()) {
+            result.add(currentWord)
+        }
+        result
+    }
+
+    // 2. Khởi tạo mảng ký tự người dùng nhập dựa trên initialAnswer và hintMask
+    val userInputChars = remember(hintMask, initialAnswer) {
+        mutableStateListOf<String>().apply {
+            for (i in hintMask.indices) {
+                val charFromAnswer = initialAnswer?.getOrNull(i)?.toString()
+                val hint = hintMask[i]
+                if (hint == " ") {
+                    add(" ") // Giữ nguyên khoảng trắng cố định
+                } else {
+                    add(charFromAnswer ?: hint ?: "")
+                }
+            }
         }
     }
-}
 
-@Composable
-fun CharacterSlot(
-    char: String,
-    isHint: Boolean
-) {
-    val displayText = char.ifEmpty { "_" }
-    val textColor = when {
-        char.isEmpty() -> Color(0xFF9CA3AF) // Gray underscore
-        isHint -> Color(0xFF9CA3AF)         // Green hint
-        else -> Color(0xFF374151)           // Dark gray typed text
+    val focusRequesters = remember(hintMask) {
+        List(hintMask.size) { FocusRequester() }
     }
 
-    Text(
-        text = displayText,
-        fontSize = 22.sp,
-        fontWeight = FontWeight.Bold,
-        color = textColor,
-        modifier = Modifier.padding(horizontal = 2.dp)
-    )
+    val focusNext = { currentIndex: Int ->
+        for (i in (currentIndex + 1) until hintMask.size) {
+            if (hintMask[i] == null) {
+                focusRequesters[i].requestFocus()
+                break
+            }
+        }
+    }
+
+    val focusPrevious = { currentIndex: Int ->
+        for (i in (currentIndex - 1) downTo 0) {
+            if (hintMask[i] == null) {
+                focusRequesters[i].requestFocus()
+                break
+            }
+        }
+    }
+
+    val updateAnswer = {
+        val combinedAnswer = userInputChars.mapIndexed { index, char ->
+            if (hintMask[index] == " ") " " else char.ifEmpty { " " }
+        }.joinToString("")
+        onAnswerSelected(combinedAnswer)
+    }
+
+    FlowRow(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        words.forEachIndexed { wordIndex, wordIndices ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                wordIndices.forEach { charIndex ->
+                    val isHint = hintMask[charIndex] != null
+                    val charValue = userInputChars.getOrNull(charIndex) ?: ""
+
+                    if (isHint) {
+                        // Hiển thị ô Gợi ý (Chỉ đọc)
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .background(Color(0xFFEFF6FF), RoundedCornerShape(8.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = hintMask[charIndex] ?: "",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1D4ED8)
+                            )
+                        }
+                    } else {
+                        // Hiển thị ô Nhập liệu (Có thể chỉnh sửa)
+                        val borderColor = when (isCorrect) {
+                            true -> Color(0xFF10B981)  // Xanh lá nếu đúng
+                            false -> Color(0xFFEF4444) // Đỏ nếu sai
+                            null -> Color(0xFFD1D5DB)  // Mặc định xám
+                        }
+
+                        BasicTextField(
+                            value = charValue,
+                            onValueChange = { newValue ->
+                                // Chỉ nhận duy nhất 1 ký tự cuối cùng vừa gõ
+                                val filtered = newValue.trim().takeLast(1)
+                                userInputChars[charIndex] = filtered
+                                updateAnswer()
+
+                                if (filtered.isNotEmpty()) {
+                                    focusNext(charIndex)
+                                }
+                            },
+                            textStyle = TextStyle(
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1F2937),
+                                textAlign = TextAlign.Center
+                            ),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Next
+                            ),
+                            modifier = Modifier
+                                .size(38.dp)
+                                .focusRequester(focusRequesters[charIndex])
+                                .border(2.dp, borderColor, RoundedCornerShape(8.dp))
+                                .background(Color.White, RoundedCornerShape(8.dp))
+                                .wrapContentHeight(Alignment.CenterVertically)
+                                .onKeyEvent { keyEvent ->
+                                    // Xử lý sự kiện nhấn nút Backspace (xóa ngược)
+                                    if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.Backspace) {
+                                        if (charValue.isEmpty()) {
+                                            focusPrevious(charIndex)
+                                            true
+                                        } else {
+                                            userInputChars[charIndex] = ""
+                                            updateAnswer()
+                                            false
+                                        }
+                                    } else {
+                                        false
+                                    }
+                                }
+                        )
+                    }
+                }
+            }
+            // Tạo khoảng trống rõ ràng giữa các từ
+            if (wordIndex < words.lastIndex) {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+        }
+    }
 }

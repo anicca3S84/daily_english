@@ -65,11 +65,6 @@ fun MoreScreen(
                     onClick = { onEvent(MoreEvent.OnMenuClick("Personal")) }
                 )
                 ProfileMenuItem(
-                    icon = Icons.Outlined.Notifications,
-                    title = "Notifications",
-                    onClick = { onEvent(MoreEvent.OnMenuClick("Notifications")) }
-                )
-                ProfileMenuItem(
                     icon = Icons.Outlined.Language,
                     title = "App Language",
                     value = "English",

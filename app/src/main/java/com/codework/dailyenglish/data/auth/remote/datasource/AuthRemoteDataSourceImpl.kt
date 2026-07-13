@@ -6,7 +6,13 @@ import com.codework.dailyenglish.core.network.unwrap
 import com.codework.dailyenglish.data.auth.remote.AuthApi
 import com.codework.dailyenglish.data.auth.remote.dto.AuthDto
 import com.codework.dailyenglish.data.auth.remote.dto.GoogleLoginDto
+import com.codework.dailyenglish.data.auth.remote.dto.UpdateUserRequest
 import com.codework.dailyenglish.data.auth.remote.dto.UserDto
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 import javax.inject.Inject
 
 class AuthRemoteDataSourceImpl @Inject constructor(
@@ -19,5 +25,19 @@ class AuthRemoteDataSourceImpl @Inject constructor(
 
     override suspend fun getMyProfile(): AppResult<UserDto> {
         return safeApiCall { api.getMyProfile() }.unwrap()
+    }
+
+    override suspend fun updateMyProfile(fullName: String, avatarFile: File?): AppResult<UserDto> {
+        return safeApiCall {
+            // Cách này loại bỏ hoàn toàn charset=UTF-8 tự động của OkHttp
+            val fullNamePart = MultipartBody.Part.createFormData("fullName", fullName)
+
+            val avatarPart = avatarFile?.let { file ->
+                val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                MultipartBody.Part.createFormData("avatar", file.name, requestFile)
+            }
+
+            api.updateMyProfile(fullName = fullNamePart, avatar = avatarPart)
+        }.unwrap()
     }
 }

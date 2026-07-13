@@ -37,7 +37,7 @@ fun FlashcardFrontFace(
         ) {
             Text(
                 text = word,
-                fontSize = 30.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Black,
                 color = AppColors.TextMain,
                 textAlign = TextAlign.Center,

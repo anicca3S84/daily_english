@@ -15,21 +15,17 @@ class ReminderReceiver : BroadcastReceiver() {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = "daily_reminder_channel"
 
-        // 1. Tạo Intent trỏ tới MainActivity để mở ứng dụng
         val openAppIntent = Intent(context, MainActivity::class.java).apply {
-            // Cờ này giúp mở lại app nếu app đang chạy ngầm, không tạo mới một Activity chồng lên
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
 
-        // 2. Bọc Intent vào PendingIntent để hệ thống Android có quyền thực thi khi click
         val openAppPendingIntent = PendingIntent.getActivity(
             context,
-            0, // Request code cho việc mở app, có thể để là 0
+            0,
             openAppIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE // Dùng cờ IMMUTABLE theo chuẩn bảo mật
         )
 
-        // 3. Gắn PendingIntent vào Notification Builder thông qua setContentIntent
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle("🔥 Protect Your Learning Streak!")

@@ -8,7 +8,6 @@ import com.codework.dailyenglish.data.lesson.remote.dto.LessonStepDto
 import com.codework.dailyenglish.data.lesson.remote.dto.QuestionDto
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,12 +22,16 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+
+    const val BASE_URL = "https://skid-glade-handclasp.ngrok-free.dev/api/v1/"
+
     @Provides
     @Singleton
     fun provideGson(): Gson {
         return GsonBuilder()
             .registerTypeAdapter(LessonStepDto::class.java, LessonStepDeserializer())
-            .registerTypeAdapter(QuestionDto::class.java, QuestionDeserializer())            .create()
+            .registerTypeAdapter(QuestionDto::class.java, QuestionDeserializer())
+            .create()
     }
 
     @Provides
@@ -63,7 +66,7 @@ object NetworkModule {
         gson: Gson
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://192.168.68.63:8818/api/v1/")
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()

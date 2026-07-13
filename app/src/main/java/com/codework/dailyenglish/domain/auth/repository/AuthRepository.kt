@@ -2,6 +2,7 @@ package com.codework.dailyenglish.domain.auth.repository
 
 import com.codework.dailyenglish.core.network.AppResult
 import com.codework.dailyenglish.domain.auth.model.User
+import java.io.File
 
 interface AuthRepository {
     suspend fun loginWithEmail(email: String, password: String): AppResult<User>
@@ -12,5 +13,5 @@ interface AuthRepository {
     suspend fun isUserLoggedIn(): Boolean
     suspend fun logout()
     suspend fun getMyProfile(): AppResult<User>
-
+    suspend fun updateMyProfile(fullName: String, avatarFile: File?): AppResult<User>
 }

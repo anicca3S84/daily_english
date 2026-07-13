@@ -103,6 +103,11 @@ import com.codework.dailyenglish.presentation.screen.word_detail.mvi.WordDetailS
 import kotlinx.coroutines.delay
 import com.codework.dailyenglish.core.session.SessionEvent
 import com.codework.dailyenglish.presentation.MainViewModel
+import com.codework.dailyenglish.presentation.screen.user.UserInfoScreen
+import com.codework.dailyenglish.presentation.screen.user.UserInfoViewModel
+import com.codework.dailyenglish.presentation.screen.user.mvi.UserInfoEffect
+import com.codework.dailyenglish.presentation.screen.user.mvi.UserInfoEvent
+import com.codework.dailyenglish.presentation.screen.user.mvi.UserInfoState
 
 
 @Composable
@@ -283,29 +288,60 @@ fun NavGraph(
         composableScreen<Route.MoreScreen, MoreViewModel, MoreState, MoreEvent, MoreEffect>(
             onNavigate = { effect ->
                 when (effect) {
-                    is MoreEffect.NavigateToEditProfile -> { /* TODO: Chuyển sang màn Edit Profile */
+                    is MoreEffect.NavigateToEditProfile -> {
+                        navController.navigate(Route.UserInfoScreen)
                     }
-
                     is MoreEffect.HandleLogout -> {
                         navController.navigate(Route.LoginScreen) {
                             popUpTo(0) { inclusive = true }
                         }
                     }
-
-                    is MoreEffect.NavigateToMenu -> { /* TODO: Xử lý click menu phụ dựa vào effect.label */
+                    is MoreEffect.NavigateToMenu -> {
+                        if (effect.label == "Personal") {
+                            navController.navigate(Route.UserInfoScreen)
+                        }
                     }
-
-                    is MoreEffect.ShowToast -> { /* Hiện toast */
-                    }
-
                     is MoreEffect.NavigateToLeaderBoard -> {
                         navController.navigate(Route.LeaderboardScreen)
                     }
-
                 }
             }
         ) { state, onEvent ->
+
+            // 1. Lắng nghe back stack entry
+            val currentEntry by navController.currentBackStackEntryAsState()
+
+            LaunchedEffect(currentEntry) {
+                val entry = currentEntry ?: return@LaunchedEffect
+                if (entry.destination.route?.contains("MoreScreen") == true) {
+                    val savedStateHandle = entry.savedStateHandle
+                    val shouldRefresh = savedStateHandle.get<Boolean>("should_refresh_profile") ?: false
+                    if (shouldRefresh) {
+                        onEvent(MoreEvent.OnRefreshData)
+                        savedStateHandle["should_refresh_profile"] = false // Reset lại cờ
+                    }
+                }
+            }
+
             MoreScreen(state = state, onEvent = onEvent)
+        }
+
+        composableScreen<Route.UserInfoScreen, UserInfoViewModel, UserInfoState, UserInfoEvent, UserInfoEffect>(
+            onNavigate = { effect ->
+                when (effect) {
+                }
+            }
+        ) { state, onEvent ->
+            UserInfoScreen(
+                state = state,
+                onEvent = onEvent,
+                onBackClick = {
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("should_refresh_profile", true)
+                    navController.popBackStack()
+                }
+            )
         }
 
         composableScreen<Route.AIScreen, AiViewModel, AiState, AiEvent, AiEffect>(

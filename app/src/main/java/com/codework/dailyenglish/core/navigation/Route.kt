@@ -77,6 +77,9 @@ sealed interface Route {
     data object LeaderboardScreen : Route
 
     @Serializable
+    data object UserInfoScreen : Route
+
+    @Serializable
     data class WordDetailScreen(
         val wordId: String
     ) : Route

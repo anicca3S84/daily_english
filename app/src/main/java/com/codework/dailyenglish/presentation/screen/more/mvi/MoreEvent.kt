@@ -7,4 +7,5 @@ sealed interface MoreEvent {
     data class OnMenuClick(val label: String) : MoreEvent
     data object OnRetry : MoreEvent
     data object OnClickLeaderboard : MoreEvent
+    object OnRefreshData : MoreEvent
 }

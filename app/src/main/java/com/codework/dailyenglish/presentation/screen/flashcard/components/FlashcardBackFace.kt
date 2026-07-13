@@ -43,7 +43,7 @@ fun FlashcardBackFace(
     ) {
         Text(
             text = meaning,
-            fontSize = 24.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Black,
             color = Color(0xFF0F172A),
             textAlign = TextAlign.Center
@@ -61,7 +61,7 @@ fun FlashcardBackFace(
                     Text(
                         text = "•  $example",
                         modifier = Modifier.widthIn(max = 300.dp),
-                        fontSize = 17.sp,
+                        fontSize = 16.sp,
                         color = Color(0xFF334155),
                         fontWeight = FontWeight.W400,
                         lineHeight = 22.sp,
