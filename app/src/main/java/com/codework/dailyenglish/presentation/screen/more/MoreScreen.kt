@@ -1,99 +1,127 @@
 package com.codework.dailyenglish.presentation.screen.more
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.codework.dailyenglish.presentation.screen.more.components.ProfileHeaderSection
 import com.codework.dailyenglish.presentation.screen.more.components.ProfileMenuItem
 import com.codework.dailyenglish.presentation.screen.more.components.SettingsGroupTitle
 import com.codework.dailyenglish.presentation.screen.more.mvi.MoreEvent
 import com.codework.dailyenglish.presentation.screen.more.mvi.MoreState
 
+val BluePrimary = Color(0xFF2196F3)
+val BackgroundColor = Color(0xFFF7F8FC) // Màu nền tổng thể hơi sáng giống ảnh
+
 @Composable
 fun MoreScreen(
     state: MoreState,
     onEvent: (MoreEvent) -> Unit
 ) {
-    // ĐÃ BỎ StateWrapper ở đây
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface),
+            .background(BackgroundColor),
         contentPadding = PaddingValues(bottom = 24.dp)
     ) {
         item {
             ProfileHeaderSection(
                 data = state,
-                onEditClick = { onEvent(MoreEvent.OnEditProfile) }
+                onSettingsClick = { /* Thêm event Setting nếu cần */ }
             )
         }
         item {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+
+                // GAMIFICATION SECTION
                 SettingsGroupTitle("Gamification")
-                ProfileMenuItem(
-                    icon = Icons.Filled.EmojiEvents,
-                    title = "Leaderboard",
-                    onClick = { onEvent(MoreEvent.OnClickLeaderboard) }
-                )
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color.White,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                        ProfileMenuItem(
+                            icon = Icons.Filled.EmojiEvents,
+                            title = "Leaderboard",
+                            subtitle = "See how you rank and compete\nwith other learners",
+                            onClick = { onEvent(MoreEvent.OnClickLeaderboard) }
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // ACCOUNT SETTINGS SECTION
                 SettingsGroupTitle("Account Settings")
-                ProfileMenuItem(
-                    icon = Icons.Outlined.Person,
-                    title = "Personal Information",
-                    onClick = { onEvent(MoreEvent.OnMenuClick("Personal")) }
-                )
-                ProfileMenuItem(
-                    icon = Icons.Outlined.Language,
-                    title = "App Language",
-                    value = "English",
-                    onClick = { onEvent(MoreEvent.OnMenuClick("Language")) }
-                )
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color.White,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                        ProfileMenuItem(
+                            icon = Icons.Filled.Person,
+                            title = "Personal Information",
+                            subtitle = "View and edit your profile details",
+                            onClick = { onEvent(MoreEvent.OnMenuClick("Personal")) }
+                        )
+                        ProfileMenuItem(
+                            icon = Icons.Filled.Language,
+                            title = "App Language",
+                            subtitle = "Choose your preferred language",
+                            value = "English",
+                            onClick = { onEvent(MoreEvent.OnMenuClick("Language")) }
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // SUPPORT & ABOUT SECTION
                 SettingsGroupTitle("Support & About")
-                ProfileMenuItem(
-                    icon = Icons.Outlined.HelpOutline,
-                    title = "Help Center",
-                    onClick = { onEvent(MoreEvent.OnMenuClick("Help")) }
-                )
-                ProfileMenuItem(
-                    icon = Icons.Outlined.PrivacyTip,
-                    title = "Privacy Policy",
-                    onClick = { onEvent(MoreEvent.OnMenuClick("Privacy")) }
-                )
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color.White,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                        ProfileMenuItem(
+                            icon = Icons.Outlined.HelpOutline,
+                            title = "Help Center",
+                            subtitle = "Get help and find answers",
+                            onClick = { onEvent(MoreEvent.OnMenuClick("Help")) }
+                        )
+                        ProfileMenuItem(
+                            icon = Icons.Outlined.Info,
+                            title = "About Daily English",
+                            subtitle = "Version 1.0.0",
+                            onClick = { onEvent(MoreEvent.OnMenuClick("About")) }
+                        )
+                    }
+                }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
                     onClick = { onEvent(MoreEvent.OnLogout) },
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.errorContainer
                     ),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(16.dp)
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Logout,
@@ -107,16 +135,6 @@ fun MoreScreen(
                         fontWeight = FontWeight.Bold
                     )
                 }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = "Version 1.0.0", // Bạn có thể thêm biến appVersion vào MoreState nếu muốn
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
             }
         }
     }

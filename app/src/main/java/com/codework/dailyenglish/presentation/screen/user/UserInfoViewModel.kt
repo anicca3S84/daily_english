@@ -28,10 +28,9 @@ import javax.inject.Inject
 class UserInfoViewModel @Inject constructor(
     private val getMyProfileUseCase: GetMyProfileUseCase,
     private val updateMyProfileUseCase: UpdateMyProfileUseCase,
-    @ApplicationContext private val context: Context // Thêm context để xử lý File
+    @ApplicationContext private val context: Context
 ) : BaseViewModel<UserInfoState, UserInfoEvent, UserInfoEffect>(UserInfoState()) {
 
-    // Biến local giữ Uri tạm thời khi người dùng chọn ảnh mới
     private var selectedAvatarUri: Uri? = null
 
     init {
@@ -54,7 +53,6 @@ class UserInfoViewModel @Inject constructor(
 
     private fun handleAvatarSelected(uri: Uri) {
         selectedAvatarUri = uri
-        // Cập nhật để hiển thị ngay lập tức lên màn hình qua Coil
         _state.update { it.copy(editedAvatarUrl = uri.toString()) }
     }
 
@@ -70,7 +68,7 @@ class UserInfoViewModel @Inject constructor(
                         isPremium = user.isPremium,
                         premiumExpiresAt = user.premiumExpiresAt
                     )
-                    selectedAvatarUri = null // Reset khi tải dữ liệu mới từ mạng
+                    selectedAvatarUri = null
                     _state.update { currentState ->
                         currentState.copy(
                             userInfoState = currentState.userInfoState.copy(
@@ -100,13 +98,11 @@ class UserInfoViewModel @Inject constructor(
             val originalData = _state.value.userInfoState.data
             val updatedName = _state.value.editedFullName.trim()
 
-            // 1. Kiểm tra Validate dữ liệu trống
             if (updatedName.isEmpty()) {
                 sendGlobalEffect(BaseEffect.ShowToast(UiText.DynamicString("Name cannot be empty")))
                 return@launch
             }
 
-            // Kiểm tra xem người dùng có thực sự thay đổi gì không
             if (originalData != null &&
                 updatedName == originalData.fullName &&
                 selectedAvatarUri == null
@@ -115,21 +111,22 @@ class UserInfoViewModel @Inject constructor(
                 return@launch
             }
 
-            // Lock UI nút Save
             _state.update { it.copy(isUpdating = true) }
 
             val avatarFile: File? = selectedAvatarUri?.let { uri ->
                 compressImage(context, uri, maxFileSizeKB = 500)
             }
 
-            // 3. Gọi thẳng UseCase đẩy dữ liệu (Multipart Form-Data) lên Server
             updateMyProfileUseCase(fullName = updatedName, avatarFile = avatarFile)
                 .onSuccess { user ->
                     val profileData = UserProfileData(
-                        fullName = user.fullName ?: "",
-                        avatarUrl = user.avatarUrl ?: "",
+                        fullName = user.fullName,
+                        avatarUrl = user.avatarUrl,
+                        email = user.email,
+                        premiumExpiresAt = user.premiumExpiresAt,
+                        isPremium = user.isPremium
                     )
-                    selectedAvatarUri = null // Lưu thành công thì dọn sạch uri tạm
+                    selectedAvatarUri = null
                     _state.update { currentState ->
                         currentState.copy(
                             isUpdating = false,

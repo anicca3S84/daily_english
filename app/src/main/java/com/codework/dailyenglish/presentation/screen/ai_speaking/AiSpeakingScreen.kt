@@ -1,5 +1,10 @@
 package com.codework.dailyenglish.presentation.screen.ai_speaking
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.codework.dailyenglish.presentation.components.AppConfirmDialog
 import com.codework.dailyenglish.presentation.components.StateWrapper
 import com.codework.dailyenglish.presentation.screen.ai.components.EnhancedMessageBubble
@@ -42,6 +48,39 @@ fun AiSpeakingScreen(
     DisposableEffect(context) {
         onDispose {
             onEvent(AiSpeakingEvent.OnStopRecording)
+        }
+    }
+
+    // 1. Launcher yêu cầu quyền ghi âm
+    val recordAudioPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Nếu được cấp quyền, bắt đầu/dừng ghi âm
+            onEvent(AiSpeakingEvent.OnToggleRecording(context))
+        } else {
+            // Nếu bị từ chối
+            Toast.makeText(
+                context,
+                "Microphone permission is required for speaking practice.",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    // 2. Hàm xử lý click nút Micro
+    val handleMicClick = {
+        val hasPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (hasPermission) {
+            // Đã có quyền -> chạy luôn
+            onEvent(AiSpeakingEvent.OnToggleRecording(context))
+        } else {
+            // Chưa có quyền -> bật hộp thoại xin quyền
+            recordAudioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
         }
     }
 
@@ -105,10 +144,9 @@ fun AiSpeakingScreen(
                     modifier = Modifier
                         .navigationBarsPadding()
                         .fillMaxWidth()
-                        .background(Color.Transparent) // Đảm bảo nền của vùng Bottom Bar là trong suốt
+                        .background(Color.Transparent)
                 ) {
                     if (state.isSuggestionsVisible && data.suggestions.isNotEmpty()) {
-                        // Bọc SuggestionDropdown để tạo khoảng cách lề hai bên, tránh bị sát viền
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -126,7 +164,8 @@ fun AiSpeakingScreen(
 
                     SpeakingInputBar(
                         isRecording = state.isRecording,
-                        onToggleRecording = { onEvent(AiSpeakingEvent.OnToggleRecording(context)) },
+                        // 3. Thay thế lệnh gọi trực tiếp bằng hàm handleMicClick
+                        onToggleRecording = { handleMicClick() },
                         onShowSuggestions = { onEvent(AiSpeakingEvent.OnToggleSuggestions) },
                         onSendText = { onEvent(AiSpeakingEvent.OnSendMessage(it)) }
                     )
@@ -138,8 +177,6 @@ fun AiSpeakingScreen(
             uiState = state.uiState,
             modifier = Modifier
                 .fillMaxSize()
-                // CHỈ sử dụng top padding để tránh che khuất bởi TopAppBar.
-                // KHÔNG áp dụng bottom padding tại đây để LazyColumn có thể tràn xuống bên dưới bottom bar.
                 .padding(top = padding.calculateTopPadding()),
             snackbarHostState = snackbarHostState,
             onRetry = { onEvent(AiSpeakingEvent.OnRetryChat) }
@@ -156,7 +193,6 @@ fun AiSpeakingScreen(
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
-                // Áp dụng bottom padding từ Scaffold vào đây để tin nhắn cuối cùng nổi lên trên Bottom Bar khi cuộn hết cỡ
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
