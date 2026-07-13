@@ -1,4 +1,3 @@
-// FILE: presentation/screen/home/components/HomeHeader.kt
 package com.codework.dailyenglish.presentation.screen.home.components
 
 import androidx.compose.foundation.background
@@ -85,7 +84,6 @@ fun HomeHeader(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // NÚT VƯƠNG MIỆN PREMIUM 3D
             Box(
                 modifier = Modifier
                     .size(40.dp)
@@ -107,35 +105,6 @@ fun HomeHeader(
                     tint = if (isPremium) Color(0xFFFFB300) else Color.Gray,
                     modifier = Modifier.size(28.dp)
                 )
-            }
-
-            Box(
-                modifier = Modifier.padding(end = 4.dp, top = 4.dp),
-                contentAlignment = Alignment.TopEnd
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = "Notifications",
-                    tint = AppColors.Slate800,
-                    modifier = Modifier.size(36.dp)
-                )
-
-                Box(
-                    modifier = Modifier
-                        .size(20.dp)
-                        .background(AppColors.Rose500, CircleShape)
-                        .border(2.dp, Color.White, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "1",
-                        color = Color.White,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.offset(y = (-0.5).dp),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                }
             }
         }
     }

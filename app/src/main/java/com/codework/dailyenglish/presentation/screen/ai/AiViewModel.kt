@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.codework.dailyenglish.core.network.AppError
 
 @HiltViewModel
 class AiViewModel @Inject constructor(
@@ -60,7 +61,7 @@ class AiViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     isPremium = initialPremium,
-                    remainingMessages = if (initialPremium) 70 else 10,
+                    remainingMessages = if (initialPremium) 70 else it.remainingMessages,
                     maxCharLimit = if (initialPremium) 300 else 150
                 )
             }
@@ -69,8 +70,8 @@ class AiViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         isPremium = freshUser.isPremium,
-                        remainingMessages = if (freshUser.isPremium) Int.MAX_VALUE else _state.value.remainingMessages,
-                        maxCharLimit = if (freshUser.isPremium) 1000 else _state.value.maxCharLimit
+                        remainingMessages = if (freshUser.isPremium) 70 else it.remainingMessages,
+                        maxCharLimit = if (freshUser.isPremium) 300 else it.maxCharLimit
                     )
                 }
             }
@@ -88,8 +89,9 @@ class AiViewModel @Inject constructor(
             return
         }
 
+        // Kiểm tra nhanh ở Client: Nếu hết lượt, mở Dialog xác nhận nâng cấp
         if (!currentState.isPremium && currentState.remainingMessages <= 0) {
-            _state.update { it.copy(isShowPremiumUpgradeDialog = true) }
+            _state.update { it.copy(isShowLimitConfirmDialog = true) }
             return
         }
 
@@ -115,21 +117,26 @@ class AiViewModel @Inject constructor(
                     )
                 }
 
-                // SỬA ĐIỂM 1: Nếu tin nhắn được gửi đi từ một phòng chat mới ("new"),
-                // chúng ta tiến hành nạp lại lịch sử ngay sau khi nhận phản hồi thành công
-                // để cuộc trò chuyện mới này xuất hiện trong Drawer.
                 if (sessionId == "new") {
                     loadHistory()
                 }
 
             }.onErrorDetails { err, serverMessage ->
                 _state.update { it.copy(isTyping = false) }
-                val toastText = if (!serverMessage.isNullOrBlank()) {
-                    UiText.DynamicString(serverMessage)
+                val isLimitError = serverMessage == "Limited" ||
+                        (err is AppError.Http && err.message == "Limited") ||
+                        (err is AppError.Validation && err.reason == "Limited")
+
+                if (isLimitError) {
+                    _state.update { it.copy(isShowLimitConfirmDialog = true) }
                 } else {
-                    err.asUiText()
+                    val toastText = if (!serverMessage.isNullOrBlank()) {
+                        UiText.DynamicString(serverMessage)
+                    } else {
+                        err.asUiText()
+                    }
+                    sendGlobalEffect(BaseEffect.ShowToast(toastText))
                 }
-                sendGlobalEffect(BaseEffect.ShowToast(toastText))
             }
         }
     }
@@ -138,14 +145,10 @@ class AiViewModel @Inject constructor(
         when (event) {
             is AiEvent.OnSendMessage -> sendMessage(event.message)
             is AiEvent.OnSuggestionClick -> sendMessage(event.text)
-
-            // SỬA ĐIỂM 2: Khi nhấn tạo cuộc trò chuyện mới từ Drawer,
-            // dọn dẹp màn hình hiện tại và đồng thời gọi lại loadHistory() để đồng bộ danh sách.
             AiEvent.OnNewChat -> {
                 _state.update { it.copy(messages = emptyList(), currentSessionId = null) }
                 loadHistory()
             }
-
             is AiEvent.OnLoadSession -> {
                 _state.update { it.copy(currentSessionId = event.sessionId, isTyping = true) }
                 viewModelScope.launch {
@@ -166,6 +169,17 @@ class AiViewModel @Inject constructor(
             }
             is AiEvent.OnImageClick -> sendEffect(AiEffect.OpenGallery)
             is AiEvent.OnMicToggle -> toggleRecording(event.context)
+            is AiEvent.OnDismissLimitConfirmDialog -> {
+                _state.update { it.copy(isShowLimitConfirmDialog = false) }
+            }
+            is AiEvent.OnConfirmLimitUpgrade -> {
+                _state.update {
+                    it.copy(
+                        isShowLimitConfirmDialog = false,
+                        isShowPremiumUpgradeDialog = true
+                    )
+                }
+            }
             is AiEvent.OnDismissSubscriptionPopup -> {
                 _state.update { it.copy(isShowPremiumUpgradeDialog = false) }
                 checkUserPremiumStatus()

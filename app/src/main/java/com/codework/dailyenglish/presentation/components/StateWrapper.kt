@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -110,12 +111,16 @@ private fun <T> BoxScope.WrapperInnerContent(
                 val visualType = when {
                     message.contains("Network", true) || message.contains("connection", true) -> ErrorVisual.NO_INTERNET
                     message.contains("Not found", true) -> ErrorVisual.NOT_FOUND
+                    message.contains("Limited", true) -> ErrorVisual.LIMITED
                     else -> ErrorVisual.SERVER_ERROR
                 }
                 ErrorOverlay(
                     errorType = visualType,
                     message = message,
                     onRetry = onRetry,
+                    modifier = Modifier
+                        .align(Alignment.Center) // Căn giữa tuyệt đối trong Box cha
+                        .offset(y = (-24).dp)   // Dịch chuyển lên một khoảng nhỏ để bù trừ cho Toolbar/Status bar (có thể tinh chỉnh lại số dp này)
                 )
             } else {
                 if (snackbarHostState != null) {
@@ -129,7 +134,8 @@ private fun <T> BoxScope.WrapperInnerContent(
 }
 
 enum class ErrorVisual(val icon: String, val title: String) {
-    NO_INTERNET("📶", "No Connection"),
-    SERVER_ERROR("⚙️", "Server Error"),
-    NOT_FOUND("🔍", "Not Found")
+    NO_INTERNET("", "No Connection"),
+    SERVER_ERROR("", "Server Error"),
+    NOT_FOUND("", "Not Found"),
+    LIMITED("", "Reached the limit")
 }

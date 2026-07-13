@@ -1,5 +1,6 @@
 package com.codework.dailyenglish
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,6 +10,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.lifecycleScope
 import com.codework.dailyenglish.domain.user_statistic.usecase.StudyTimeManagerUseCase
+import com.codework.dailyenglish.notification.ReminderManager
+import com.codework.dailyenglish.notification.ReminderReceiver
 import com.codework.dailyenglish.presentation.MainScreen
 import com.codework.dailyenglish.presentation.MainViewModel
 import com.codework.dailyenglish.presentation.theme.DailyEnglishTheme
@@ -44,5 +47,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        val reminderManager = ReminderManager(this)
+        reminderManager.rescheduleDailyReminders()
+
+//        val testIntent = Intent(this, ReminderReceiver::class.java)
+//        sendBroadcast(testIntent)
     }
 }

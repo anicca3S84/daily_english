@@ -29,4 +29,10 @@ class AiRemoteDataSourceImpl @Inject constructor(
             it.data ?: throw Exception("Data is null")
         }
     }
+
+    override suspend fun sendAgentMessage(request: ChatRequestDto): AppResult<ChatResponseDto> {
+        return safeApiCall { apiService.sendAgentMessage(request) }.map {
+            it.data ?: throw Exception("Data is null")
+        }
+    }
 }

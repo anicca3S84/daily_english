@@ -9,5 +9,6 @@ sealed interface AiEvent {
     data object OnDismissSubscriptionPopup : AiEvent
     data class OnSuggestionClick(val text: String) : AiEvent
     data class OnMicToggle(val context: android.content.Context) : AiEvent
-
+    data object OnDismissLimitConfirmDialog : AiEvent
+    data object OnConfirmLimitUpgrade : AiEvent
 }

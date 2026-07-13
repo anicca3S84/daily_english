@@ -59,23 +59,23 @@ fun AppConfirmDialog(
 
                     Text(
                         text = title,
-                        fontSize = AppTextSizes.TextSize24,
+                        fontSize = AppTextSizes.TextSizeMain,
                         fontWeight = FontWeight.Bold,
                         color = AppColors.Slate800,
                         modifier = Modifier.padding(vertical = Spaces.Space8)
                     )
 
-                    Spacer(modifier = Modifier.height(Spaces.Space16))
+                    Spacer(modifier = Modifier.height(Spaces.Space10))
 
                     HorizontalDivider(color = AppColors.Slate100, thickness = 1.dp)
 
                     Text(
                         text = message,
-                        fontSize = AppTextSizes.TextSizeMain,
+                        fontSize = AppTextSizes.TextSize13,
                         color = AppColors.Slate500,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(
-                            vertical = Spaces.Space32,
+                            vertical = Spaces.Space20,
                             horizontal = Spaces.Space12
                         ),
                         lineHeight = AppTextSizes.TextSize24
@@ -83,7 +83,7 @@ fun AppConfirmDialog(
 
                     HorizontalDivider(color = AppColors.Slate100, thickness = 1.dp)
 
-                    Spacer(modifier = Modifier.height(Spaces.Space32))
+                    Spacer(modifier = Modifier.height(Spaces.Space24))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -93,7 +93,7 @@ fun AppConfirmDialog(
                             onClick = onDismiss,
                             modifier = Modifier
                                 .weight(1f)
-                                .height(Spaces.Space52),
+                                .height(Spaces.Space48),
                             shape = RoundedCornerShape(AppRadius.RadiusFull),
                             border = BorderStroke(Spaces.Space1, AppColors.BluePrimary)
                         ) {
@@ -101,7 +101,7 @@ fun AppConfirmDialog(
                                 text = cancelText,
                                 color = AppColors.BluePrimary,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = AppTextSizes.TextSizeMain
+                                fontSize = AppTextSizes.TextSize13
                             )
                         }
 
@@ -109,7 +109,7 @@ fun AppConfirmDialog(
                             onClick = onConfirm,
                             modifier = Modifier
                                 .weight(1f)
-                                .height(Spaces.Space52),
+                                .height(Spaces.Space48),
                             shape = RoundedCornerShape(AppRadius.RadiusFull),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = AppColors.BluePrimary
@@ -119,7 +119,7 @@ fun AppConfirmDialog(
                                 text = confirmText,
                                 color = Color.White,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = AppTextSizes.TextSizeMain
+                                fontSize = AppTextSizes.TextSize13
                             )
                         }
                     }

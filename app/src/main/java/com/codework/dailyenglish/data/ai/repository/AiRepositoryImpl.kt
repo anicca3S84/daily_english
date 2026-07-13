@@ -26,15 +26,11 @@ class AiRepositoryImpl @Inject constructor(
     override suspend fun sendMessage(
         sessionId: String,
         message: String,
-        topicId: String?,
-        topicName: String?,
         isNeedSuggestions: Boolean
     ): AppResult<ChatMessage> = withContext(dispatchers.io) {
         val requestDto = ChatRequestDto(
             sessionId = sessionId,
             message = message,
-            topicId = topicId,
-            topicName = topicName,
             isNeedSuggestions = isNeedSuggestions
         )
         remoteDataSource.sendMessage(requestDto).map { dto ->
@@ -45,6 +41,25 @@ class AiRepositoryImpl @Inject constructor(
     override suspend fun getSessionMessages(sessionId: String): AppResult<List<ChatMessage>> = withContext(dispatchers.io) {
         remoteDataSource.getSessionMessages(sessionId).map { listDto ->
             listDto.map { AiMapper.mapToDomain(it, sessionId) }
+        }
+    }
+
+    override suspend fun sendAgentMessage(
+        sessionId: String,
+        message: String,
+        topicId: String,
+        topicName: String,
+        isNeedSuggestions: Boolean
+    ): AppResult<ChatMessage> = withContext(dispatchers.io) {
+        val requestDto = ChatRequestDto(
+            sessionId = sessionId,
+            message = message,
+            topicId = topicId,
+            topicName = topicName,
+            isNeedSuggestions = isNeedSuggestions
+        )
+        remoteDataSource.sendAgentMessage(requestDto).map { dto ->
+            AiMapper.mapToDomain(dto)
         }
     }
 }

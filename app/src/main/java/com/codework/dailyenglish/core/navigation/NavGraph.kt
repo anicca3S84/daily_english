@@ -609,11 +609,7 @@ fun NavGraph(
                 AiSpeakingEffect
                 >(
             onNavigate = { effect ->
-                when (effect) {
-                    is AiSpeakingEffect.StartSpeechRecognition -> {
 
-                    }
-                }
             }
         ) { state, onEvent ->
             AiSpeakingScreen(

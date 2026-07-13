@@ -1,8 +1,10 @@
 package com.codework.dailyenglish.presentation.screen.ai
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import android.Manifest
+import android.content.pm.PackageManager
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,10 +14,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import com.codework.dailyenglish.presentation.components.AppConfirmDialog
 import com.codework.dailyenglish.presentation.components.AppTopBar
 import com.codework.dailyenglish.presentation.screen.ai.components.AutoScrollingSuggestionSection
 import com.codework.dailyenglish.presentation.screen.ai.components.EmptyChatPlaceholder
@@ -27,16 +32,8 @@ import com.codework.dailyenglish.presentation.screen.ai.mvi.AiEvent
 import com.codework.dailyenglish.presentation.screen.ai.mvi.AiState
 import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.AppTextSizes
-import kotlinx.coroutines.launch
-import android.Manifest
-import android.content.pm.PackageManager
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.ContextCompat
-import com.codework.dailyenglish.presentation.screen.courses.mvi.CourseEvent
 import com.codework.dailyenglish.presentation.screen.subscription.SubscriptionPopup
+import kotlinx.coroutines.launch
 
 @Composable
 fun AiScreen(
@@ -51,20 +48,30 @@ fun AiScreen(
     var inputText by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    // Khởi tạo bộ Launcher để xin quyền ghi âm
+    // Dialog thông báo hết lượt dùng thử
+    if (state.isShowLimitConfirmDialog) {
+        AppConfirmDialog(
+            title = "Message Limit Reached",
+            message = "You have used all of your free messages for today. Please upgrade to Premium to continue chatting without limits!",
+            confirmText = "Upgrade Now",
+            cancelText = "Maybe Later",
+            onConfirm = { onEvent(AiEvent.OnConfirmLimitUpgrade) },
+            onDismiss = { onEvent(AiEvent.OnDismissLimitConfirmDialog) }
+        )
+    }
+
+    // Launcher yêu cầu quyền ghi âm
     val recordAudioPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            // Nếu người dùng đồng ý cấp quyền, kích hoạt bật mic
             onEvent(AiEvent.OnMicToggle(context))
         } else {
-            // Nếu từ chối, hiển thị thông báo nhắc nhở
             Toast.makeText(context, "Vui lòng cấp quyền ghi âm để sử dụng tính năng này", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // Hàm kiểm tra quyền trước khi toggle mic
+    // Xử lý click nút Micro
     val handleMicClick = {
         val hasPermission = ContextCompat.checkSelfPermission(
             context,
@@ -74,23 +81,27 @@ fun AiScreen(
         if (hasPermission) {
             onEvent(AiEvent.OnMicToggle(context))
         } else {
-            // Nếu chưa có quyền, tiến hành xin quyền
             recordAudioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
         }
     }
 
+    // Cập nhật text khi nhận diện giọng nói thành công
     LaunchedEffect(state.voiceCapturedText) {
         if (state.voiceCapturedText.isNotBlank()) {
             inputText = state.voiceCapturedText.take(state.maxCharLimit)
         }
     }
 
-    LaunchedEffect(state.messages.size) {
+    // Tự động xóa text ô chat khi tạo New Chat (danh sách trống) hoặc đổi Chat Session mới
+    // Giải quyết triệt để lỗi "Assigned value is never read"
+    LaunchedEffect(state.messages) {
+        if (state.messages.isEmpty()) {
+            inputText = ""
+        } else if (state.messages.last().isUser) {
+            inputText = ""
+            keyboardController?.hide()
+        }
         if (state.messages.isNotEmpty()) {
-            if (state.messages.last().isUser) {
-                inputText = ""
-                keyboardController?.hide()
-            }
             listState.animateScrollToItem(state.messages.size)
         }
     }
@@ -100,8 +111,14 @@ fun AiScreen(
         drawerContent = {
             HistoryDrawerContent(
                 sessions = state.historySessions,
-                onNewChatClick = { onEvent(AiEvent.OnNewChat); scope.launch { drawerState.close() } },
-                onSessionClick = { id -> onEvent(AiEvent.OnLoadSession(id)); scope.launch { drawerState.close() } }
+                onNewChatClick = {
+                    onEvent(AiEvent.OnNewChat)
+                    scope.launch { drawerState.close() }
+                },
+                onSessionClick = { id ->
+                    onEvent(AiEvent.OnLoadSession(id))
+                    scope.launch { drawerState.close() }
+                }
             )
         }
     ) {
@@ -130,9 +147,13 @@ fun AiScreen(
                         .padding(bottom = 24.dp)
                 ) {
                     if (state.messages.isEmpty()) {
-                        AutoScrollingSuggestionSection(suggestions = listOf(
-                            "Correct my grammar ✍️", "Practice Speaking 🗣️", "Translate to English 🌐"
-                        )) { onEvent(AiEvent.OnSuggestionClick(it)) }
+                        AutoScrollingSuggestionSection(
+                            suggestions = listOf(
+                                "Correct my grammar ✍️",
+                                "Practice Speaking 🗣️",
+                                "Translate to English 🌐"
+                            )
+                        ) { onEvent(AiEvent.OnSuggestionClick(it)) }
                     }
 
                     ModernInputBar(
@@ -184,12 +205,11 @@ fun AiScreen(
             }
         }
     }
+
     if (state.isShowPremiumUpgradeDialog) {
         SubscriptionPopup(
             visible = true,
             onDismiss = { onEvent(AiEvent.OnDismissSubscriptionPopup) }
         )
     }
-
-
 }

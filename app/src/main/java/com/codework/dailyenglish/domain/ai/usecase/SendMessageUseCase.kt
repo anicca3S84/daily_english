@@ -6,20 +6,16 @@ import com.codework.dailyenglish.domain.ai.repository.AiRepository
 import javax.inject.Inject
 
 class SendMessageUseCase @Inject constructor(
-    private val repository: AiRepository
+    private val aiRepository: AiRepository
 ) {
     suspend operator fun invoke(
         sessionId: String,
         message: String,
-        topicId: String? = null,
-        topicName: String? = null,
         isNeedSuggestions: Boolean
     ): AppResult<ChatMessage> {
-        return repository.sendMessage(
+        return aiRepository.sendMessage(
             sessionId = sessionId,
             message = message,
-            topicId = topicId,
-            topicName = topicName,
             isNeedSuggestions = isNeedSuggestions
         )
     }

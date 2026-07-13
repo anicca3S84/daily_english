@@ -10,9 +10,15 @@ interface AiRepository {
     suspend fun sendMessage(
         sessionId: String,
         message: String,
-        topicId: String? = null,
-        topicName: String? = null,
-        isNeedSuggestions: Boolean      
+        isNeedSuggestions: Boolean
     ): AppResult<ChatMessage>
     suspend fun getSessionMessages(sessionId: String): AppResult<List<ChatMessage>>
+
+    suspend fun sendAgentMessage(
+        sessionId: String,
+        message: String,
+        topicId: String,
+        topicName: String,
+        isNeedSuggestions: Boolean
+    ): AppResult<ChatMessage>
 }

@@ -15,6 +15,6 @@ data class AiState(
     val remainingMessages: Int = 10,
     val maxCharLimit: Int = 150,
 
-    val isShowPremiumUpgradeDialog: Boolean = false
-
+    val isShowPremiumUpgradeDialog: Boolean = false,
+    val isShowLimitConfirmDialog: Boolean = false,
 )

@@ -1,5 +1,6 @@
 package com.codework.dailyenglish.presentation.screen.lessons.lesson
 
+import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.codework.dailyenglish.core.base.BaseViewModel
@@ -18,15 +19,16 @@ import com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi.LessonEv
 import com.codework.dailyenglish.presentation.screen.lessons.lesson.mvi.LessonState
 import com.codework.dailyenglish.presentation.utils.asUiText
 import com.codework.dailyenglish.presentation.utils.calculateSimilarity
-import android.app.Application
 import com.codework.dailyenglish.R
 import com.codework.dailyenglish.core.base.BaseEffect
 import com.codework.dailyenglish.core.utils.TextToSpeechParser
 import com.codework.dailyenglish.core.utils.VoiceToTextParser
 import com.codework.dailyenglish.domain.dictionary.usecase.RestartLessonUseCase
 import com.codework.dailyenglish.domain.dictionary.usecase.ToggleSaveWordUseCase
+import com.codework.dailyenglish.notification.ReminderManager
 import com.codework.dailyenglish.presentation.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext // Thêm import ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
@@ -43,6 +45,7 @@ class LessonViewModel @Inject constructor(
     private val textToSpeechParser: TextToSpeechParser,
     private val speachToTextParser: VoiceToTextParser,
     private val toggleSaveWordUseCase: ToggleSaveWordUseCase,
+    @ApplicationContext private val context: Context, // Inject Application Context từ Hilt
     savedStateHandle: SavedStateHandle
 ) : BaseViewModel<LessonState, LessonEvent, LessonEffect>(
     initialState = BaseUiState(isLoading = true)
@@ -51,6 +54,7 @@ class LessonViewModel @Inject constructor(
     private val isCompleted: Boolean = checkNotNull(savedStateHandle["isCompleted"])
     private val isReview: Boolean = savedStateHandle["isReview"] ?: false
 
+    private val reminderManager = ReminderManager(context)
 
     init {
         loadLessonData()
@@ -77,7 +81,7 @@ class LessonViewModel @Inject constructor(
                     sendEffect(LessonEffect.NavigateBack)
                 }
             }
-            is LessonEvent.OnToggleSaveWord ->{
+            is LessonEvent.OnToggleSaveWord -> {
                 viewModelScope.launch {
                     event.wordId.let {
                         toggleSaveWordUseCase(event.wordId)
@@ -237,6 +241,10 @@ class LessonViewModel @Inject constructor(
         completeLessonUseCase(lessonId)
             .onSuccess { data ->
                 _state.update { it.copy(isLoading = false) }
+
+                // GỌI HÀM LÀM MỚI LỊCH CUỘN 7 NGÀY Ở ĐÂY
+                reminderManager.rescheduleDailyReminders()
+
                 sendEffect(
                     LessonEffect.NavigateToResult(
                         scorePercentage = data.scorePercentage,
@@ -370,6 +378,4 @@ class LessonViewModel @Inject constructor(
             }
         }
     }
-
-
 }

@@ -10,5 +10,6 @@ interface AiRemoteDataSource {
     suspend fun getSessions(): AppResult<List<ChatSessionDto>>
     suspend fun sendMessage(request: ChatRequestDto): AppResult<ChatResponseDto>
     suspend fun getSessionMessages(sessionId: String): AppResult<List<ChatMessageDto>>
+    suspend fun sendAgentMessage(request: ChatRequestDto): AppResult<ChatResponseDto>
 
 }

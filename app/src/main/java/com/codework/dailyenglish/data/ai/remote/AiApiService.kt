@@ -21,4 +21,7 @@ interface AiApiService {
     suspend fun getSessionMessages(
         @Path("sessionId") sessionId: String
     ): BaseResponse<List<ChatMessageDto>>
+
+    @POST("chat/agent/message")
+    suspend fun sendAgentMessage(@Body request: ChatRequestDto): BaseResponse<ChatResponseDto>
 }
