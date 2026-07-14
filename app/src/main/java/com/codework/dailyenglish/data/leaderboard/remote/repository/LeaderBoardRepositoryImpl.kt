@@ -13,10 +13,9 @@ class LeaderBoardRepositoryImpl @Inject constructor(
     private val remoteDataSource: LeaderBoardRemoteDataSource,
     private val dispatchers: Dispatcher
 ) : LeaderBoardRepository {
-
-    override suspend fun getLeaderBoard(page: Int, size: Int): AppResult<LeaderBoardWrapper> =
+    override suspend fun getLeaderBoard(type: String, timeFilter: String, page: Int, size: Int): AppResult<LeaderBoardWrapper> =
         withContext(dispatchers.io) {
-            remoteDataSource.getLeaderBoard(page, size).map { dto ->
+            remoteDataSource.getLeaderBoard(type, timeFilter, page, size).map { dto ->
                 dto.toDomain()
             }
         }

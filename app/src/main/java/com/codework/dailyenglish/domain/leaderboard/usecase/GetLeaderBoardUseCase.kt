@@ -8,7 +8,12 @@ import javax.inject.Inject
 class GetLeaderBoardUseCase @Inject constructor(
     private val repository: LeaderBoardRepository
 ) {
-    suspend operator fun invoke(page: Int = 0, size: Int = 20): AppResult<LeaderBoardWrapper> {
-        return repository.getLeaderBoard(page, size)
+    suspend operator fun invoke(
+        type: String,
+        timeFilter: String,
+        page: Int = 0,
+        size: Int = 20
+    ): AppResult<LeaderBoardWrapper> {
+        return repository.getLeaderBoard(type, timeFilter, page, size)
     }
 }

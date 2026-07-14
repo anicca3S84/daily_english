@@ -6,7 +6,7 @@ data class LeaderBoardDto(
     @SerializedName("userId") val userId: String,
     @SerializedName("fullName") val fullName: String?,
     @SerializedName("avatarUrl") val avatarUrl: String?,
-    @SerializedName("totalXp") val totalXp: Int,
+    @SerializedName("score") val score: Int,
     @SerializedName("rank") val rank: Int,
     @SerializedName("currentUser") val isCurrentUser: Boolean
 )

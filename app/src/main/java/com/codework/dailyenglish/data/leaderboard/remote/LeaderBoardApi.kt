@@ -8,6 +8,8 @@ import retrofit2.http.Query
 interface LeaderBoardApi {
     @GET("leaderboard")
     suspend fun getLeaderBoard(
+        @Query("type") type: String,             // THÊM DÒNG NÀY
+        @Query("timeFilter") timeFilter: String, // THÊM DÒNG NÀY
         @Query("page") page: Int,
         @Query("size") size: Int
     ): BaseResponse<LeaderBoardWrapperDto>

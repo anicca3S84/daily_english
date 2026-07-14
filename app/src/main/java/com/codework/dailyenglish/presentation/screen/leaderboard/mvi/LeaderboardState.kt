@@ -4,5 +4,7 @@ import com.codework.dailyenglish.core.base.BaseUiState
 import com.codework.dailyenglish.domain.leaderboard.model.LeaderBoardWrapper
 
 data class LeaderboardState(
-    val leaderboardState: BaseUiState<LeaderBoardWrapper> = BaseUiState()
+    val leaderboardState: BaseUiState<LeaderBoardWrapper> = BaseUiState(),
+    val selectedTab: String = "EXP", // "EXP" hoặc "STREAK"
+    val selectedTimeFilter: String = "All" // "All", "This Week", "This Month"
 )

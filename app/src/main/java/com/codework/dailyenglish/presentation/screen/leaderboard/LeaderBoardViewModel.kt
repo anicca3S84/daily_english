@@ -23,14 +23,41 @@ class LeaderboardViewModel @Inject constructor(
 
     override fun onEvent(event: LeaderboardEvent) {
         when (event) {
+            is LeaderboardEvent.OnTabChanged -> {
+                if (_state.value.selectedTab != event.tab) {
+                    _state.update { it.copy(selectedTab = event.tab) }
+                    fetchLeaderboard()
+                }
+            }
+            is LeaderboardEvent.OnTimeFilterChanged -> {
+                if (_state.value.selectedTimeFilter != event.filter) {
+                    _state.update { it.copy(selectedTimeFilter = event.filter) }
+                    fetchLeaderboard()
+                }
+            }
             LeaderboardEvent.LoadLeaderboard -> fetchLeaderboard()
         }
     }
 
     private fun fetchLeaderboard() {
         _state.update { it.copy(leaderboardState = it.leaderboardState.copy(isLoading = true, error = null)) }
+
+        val type = _state.value.selectedTab
+
+        // Format lại TimeFilter cho Backend (ALL, THIS_WEEK, THIS_MONTH)
+        // Nếu là STREAK thì ép về "ALL" vì streak thường không có filter thời gian tuần/tháng
+        val timeFilter = if (type == "STREAK") {
+            "ALL"
+        } else {
+            when (_state.value.selectedTimeFilter.uppercase()) {
+                "THIS WEEK", "THIS_WEEK" -> "THIS_WEEK"
+                "THIS MONTH", "THIS_MONTH" -> "THIS_MONTH"
+                else -> "ALL"
+            }
+        }
+
         viewModelScope.launch {
-            getLeaderBoardUseCase(page = 0, size = 50)
+            getLeaderBoardUseCase(type = type, timeFilter = timeFilter, page = 0, size = 50)
                 .onSuccess { wrapper ->
                     _state.update { it.copy(leaderboardState = it.leaderboardState.copy(isLoading = false, data = wrapper)) }
                 }

@@ -10,7 +10,7 @@ fun LeaderBoardDto.toDomain(): LeaderBoardProfile {
         userId = this.userId,
         fullName = this.fullName.orEmpty(),
         avatarUrl = this.avatarUrl.orEmpty(),
-        totalXp = this.totalXp,
+        score = this.score,
         rank = this.rank,
         isCurrentUser = this.isCurrentUser
     )

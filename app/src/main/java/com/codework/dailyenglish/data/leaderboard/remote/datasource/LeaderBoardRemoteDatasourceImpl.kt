@@ -10,7 +10,7 @@ import javax.inject.Inject
 class LeaderBoardRemoteDataSourceImpl @Inject constructor(
     private val api: LeaderBoardApi
 ) : LeaderBoardRemoteDataSource {
-    override suspend fun getLeaderBoard(page: Int, size: Int): AppResult<LeaderBoardWrapperDto> {
-        return safeApiCall { api.getLeaderBoard(page, size) }.unwrap()
+    override suspend fun getLeaderBoard(type: String, timeFilter: String, page: Int, size: Int): AppResult<LeaderBoardWrapperDto> {
+        return safeApiCall { api.getLeaderBoard(type, timeFilter, page, size) }.unwrap()
     }
 }

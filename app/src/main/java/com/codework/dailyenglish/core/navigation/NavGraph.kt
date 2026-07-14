@@ -574,9 +574,10 @@ fun NavGraph(
                 >(
             onNavigate = { effect ->
             }
-        ) { state, _ ->
+        ) { state, event ->
             LeaderboardScreen(
                 state = state,
+                onEvent = event,
                 onBackClick = { navController.popBackStack() }
             )
         }
