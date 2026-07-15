@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codework.dailyenglish.presentation.screen.home.model.DailyStudyTime
+import com.codework.dailyenglish.presentation.theme.AppColors.MainGradient
 
 @Composable
 fun WeeklyProgressCard(weeklyStats: List<DailyStudyTime>) {
@@ -39,6 +40,7 @@ fun WeeklyProgressCard(weeklyStats: List<DailyStudyTime>) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
+                    modifier = Modifier.weight(1f), // Tự động co giãn để tránh đẩy Badge tổng ra ngoài màn hình
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -52,34 +54,36 @@ fun WeeklyProgressCard(weeklyStats: List<DailyStudyTime>) {
                         text = "Weekly Study Progress",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E293B)
+                            color = Color(0xFF1E293B),
+                            fontSize = 14.sp // Giảm kích thước chữ tiêu đề xuống 14.sp
                         )
                     )
                 }
 
-                // Định dạng hiển thị đồng bộ dạng "X h Y phút" hoặc "X phút" cho Badge thống kê
+                // Định dạng hiển thị tinh gọn: "Total: Xh Ym" hoặc "Total: X min"
                 val displayTotalTime = if (totalMinutes >= 60) {
                     val hours = totalMinutes / 60
                     val minutes = totalMinutes % 60
                     if (minutes > 0) {
-                        "$hours h $minutes phút"
+                        "${hours}h ${minutes}m"
                     } else {
-                        "$hours h"
+                        "${hours}h"
                     }
                 } else {
-                    "$totalMinutes phút"
+                    "${totalMinutes} min"
                 }
 
+                // Badge hiển thị tổng thời gian với kích thước rộng hơn và tô màu Gradient [1]
                 Box(
                     modifier = Modifier
-                        .background(Color(0xFFF3F0FF), shape = RoundedCornerShape(50))
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                        .background(MainGradient, shape = RoundedCornerShape(50)) // Tô màu gradient [1]
+                        .padding(horizontal = 16.dp, vertical = 6.dp) // Tăng horizontal padding lên 16.dp giúp ô to hơn [1]
                 ) {
                     Text(
-                        text = "$displayTotalTime Total Time",
+                        text = "Total: $displayTotalTime", // Đơn giản hóa nội dung chỉ còn "Total: + thời gian"
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF6F3AFF),
+                            color = Color.White, // Đổi sang chữ trắng để tương tương phản tốt trên nền gradient [1]
                             fontSize = 11.sp
                         )
                     )
@@ -114,9 +118,22 @@ fun BarItem(
     val maxBarHeight = 110.dp
     val barWidth = 14.dp
 
-    val timeValue = if (day.minutes >= 60) (day.minutes / 60) else day.minutes
-    val timeUnit = if (day.minutes >= 60) "h" else "m"
-    val displayTime = if (day.minutes > 0) "$timeValue$timeUnit" else ""
+    // Logic mới: Tính toán đầy đủ cả giờ và phút lẻ
+    val displayTime = if (day.minutes > 0) {
+        if (day.minutes >= 60) {
+            val hours = day.minutes / 60
+            val remainingMinutes = day.minutes % 60
+            if (remainingMinutes > 0) {
+                "${hours}h ${remainingMinutes}m" // Viết liền không khoảng trắng để tránh bị xuống dòng khi màn hình hẹp
+            } else {
+                "${hours}h"
+            }
+        } else {
+            "${day.minutes}m"
+        }
+    } else {
+        ""
+    }
 
     val safeMax = if (maxMinutes > 0) maxMinutes else 1
     val ratio = (day.minutes.toFloat() / safeMax.toFloat()).coerceIn(0f, 1f)
@@ -126,15 +143,15 @@ fun BarItem(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Chỉ số thời gian học bên trên
         Text(
             text = displayTime,
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Bold,
-                fontSize = 11.sp,
+                fontSize = 10.sp,
                 color = if (day.isToday) Color(0xFF3B82F6) else Color(0xFF94A3B8)
             ),
-            modifier = Modifier.height(16.dp)
+            modifier = Modifier.height(16.dp),
+            maxLines = 1
         )
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -145,7 +162,6 @@ fun BarItem(
                 .height(maxBarHeight),
             contentAlignment = Alignment.BottomCenter
         ) {
-            // Đường kẻ chấm đứt (dashed line) chạy dọc mờ ảo làm guide phía sau biểu đồ
             androidx.compose.foundation.Canvas(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -162,7 +178,6 @@ fun BarItem(
                 )
             }
 
-            // Thanh nền rỗng của ngày học
             Box(
                 modifier = Modifier
                     .width(barWidth)
@@ -171,7 +186,6 @@ fun BarItem(
                     .background(Color(0xFFF1F5F9))
             )
 
-            // Thanh tiến trình thực tế được lấp đầy bằng màu Gradient
             if (day.minutes > 0) {
                 Box(
                     modifier = Modifier
@@ -181,9 +195,9 @@ fun BarItem(
                         .background(
                             brush = Brush.verticalGradient(
                                 colors = if (day.isToday) {
-                                    listOf(Color(0xFF3B82F6), Color(0xFF8B5CF6)) // Gradient Xanh -> Tím như ảnh mẫu
+                                    listOf(Color(0xFF3B82F6), Color(0xFF8B5CF6))
                                 } else {
-                                    listOf(Color(0xFFCBD5E1), Color(0xFFE2E8F0)) // Màu xám nhạt cho ngày thường
+                                    listOf(Color(0xFFCBD5E1), Color(0xFFE2E8F0))
                                 }
                             )
                         )
@@ -193,7 +207,6 @@ fun BarItem(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Nhãn thứ trong tuần bên dưới
         Text(
             text = day.dayName,
             style = MaterialTheme.typography.labelMedium.copy(

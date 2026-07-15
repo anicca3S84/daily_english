@@ -116,9 +116,9 @@ class VocabularyListViewModel @Inject constructor(
                 _state.update { currentState ->
                     val allIds = currentState.vocabWords.data?.map { it.id } ?: emptyList()
                     val newSelected = if (currentState.selectedWordIds.size == allIds.size) {
-                        emptySet() // Nếu đang chọn hết thì gỡ bỏ toàn bộ
+                        emptySet()
                     } else {
-                        allIds.toSet() // Ngược lại thì chọn hết
+                        allIds.toSet()
                     }
                     currentState.copy(selectedWordIds = newSelected)
                 }

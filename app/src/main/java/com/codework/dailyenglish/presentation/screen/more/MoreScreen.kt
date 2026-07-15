@@ -37,7 +37,7 @@ fun MoreScreen(
         item {
             ProfileHeaderSection(
                 data = state,
-                onSettingsClick = { /* Thêm event Setting nếu cần */ }
+                onSettingsClick = { }
             )
         }
         item {

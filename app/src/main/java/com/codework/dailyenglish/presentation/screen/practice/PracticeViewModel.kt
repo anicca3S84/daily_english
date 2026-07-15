@@ -1,17 +1,10 @@
 package com.codework.dailyenglish.presentation.screen.practice
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Headset
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Quiz
-import androidx.compose.material.icons.filled.Translate
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import com.codework.dailyenglish.core.base.BaseViewModel
 import com.codework.dailyenglish.core.network.onError
 import com.codework.dailyenglish.core.network.onSuccess
 import com.codework.dailyenglish.domain.vocabulary.usecase.GetVocabTopicsUseCase
-import com.codework.dailyenglish.presentation.screen.practice.model.PracticeCategory
 import com.codework.dailyenglish.presentation.screen.practice.mvi.PracticeEffect
 import com.codework.dailyenglish.presentation.screen.practice.mvi.PracticeEvent
 import com.codework.dailyenglish.presentation.screen.practice.mvi.PracticeState
@@ -26,7 +19,7 @@ import com.codework.dailyenglish.domain.user.usecase.GetUserInfoUseCase
 @HiltViewModel
 class PracticeViewModel @Inject constructor(
     private val getVocabTopicsUseCase: GetVocabTopicsUseCase,
-    private val getUserInfoUseCase: GetUserInfoUseCase // BỔ SUNG
+    private val getUserInfoUseCase: GetUserInfoUseCase
 ) : BaseViewModel<PracticeState, PracticeEvent, PracticeEffect>(
     initialState = PracticeState()
 ) {
@@ -50,10 +43,8 @@ class PracticeViewModel @Inject constructor(
     private fun loadPracticeContent() {
         _state.update { it.copy(topicsState = it.topicsState.copy(isLoading = true)) }
         viewModelScope.launch {
-            // Đọc trạng thái Premium từ Local
             val localUser = getUserInfoUseCase()
             _state.update { it.copy(isPremium = localUser?.isPremium ?: false) }
-
             getVocabTopicsUseCase()
                 .onSuccess { topics ->
                     _state.update { it.copy(topicsState = it.topicsState.copy(data = topics, isLoading = false)) }

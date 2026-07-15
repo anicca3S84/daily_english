@@ -9,10 +9,19 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface AiApiService {
     @GET("chat/sessions")
-    suspend fun getSessions(): BaseResponse<List<ChatSessionDto>>
+    suspend fun getSessions(
+        @Query("type") type: String
+    ): BaseResponse<List<ChatSessionDto>>
+
+    @GET("chat/sessions/agent")
+    suspend fun getAgentSessions(
+        @Query("type") type: String,
+        @Query("topicId") topicId: String?
+    ): BaseResponse<List<ChatSessionDto>>
 
     @POST("chat/message")
     suspend fun sendMessage(@Body request: ChatRequestDto): BaseResponse<ChatResponseDto>

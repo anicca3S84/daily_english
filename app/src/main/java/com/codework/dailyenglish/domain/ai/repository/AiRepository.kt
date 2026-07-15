@@ -5,7 +5,7 @@ import com.codework.dailyenglish.domain.ai.model.ChatMessage
 import com.codework.dailyenglish.domain.ai.model.ChatSession
 
 interface AiRepository {
-    suspend fun getHistorySessions(): AppResult<List<ChatSession>>
+    suspend fun getHistorySessions(type: String): AppResult<List<ChatSession>>
 
     suspend fun sendMessage(
         sessionId: String,
@@ -21,4 +21,7 @@ interface AiRepository {
         topicName: String,
         isNeedSuggestions: Boolean
     ): AppResult<ChatMessage>
+
+    suspend fun getAgentHistorySessions(type: String, topicId: String?): AppResult<List<ChatSession>>
+
 }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -13,11 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -25,6 +22,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.input.TextFieldValue // Import thêm thư viện này
+import androidx.compose.ui.text.TextRange       // Import thêm thư viện này
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -35,8 +34,12 @@ fun FillBlankInputArea(
     isCorrect: Boolean?,
     modifier: Modifier = Modifier
 ) {
-    // 1. Nhóm các chỉ mục (index) thành các "từ" riêng biệt dựa trên khoảng trắng " "
-    // Cách này giúp hiển thị FlowRow đẹp mắt, tự động xuống dòng theo nguyên từ.
+    val focusManager = LocalFocusManager.current
+
+    val lastEditableIndex = remember(hintMask) {
+        hintMask.indices.lastOrNull { hintMask[it] == null } ?: -1
+    }
+
     val words = remember(hintMask) {
         val result = mutableListOf<List<Int>>()
         var currentWord = mutableListOf<Int>()
@@ -56,16 +59,18 @@ fun FillBlankInputArea(
         result
     }
 
-    // 2. Khởi tạo mảng ký tự người dùng nhập dựa trên initialAnswer và hintMask
+    // Khởi tạo mảng dưới dạng TextFieldValue để kiểm soát vị trí con trỏ (luôn ở sau ký tự)
     val userInputChars = remember(hintMask, initialAnswer) {
-        mutableStateListOf<String>().apply {
+        mutableStateListOf<TextFieldValue>().apply {
             for (i in hintMask.indices) {
                 val charFromAnswer = initialAnswer?.getOrNull(i)?.toString()
                 val hint = hintMask[i]
                 if (hint == " ") {
-                    add(" ") // Giữ nguyên khoảng trắng cố định
+                    add(TextFieldValue(" ", TextRange(1)))
                 } else {
-                    add(charFromAnswer ?: hint ?: "")
+                    val initialVal = charFromAnswer ?: hint ?: " "
+                    val finalVal = if (initialVal.isEmpty()) " " else initialVal
+                    add(TextFieldValue(finalVal, TextRange(finalVal.length)))
                 }
             }
         }
@@ -84,18 +89,9 @@ fun FillBlankInputArea(
         }
     }
 
-    val focusPrevious = { currentIndex: Int ->
-        for (i in (currentIndex - 1) downTo 0) {
-            if (hintMask[i] == null) {
-                focusRequesters[i].requestFocus()
-                break
-            }
-        }
-    }
-
     val updateAnswer = {
-        val combinedAnswer = userInputChars.mapIndexed { index, char ->
-            if (hintMask[index] == " ") " " else char.ifEmpty { " " }
+        val combinedAnswer = userInputChars.mapIndexed { index, tfv ->
+            if (hintMask[index] == " ") " " else if (tfv.text == " ") " " else tfv.text
         }.joinToString("")
         onAnswerSelected(combinedAnswer)
     }
@@ -112,10 +108,9 @@ fun FillBlankInputArea(
             ) {
                 wordIndices.forEach { charIndex ->
                     val isHint = hintMask[charIndex] != null
-                    val charValue = userInputChars.getOrNull(charIndex) ?: ""
+                    val textFieldValue = userInputChars.getOrNull(charIndex) ?: TextFieldValue(" ", TextRange(1))
 
                     if (isHint) {
-                        // Hiển thị ô Gợi ý (Chỉ đọc)
                         Box(
                             modifier = Modifier
                                 .size(38.dp)
@@ -130,23 +125,57 @@ fun FillBlankInputArea(
                             )
                         }
                     } else {
-                        // Hiển thị ô Nhập liệu (Có thể chỉnh sửa)
                         val borderColor = when (isCorrect) {
-                            true -> Color(0xFF10B981)  // Xanh lá nếu đúng
-                            false -> Color(0xFFEF4444) // Đỏ nếu sai
-                            null -> Color(0xFFD1D5DB)  // Mặc định xám
+                            true -> Color(0xFF10B981)
+                            false -> Color(0xFFEF4444)
+                            null -> Color(0xFFD1D5DB)
                         }
 
-                        BasicTextField(
-                            value = charValue,
-                            onValueChange = { newValue ->
-                                // Chỉ nhận duy nhất 1 ký tự cuối cùng vừa gõ
-                                val filtered = newValue.trim().takeLast(1)
-                                userInputChars[charIndex] = filtered
-                                updateAnswer()
+                        val isLastEditable = charIndex == lastEditableIndex
 
-                                if (filtered.isNotEmpty()) {
-                                    focusNext(charIndex)
+                        BasicTextField(
+                            value = textFieldValue,
+                            onValueChange = { newValue ->
+                                val text = newValue.text
+                                if (text.isEmpty()) {
+                                    // Người dùng nhấn nút xóa (Backspace)
+                                    if (textFieldValue.text == " ") {
+                                        // Nếu ô hiện tại đã trống sẵn (" "), tìm ô nhập gần nhất phía trước để xóa và chuyển focus
+                                        var prevEditableIndex = -1
+                                        for (i in (charIndex - 1) downTo 0) {
+                                            if (hintMask[i] == null) {
+                                                prevEditableIndex = i
+                                                break
+                                            }
+                                        }
+                                        if (prevEditableIndex != -1) {
+                                            // Xóa ký tự ở ô trước đó và ép con trỏ nằm sau khoảng trắng
+                                            userInputChars[prevEditableIndex] = TextFieldValue(" ", TextRange(1))
+                                            updateAnswer()
+                                            focusRequesters[prevEditableIndex].requestFocus()
+                                        }
+                                    } else {
+                                        // Nếu ô hiện tại đang có chữ, đưa nó về trạng thái trống " "
+                                        userInputChars[charIndex] = TextFieldValue(" ", TextRange(1))
+                                        updateAnswer()
+                                    }
+                                } else {
+                                    // Người dùng nhập ký tự mới
+                                    val filtered = text.replace(" ", "").takeLast(1)
+                                    if (filtered.isNotEmpty()) {
+                                        userInputChars[charIndex] = TextFieldValue(filtered, TextRange(filtered.length))
+                                        updateAnswer()
+
+                                        if (isLastEditable) {
+                                            focusManager.clearFocus()
+                                        } else {
+                                            focusNext(charIndex)
+                                        }
+                                    } else {
+                                        // Phòng trường hợp người dùng chỉ nhập khoảng trắng
+                                        userInputChars[charIndex] = TextFieldValue(" ", TextRange(1))
+                                        updateAnswer()
+                                    }
                                 }
                             },
                             textStyle = TextStyle(
@@ -157,7 +186,15 @@ fun FillBlankInputArea(
                             ),
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next
+                                imeAction = if (isLastEditable) ImeAction.Done else ImeAction.Next
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onNext = {
+                                    focusNext(charIndex)
+                                },
+                                onDone = {
+                                    focusManager.clearFocus()
+                                }
                             ),
                             modifier = Modifier
                                 .size(38.dp)
@@ -165,26 +202,10 @@ fun FillBlankInputArea(
                                 .border(2.dp, borderColor, RoundedCornerShape(8.dp))
                                 .background(Color.White, RoundedCornerShape(8.dp))
                                 .wrapContentHeight(Alignment.CenterVertically)
-                                .onKeyEvent { keyEvent ->
-                                    // Xử lý sự kiện nhấn nút Backspace (xóa ngược)
-                                    if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.Backspace) {
-                                        if (charValue.isEmpty()) {
-                                            focusPrevious(charIndex)
-                                            true
-                                        } else {
-                                            userInputChars[charIndex] = ""
-                                            updateAnswer()
-                                            false
-                                        }
-                                    } else {
-                                        false
-                                    }
-                                }
                         )
                     }
                 }
             }
-            // Tạo khoảng trống rõ ràng giữa các từ
             if (wordIndex < words.lastIndex) {
                 Spacer(modifier = Modifier.width(8.dp))
             }

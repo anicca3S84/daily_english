@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 import com.codework.dailyenglish.domain.user_statistic.usecase.StudyTimeManagerUseCase
+import com.codework.dailyenglish.presentation.components.AppAdManager
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -55,15 +56,17 @@ class HomeViewModel @Inject constructor(
             _state.update {
                 it.copy(weeklyStatsState = it.weeklyStatsState.copy(isLoading = true))
             }
-
             val cachedUser = getUserInfoUseCase()
+            val isPremiumCached = cachedUser?.isPremium ?: false
+
             _state.update {
                 it.copy(
                     userName = cachedUser?.fullName ?: "Guest",
                     avatarUrl = cachedUser?.avatarUrl,
-                    isPremium = cachedUser?.isPremium ?: false
+                    isPremium = isPremiumCached
                 )
             }
+            AppAdManager.isPremiumUser = isPremiumCached
 
             try {
                 studyTimeManager.syncIfEnoughTime()
@@ -80,6 +83,7 @@ class HomeViewModel @Inject constructor(
                                 isPremium = freshUser.isPremium
                             )
                         }
+                        AppAdManager.isPremiumUser = freshUser.isPremium
                     }
                     .onError { }
             }

@@ -14,9 +14,10 @@ class AiRemoteDataSourceImpl @Inject constructor(
     private val apiService: AiApiService
 ) : AiRemoteDataSource {
 
-    override suspend fun getSessions(): AppResult<List<ChatSessionDto>> {
-        return safeApiCall { apiService.getSessions() }.map { it.data.orEmpty() }
+    override suspend fun getSessions(type: String): AppResult<List<ChatSessionDto>> {
+        return safeApiCall { apiService.getSessions(type) }.map { it.data.orEmpty() }
     }
+
 
     override suspend fun sendMessage(request: ChatRequestDto): AppResult<ChatResponseDto> {
         return safeApiCall { apiService.sendMessage(request) }.map {
@@ -34,5 +35,9 @@ class AiRemoteDataSourceImpl @Inject constructor(
         return safeApiCall { apiService.sendAgentMessage(request) }.map {
             it.data ?: throw Exception("Data is null")
         }
+    }
+
+    override suspend fun getAgentSessions(type: String, topicId: String?): AppResult<List<ChatSessionDto>> {
+        return safeApiCall { apiService.getAgentSessions(type, topicId) }.map { it.data.orEmpty() }
     }
 }

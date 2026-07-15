@@ -43,9 +43,6 @@ class LeaderboardViewModel @Inject constructor(
         _state.update { it.copy(leaderboardState = it.leaderboardState.copy(isLoading = true, error = null)) }
 
         val type = _state.value.selectedTab
-
-        // Format lại TimeFilter cho Backend (ALL, THIS_WEEK, THIS_MONTH)
-        // Nếu là STREAK thì ép về "ALL" vì streak thường không có filter thời gian tuần/tháng
         val timeFilter = if (type == "STREAK") {
             "ALL"
         } else {

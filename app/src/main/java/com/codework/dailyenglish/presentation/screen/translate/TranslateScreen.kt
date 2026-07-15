@@ -221,7 +221,7 @@ fun TranslateScreen(
                             StateWrapper(
                                 uiState = state.historyState,
                                 snackbarHostState = snackbarHostState,
-                                onRetry = { }
+                                onRetry = { onEvent(TranslateEvent.OnRefreshHistory) }
                             ) { historyList ->
                                 Column(
                                     verticalArrangement = Arrangement.spacedBy(Spaces.Space10),

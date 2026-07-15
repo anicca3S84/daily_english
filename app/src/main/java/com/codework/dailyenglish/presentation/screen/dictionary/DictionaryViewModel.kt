@@ -258,7 +258,6 @@ class DictionaryViewModel @Inject constructor(
                 sendEffect(DictionaryEffect.NavigateToTopicSelection(origin = "DICTIONARY"))
             }
 
-            // --- XỬ LÝ CÁC EVENT MỚI ĐƯỢC THÊM VÀO ---
 
             is DictionaryEvent.OnRecentSearchClick -> {
                 // Điều hướng thẳng sang màn detail khi click từ lịch sử

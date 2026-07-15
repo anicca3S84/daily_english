@@ -62,7 +62,13 @@ class SubscriptionViewModel @Inject constructor(
             }
 
             SubscriptionEvent.OnShowPacksClick -> {
-                _state.update { it.copy(forceShowPacks = true) }
+                _state.update {
+                    it.copy(
+                        forceShowPacks = true,
+                        isPaymentSuccess = false,
+                        paymentUiState = BaseUiState()
+                    )
+                }
             }
 
             is SubscriptionEvent.OnCopySuccess -> {
@@ -99,7 +105,7 @@ class SubscriptionViewModel @Inject constructor(
                     _state.update {
                         it.copy(packsUiState = BaseUiState(isLoading = false, error = err.asUiText()))
                     }
-                    sendGlobalEffect(BaseEffect.ShowToast(err.asUiText()))
+                    sendGlobalEffect(ShowToast(err.asUiText()))
                 }
         }
     }
@@ -121,7 +127,7 @@ class SubscriptionViewModel @Inject constructor(
                     _state.update {
                         it.copy(paymentUiState = BaseUiState(isLoading = false, error = err.asUiText()))
                     }
-                    sendGlobalEffect(BaseEffect.ShowToast(err.asUiText()))
+                    sendGlobalEffect(ShowToast(err.asUiText()))
                 }
         }
     }

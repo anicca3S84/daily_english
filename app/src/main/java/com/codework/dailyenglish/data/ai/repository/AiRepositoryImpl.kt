@@ -17,8 +17,8 @@ class AiRepositoryImpl @Inject constructor(
     private val dispatchers: Dispatcher
 ) : AiRepository {
 
-    override suspend fun getHistorySessions(): AppResult<List<ChatSession>> = withContext(dispatchers.io) {
-        remoteDataSource.getSessions().map { listDto ->
+    override suspend fun getHistorySessions(type: String): AppResult<List<ChatSession>> = withContext(dispatchers.io) {
+        remoteDataSource.getSessions(type).map { listDto ->
             listDto.map { AiMapper.mapToDomain(it) }
         }
     }
@@ -60,6 +60,12 @@ class AiRepositoryImpl @Inject constructor(
         )
         remoteDataSource.sendAgentMessage(requestDto).map { dto ->
             AiMapper.mapToDomain(dto)
+        }
+    }
+
+    override suspend fun getAgentHistorySessions(type: String, topicId: String?): AppResult<List<ChatSession>> = withContext(dispatchers.io) {
+        remoteDataSource.getAgentSessions(type, topicId).map { listDto ->
+            listDto.map { AiMapper.mapToDomain(it) }
         }
     }
 }

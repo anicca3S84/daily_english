@@ -7,6 +7,10 @@ sealed interface AiSpeakingEvent {
     data object OnRetryChat : AiSpeakingEvent
     data object OnStopRecording : AiSpeakingEvent
 
+    // BỔ SUNG SỰ KIỆN LỊCH SỬ
+    data object OnNewChat : AiSpeakingEvent
+    data class OnLoadSession(val sessionId: String) : AiSpeakingEvent
+
     data object OnDismissLimitConfirmDialog : AiSpeakingEvent
     data object OnConfirmLimitUpgrade : AiSpeakingEvent
     data object OnDismissSubscriptionPopup : AiSpeakingEvent

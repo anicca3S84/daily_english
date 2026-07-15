@@ -8,7 +8,7 @@ import jakarta.inject.Inject
 class GetHistorySessionsUseCase @Inject constructor(
     private val repository: AiRepository
 ) {
-    suspend operator fun invoke(): AppResult<List<ChatSession>> {
-        return repository.getHistorySessions()
+    suspend operator fun invoke(type: String): AppResult<List<ChatSession>> {
+        return repository.getHistorySessions(type)
     }
 }

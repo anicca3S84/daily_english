@@ -19,6 +19,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+// Import BannerAd
+import com.codework.dailyenglish.presentation.components.BannerAd
 import com.codework.dailyenglish.presentation.components.StateWrapper
 import com.codework.dailyenglish.presentation.screen.dictionary.components.WordResultCard
 import com.codework.dailyenglish.presentation.screen.vocab_list.components.EmptySavedState
@@ -26,6 +28,7 @@ import com.codework.dailyenglish.presentation.screen.vocab_list.mvi.VocabularyLi
 import com.codework.dailyenglish.presentation.screen.vocab_list.mvi.VocabularyListState
 import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.AppTextSizes
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VocabularyListScreen(
@@ -93,7 +96,8 @@ fun VocabularyListScreen(
             uiState = state.vocabWords,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
+            onRetry = { onEvent(VocabularyListEvent.OnRefresh) }
         ) { wordsList ->
             Box(
                 modifier = Modifier
@@ -154,6 +158,20 @@ fun VocabularyListScreen(
                                 onPlayAudio = { onEvent(VocabularyListEvent.OnPlayAudio(word)) },
                                 onToggleSave = { onEvent(VocabularyListEvent.OnToggleSaveClick(word)) }
                             )
+
+                            if (!state.isPremium) {
+                                val shouldShowAfterFirst = index == 1 && wordsList.size > 1
+                                val shouldShowAfterFourth = index == 3 && wordsList.size > 4
+
+                                if (shouldShowAfterFirst || shouldShowAfterFourth) {
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    BannerAd(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp)
+                                    )
+                                }
+                            }
                         }
 
                         item {

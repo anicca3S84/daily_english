@@ -5,5 +5,6 @@ import com.google.gson.annotations.SerializedName
 data class LessonResultResponseDto(
     @SerializedName("scorePercentage") val scorePercentage: Int?,
     @SerializedName("starsEarned") val starsEarned: Int?,
-    @SerializedName("xpEarned") val xpEarned: Int?
+    @SerializedName("xpEarned") val xpEarned: Int?,
+    @SerializedName("streak") val streak: String?
 )

@@ -9,4 +9,5 @@ interface AuthRemoteDataSource {
     suspend fun loginWithGoogle(idToken: String): AppResult<AuthDto>
     suspend fun getMyProfile(): AppResult<UserDto>
     suspend fun updateMyProfile(fullName: String, avatarFile: File?): AppResult<UserDto>
+    suspend fun logout(refreshToken: String): AppResult<Unit>
 }

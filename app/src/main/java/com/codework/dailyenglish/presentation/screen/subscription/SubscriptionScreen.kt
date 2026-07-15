@@ -1,6 +1,7 @@
 package com.codework.dailyenglish.presentation.screen.subscription
 import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -11,6 +12,8 @@ import com.codework.dailyenglish.presentation.components.AppBottomSheet
 import com.codework.dailyenglish.presentation.screen.subscription.components.SubscriptionSheetContent
 import com.codework.dailyenglish.presentation.screen.subscription.mvi.*
 
+// Trong file SubscriptionPopup.kt
+
 @Composable
 fun SubscriptionPopup(
     visible: Boolean,
@@ -19,6 +22,12 @@ fun SubscriptionPopup(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+
+    LaunchedEffect(visible) {
+        if (visible) {
+            viewModel.onEvent(SubscriptionEvent.OnInitLoad)
+        }
+    }
 
     CollectEffect(viewModel.effectFlow) { effect ->
         when (effect) {
@@ -44,7 +53,6 @@ fun SubscriptionPopup(
 
     AppBottomSheet(
         visible = visible,
-
         onDismiss = {
             viewModel.onEvent(SubscriptionEvent.OnDismissBottomSheet)
             onDismiss()
@@ -59,4 +67,3 @@ fun SubscriptionPopup(
         )
     }
 }
-

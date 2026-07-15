@@ -57,7 +57,7 @@ sealed interface Route {
     ) : Route
 
     @Serializable
-    data class LessonResultScreen(val scorePercentage: Int, val starsEarned: Int, val lessonId: String)
+    data class LessonResultScreen(val scorePercentage: Int, val starsEarned: Int, val lessonId: String, val streak: String?)
 
     @Serializable
     data object VocabularyListScreen : Route
@@ -87,6 +87,11 @@ sealed interface Route {
     @Serializable
     data class TopicScreen(
         val origin: String
+    ) : Route
+    @Serializable
+
+    data class StreakScreen(
+        val streak: String
     ) : Route
 
     @Serializable

@@ -1,8 +1,8 @@
 package com.codework.dailyenglish.presentation.screen.ai_speaking.mvi
 
 import com.codework.dailyenglish.domain.ai.model.ChatMessage
+import com.codework.dailyenglish.domain.ai.model.ChatSession
 import com.codework.dailyenglish.core.base.BaseUiState
-
 
 data class AiSpeakingUiData(
     val currentSessionId: String = "new",
@@ -15,6 +15,9 @@ data class AiSpeakingState(
     val uiState: BaseUiState<AiSpeakingUiData> = BaseUiState(),
     val isRecording: Boolean = false,
     val isSuggestionsVisible: Boolean = false,
+
+    // BỔ SUNG LỊCH SỬ SESSIONS
+    val historySessions: List<ChatSession> = emptyList(),
 
     val isPremium: Boolean = false,
     val remainingMessages: Int = 3,

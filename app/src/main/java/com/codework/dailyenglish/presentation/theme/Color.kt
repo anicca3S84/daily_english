@@ -4,6 +4,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 object AppColors {
+    val BluePrimary = Color(0xFF2196F3)
+    val IndigoPurple = Color(0xFF7384E8)
+    val MainGradient = Brush.linearGradient(
+        colors = listOf(BluePrimary, IndigoPurple)
+    )
     val TrackColorProgress = Color(0xFFEEEEEE)
     val TitleColor = Color(0xFF111827)
     val ExpBgColor = Color(0xFFFF9800)
@@ -42,11 +47,7 @@ object AppColors {
     val GrayText = Color(0xFF6B7280)
     val AppSurface = Color(0xFFFFFFFF)
     val TextPrimary = Color(0xFF1F1F1F)
-    val BluePrimary = Color(0xFF2196F3)
-    val IndigoPurple = Color(0xFF7384E8)
-    val MainGradient = Brush.linearGradient(
-        colors = listOf(BluePrimary, IndigoPurple)
-    )
+
     val BorderStrokeColor = Color(0xFFE5E7EB)
     val SuccessGreen = Color(0xFF10B981)
     val DisableBtn = Color(0xFFE3E3E7)

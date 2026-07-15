@@ -51,6 +51,7 @@ class LessonViewModel @Inject constructor(
     initialState = BaseUiState(isLoading = true)
 ) {
     private val lessonId: String = checkNotNull(savedStateHandle["lessonId"])
+    private val streak: Int = checkNotNull(savedStateHandle["streak"])
     private val isCompleted: Boolean = checkNotNull(savedStateHandle["isCompleted"])
     private val isReview: Boolean = savedStateHandle["isReview"] ?: false
 
@@ -125,6 +126,7 @@ class LessonViewModel @Inject constructor(
                     isCorrect = answerText.equals(content.correctAnswer.trim(), ignoreCase = true)
                 }
                 is QuestionContent.Speaking -> {
+                    speachToTextParser.stopListening()
                     val similarity = (questionData.userAnswer ?: "").calculateSimilarity(content.targetText)
                     isCorrect = similarity >= 0.8f || questionData.userAnswer == "PASSED"
                 }
@@ -147,7 +149,11 @@ class LessonViewModel @Inject constructor(
         }
     }
 
-    private fun updateUserAnswer(answer: String, indices: List<Int>) {
+    private fun updateUserAnswer(
+        answer: String,
+        indices: List<Int>,
+        isFinalSpeaking: Boolean = false // Thêm tham số này với giá trị mặc định là false
+    ) {
         _state.update { state ->
             val currentData = state.data ?: return@update state
             val currentStep = currentData.steps[currentData.currentIndex]
@@ -165,11 +171,25 @@ class LessonViewModel @Inject constructor(
             if (isSpeaking && answer.isNotBlank()) {
                 val content = questionData.content
                 val similarity = answer.calculateSimilarity(content.targetText)
+                val isCorrectAnswer = similarity >= 0.8f || answer == "PASSED"
 
-                updatedQuestionData = updatedQuestionData.copy(
-                    isAnswerEvaluated = true,
-                    isCorrect = similarity >= 0.8f || answer == "PASSED"
-                )
+                if (isCorrectAnswer) {
+                    updatedQuestionData = updatedQuestionData.copy(
+                        isAnswerEvaluated = true,
+                        isCorrect = true
+                    )
+                    speachToTextParser.stopListening()
+                } else if (isFinalSpeaking) {
+                    updatedQuestionData = updatedQuestionData.copy(
+                        isAnswerEvaluated = true,
+                        isCorrect = false
+                    )
+                } else {
+                    updatedQuestionData = updatedQuestionData.copy(
+                        isAnswerEvaluated = false,
+                        isCorrect = null
+                    )
+                }
             }
 
             val updatedSteps = currentData.steps.toMutableList()
@@ -177,7 +197,7 @@ class LessonViewModel @Inject constructor(
 
             state.copy(data = currentData.copy(
                 steps = updatedSteps,
-                showResultStepIndex = if (isSpeaking) currentData.currentIndex else currentData.showResultStepIndex
+                showResultStepIndex = if (isSpeaking && updatedQuestionData.isAnswerEvaluated) currentData.currentIndex else currentData.showResultStepIndex
             ))
         }
     }
@@ -242,14 +262,14 @@ class LessonViewModel @Inject constructor(
             .onSuccess { data ->
                 _state.update { it.copy(isLoading = false) }
 
-                // GỌI HÀM LÀM MỚI LỊCH CUỘN 7 NGÀY Ở ĐÂY
                 reminderManager.rescheduleDailyReminders()
 
                 sendEffect(
                     LessonEffect.NavigateToResult(
                         scorePercentage = data.scorePercentage,
                         starsEarned = data.starsEarned,
-                        lessonId = lessonId
+                        lessonId = lessonId,
+                        streak = data.streak
                     )
                 )
             }
@@ -373,7 +393,12 @@ class LessonViewModel @Inject constructor(
                 }
 
                 if (voiceState.spokenText.isNotBlank()) {
-                    updateUserAnswer(voiceState.spokenText, emptyList())
+                    // Truyền thêm cờ đánh dấu nếu mic đã ngừng lắng nghe (!voiceState.isListening)
+                    updateUserAnswer(
+                        answer = voiceState.spokenText,
+                        indices = emptyList(),
+                        isFinalSpeaking = !voiceState.isListening
+                    )
                 }
             }
         }

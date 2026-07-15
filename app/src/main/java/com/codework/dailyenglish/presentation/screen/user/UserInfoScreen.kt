@@ -94,7 +94,8 @@ fun UserInfoScreen(
             uiState = state.userInfoState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
+            onRetry = {onEvent(UserInfoEvent.OnLoadProfile)}
         ) { profile ->
             profile?.let { data ->
                 Column(

@@ -2,6 +2,7 @@ package com.codework.dailyenglish.data.auth.remote
 
 import com.codework.dailyenglish.data.auth.remote.dto.AuthDto
 import com.codework.dailyenglish.data.auth.remote.dto.GoogleLoginDto
+import com.codework.dailyenglish.data.auth.remote.dto.LogoutRequestDto
 import com.codework.dailyenglish.data.auth.remote.dto.UpdateUserRequest
 import com.codework.dailyenglish.data.auth.remote.dto.UserDto
 import com.codework.dailyenglish.data.remote.response.BaseResponse
@@ -44,4 +45,9 @@ interface AuthApi {
         @Part fullName: MultipartBody.Part, // Thay đổi từ RequestBody sang MultipartBody.Part
         @Part avatar: MultipartBody.Part?
     ): BaseResponse<UserDto>
+
+    @POST("auth/logout")
+    suspend fun logout(
+        @Body request: LogoutRequestDto
+    ): BaseResponse<Unit>
 }

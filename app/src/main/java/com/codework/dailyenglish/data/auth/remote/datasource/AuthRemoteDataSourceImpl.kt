@@ -6,6 +6,7 @@ import com.codework.dailyenglish.core.network.unwrap
 import com.codework.dailyenglish.data.auth.remote.AuthApi
 import com.codework.dailyenglish.data.auth.remote.dto.AuthDto
 import com.codework.dailyenglish.data.auth.remote.dto.GoogleLoginDto
+import com.codework.dailyenglish.data.auth.remote.dto.LogoutRequestDto
 import com.codework.dailyenglish.data.auth.remote.dto.UpdateUserRequest
 import com.codework.dailyenglish.data.auth.remote.dto.UserDto
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -39,5 +40,9 @@ class AuthRemoteDataSourceImpl @Inject constructor(
 
             api.updateMyProfile(fullName = fullNamePart, avatar = avatarPart)
         }.unwrap()
+    }
+
+    override suspend fun logout(refreshToken: String): AppResult<Unit> {
+        return safeApiCall { api.logout(LogoutRequestDto(refreshToken)) }.unwrap()
     }
 }

@@ -3,6 +3,7 @@ package com.codework.dailyenglish.presentation.screen.courses
 import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -18,8 +20,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.codework.dailyenglish.R
+import com.codework.dailyenglish.presentation.components.BannerAd
 import com.codework.dailyenglish.presentation.components.CurvedHeaderWrapper
 import com.codework.dailyenglish.presentation.components.HeaderStatItem
 import com.codework.dailyenglish.presentation.components.LoadingType
@@ -32,8 +37,8 @@ import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.Spaces
 import com.codework.dailyenglish.presentation.theme.AppTextSizes
 
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CourseScreen(
     state: CourseState,
@@ -48,23 +53,19 @@ fun CourseScreen(
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            StateWrapper(
-                uiState = state.dashboardState,
-                modifier = Modifier.fillMaxSize(),
-                snackbarHostState = snackBar,
-                loadingType = LoadingType.CIRCULAR,
-                enablePullToRefresh = true,
-                onRetry = { onEvent(CourseEvent.OnRefreshData) }
-            ) { courseList ->
-
-                val safeCourses = courseList ?: emptyList()
-
+            // Tích hợp PullToRefreshBox ngoài cùng để kéo làm mới toàn bộ màn hình (bao gồm cả cập nhật lại chỉ số Header)
+            PullToRefreshBox(
+                isRefreshing = state.dashboardState.isRefreshing,
+                onRefresh = { onEvent(CourseEvent.OnRefreshData) },
+                modifier = Modifier.fillMaxSize()
+            ) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = Spaces.Space20),
                     verticalArrangement = Arrangement.spacedBy(Spaces.Space16),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // 1. Sticky Header chứa thông tin học tập của người dùng luôn luôn hiển thị
                     stickyHeader {
                         CurvedHeaderWrapper(
                             content = {
@@ -116,7 +117,15 @@ fun CourseScreen(
                                                     horizontalAlignment = Alignment.CenterHorizontally,
                                                     verticalArrangement = Arrangement.Center
                                                 ) {
-                                                    Text("🔥", fontSize = AppTextSizes.TextSizeTitle)
+                                                    Image(
+                                                        painter = painterResource(id = R.drawable.ic_streak),
+                                                        contentDescription = "Streak Icon",
+                                                        modifier = Modifier
+                                                            .size(Spaces.Space24)
+                                                    )
+
+                                                    Spacer(modifier = Modifier.height(Spaces.Space2))
+
                                                     Text(
                                                         text = streakValue,
                                                         color = Color.White,
@@ -167,30 +176,65 @@ fun CourseScreen(
                         )
                     }
 
-                    items(safeCourses.chunked(2)) { rowCourses ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = Spaces.Space16),
-                            horizontalArrangement = Arrangement.spacedBy(Spaces.Space16)
-                        ) {
-                            for (course in rowCourses) {
-                                // Phân loại xem có phải gói VIP hay không để vẽ nhãn PRO
-                                val isPremiumCourse = course.code.uppercase() in listOf("B2", "C1", "C2")
+                    // 2. StateWrapper bọc cục bộ riêng khu vực danh sách khóa học
+                    item {
+                        StateWrapper(
+                            uiState = state.dashboardState,
+                            modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 250.dp),
+                            snackbarHostState = snackBar,
+                            loadingType = LoadingType.CIRCULAR,
+                            enablePullToRefresh = false, // Vô hiệu hóa ở đây vì đã bọc PullToRefreshBox ở ngoài cùng
+                            onRetry = { onEvent(CourseEvent.OnRefreshData) }
+                        ) { courseList ->
+                            val safeCourses = courseList ?: emptyList()
 
-                                CourseCard(
-                                    course = course,
-                                    isPremium = isPremiumCourse, // Dùng để hiển thị nhãn "PRO" màu vàng cao cấp
-                                    modifier = Modifier.weight(1f),
-                                    isLocked = course.isLocked, // ĐÃ TỐI ƯU: Đọc trực tiếp trạng thái khóa từ Server trả về!
-                                    onClick = {
-                                        onEvent(CourseEvent.OnCourseClick(course.id, course.code, course.isLocked))
+                            // Kiểm tra nếu xảy ra lỗi kết nối mạng và không có dữ liệu hiển thị:
+                            if (state.dashboardState.error != null && safeCourses.isEmpty()) {
+                                // Trả về Box rỗng cao 250.dp để nút "Try again" tự căn giữa gọn gàng dưới Header
+                                Box(modifier = Modifier.fillMaxWidth().height(250.dp))
+                            } else {
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(Spaces.Space16)
+                                ) {
+                                    safeCourses.chunked(2).forEach { rowCourses ->
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = Spaces.Space16),
+                                            horizontalArrangement = Arrangement.spacedBy(Spaces.Space16)
+                                        ) {
+                                            for (course in rowCourses) {
+                                                val isPremiumCourse = course.code.uppercase() in listOf("B2", "C1", "C2")
+
+                                                CourseCard(
+                                                    course = course,
+                                                    isPremium = isPremiumCourse,
+                                                    modifier = Modifier.weight(1f),
+                                                    isLocked = course.isLocked,
+                                                    onClick = {
+                                                        onEvent(CourseEvent.OnCourseClick(course.id, course.code, course.isLocked))
+                                                    }
+                                                )
+                                            }
+                                            if (rowCourses.size == 1) {
+                                                Spacer(modifier = Modifier.weight(1f))
+                                            }
+                                        }
                                     }
-                                )
+                                }
                             }
-                            if (rowCourses.size == 1) {
-                                Spacer(modifier = Modifier.weight(1f))
-                            }
+                        }
+                    }
+
+                    // 3. Banner quảng cáo luôn hiển thị dưới cùng của danh sách
+                    if (!state.isPremium) {
+                        item {
+                            Spacer(modifier = Modifier.height(Spaces.Space16))
+                            BannerAd(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = Spaces.Space16)
+                            )
                         }
                     }
                 }

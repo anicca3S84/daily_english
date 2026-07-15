@@ -241,8 +241,7 @@ class TranslateViewModel @Inject constructor(
                         )
                     }
                     sourceTextFlow.value = TranslationRequest("", shouldTranslate = false)
-
-                    val langCode = getLocaleFromLangCode(_state.value.sourceLang).language
+                    val langCode = getLocaleFromLangCode(_state.value.sourceLang).toLanguageTag()
                     voiceToTextParser.startListening(event.context, langCode)
                 }
             }
@@ -273,6 +272,8 @@ class TranslateViewModel @Inject constructor(
                 }
                 sourceTextFlow.value = TranslationRequest(event.source, shouldTranslate = false)
             }
+
+            is TranslateEvent.OnRefreshHistory -> {observeHistory()}
 
             else -> {}
         }

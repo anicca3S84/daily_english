@@ -9,6 +9,7 @@ import com.codework.dailyenglish.core.network.onSuccess
 import com.codework.dailyenglish.domain.course.usecase.GetDashboardDataUseCase
 import com.codework.dailyenglish.domain.user.usecase.GetUserInfoUseCase // BỔ SUNG
 import com.codework.dailyenglish.domain.auth.usecase.GetMyProfileUseCase // BỔ SUNG (Đồng bộ ngầm)
+import com.codework.dailyenglish.presentation.components.AppAdManager
 import com.codework.dailyenglish.presentation.screen.courses.mapper.toUiModels
 import com.codework.dailyenglish.presentation.screen.courses.mvi.CourseEffect
 import com.codework.dailyenglish.presentation.screen.courses.mvi.CourseEffect.*
@@ -37,7 +38,7 @@ class CourseViewModel @Inject constructor(
     override fun onEvent(event: CourseEvent) {
         when (event) {
             is CourseEvent.OnCourseClick -> {
-                if (event.isLocked) { // Đọc trực tiếp trạng thái khóa từ Server trả về
+                if (event.isLocked) {
                         _state.update { it.copy(showSubscriptionPopup = true) }
                     } else {
                     sendEffect(NavigateToCourseDetails(event.courseId, event.courseCode))
@@ -67,11 +68,15 @@ class CourseViewModel @Inject constructor(
 
         viewModelScope.launch {
             val localUser = getUserInfoUseCase()
-            _state.update { it.copy(isPremium = localUser?.isPremium ?: false) }
+            val isPremiumLocal = localUser?.isPremium ?: false
+
+            _state.update { it.copy(isPremium = isPremiumLocal) }
+            AppAdManager.isPremiumUser = isPremiumLocal
 
             launch {
                 getMyProfileUseCase().onSuccess { freshUser ->
                     _state.update { it.copy(isPremium = freshUser.isPremium) }
+                    AppAdManager.isPremiumUser = freshUser.isPremium
                 }
             }
 

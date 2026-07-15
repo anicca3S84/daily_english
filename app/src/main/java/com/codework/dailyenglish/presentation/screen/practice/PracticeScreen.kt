@@ -1,5 +1,6 @@
 package com.codework.dailyenglish.presentation.screen.practice
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,7 +15,9 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material.icons.rounded.SmartToy
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -25,7 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.layout // Thư viện xử lý layout lề âm
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -34,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import com.codework.dailyenglish.R
 import com.codework.dailyenglish.domain.vocabulary.model.VocabTopic
 import com.codework.dailyenglish.presentation.components.BannerAd
+import com.codework.dailyenglish.presentation.components.LoadingType
 import com.codework.dailyenglish.presentation.components.StateWrapper
 import com.codework.dailyenglish.presentation.screen.practice.components.AiTopicCard
 import com.codework.dailyenglish.presentation.screen.practice.components.HeaderWaveShape
@@ -42,248 +46,286 @@ import com.codework.dailyenglish.presentation.screen.practice.mvi.PracticeEvent
 import com.codework.dailyenglish.presentation.screen.practice.mvi.PracticeState
 import com.codework.dailyenglish.presentation.theme.AppColors
 
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun PracticeScreen(
     state: PracticeState,
     onEvent: (PracticeEvent) -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF8FAFC)),
-    ) {
-        item {
-            Box(
+    val snackBar = remember { SnackbarHostState() }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackBar) },
+        containerColor = Color(0xFFF8FAFC)
+    ) { _ ->
+        // Bọc PullToRefreshBox ngoài cùng để có thể vuốt kéo tải lại toàn bộ màn hình (bao gồm cả Header)
+        PullToRefreshBox(
+            isRefreshing = state.topicsState.isRefreshing,
+            onRefresh = { onEvent(PracticeEvent.OnRetry) },
+            modifier = Modifier.fillMaxSize()
+        ) {
+            LazyColumn(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(270.dp)
+                    .fillMaxSize()
+                    .background(Color(0xFFF8FAFC)),
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.img_practice_bg),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(HeaderWaveShape())
-                )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(horizontal = 24.dp, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = "Practice Hub",
-                            fontSize = 30.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = Color.White,
-                            style = TextStyle(letterSpacing = (-0.5).sp)
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "Level up your speaking & skills",
-                            fontSize = 15.sp,
-                            color = Color.White.copy(alpha = 0.85f),
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-            }
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(30.dp))
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .layout { measurable, constraints ->
-                        val placeable = measurable.measure(constraints)
-                        val overlapPx = 75.dp.roundToPx()
-                        val calculatedHeight = (placeable.height - overlapPx).coerceAtLeast(0)
-                        layout(placeable.width, calculatedHeight) {
-                            placeable.placeRelative(0, -overlapPx)
-                        }
-                    }
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                // 1. Phần Header luôn hiển thị (Kể cả khi mất kết nối)
+                item {
                     Box(
                         modifier = Modifier
-                            .size(54.dp)
-                            .background(Color(0xFFEEF2F6), CircleShape)
-                            .border(1.dp, Color(0xFFE2E8F0), CircleShape),
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .height(270.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.SmartToy,
-                            contentDescription = "AI Assistant",
-                            tint = Color.White,
+                        Image(
+                            painter = painterResource(id = R.drawable.img_practice_bg),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .size(32.dp)
-                                .graphicsLayer {
-                                    compositingStrategy = CompositingStrategy.Offscreen
+                                .fillMaxSize()
+                                .clip(HeaderWaveShape())
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .statusBarsPadding()
+                                .padding(horizontal = 24.dp, vertical = 16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(top = 8.dp)
+                            ) {
+                                Text(
+                                    text = "Practice Hub",
+                                    fontSize = 30.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color.White,
+                                    style = TextStyle(letterSpacing = (-0.5).sp)
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = "Level up your speaking & skills",
+                                    fontSize = 15.sp,
+                                    color = Color.White.copy(alpha = 0.85f),
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // 2. Phần danh sách chủ đề học
+                item {
+                    Spacer(modifier = Modifier.height(30.dp))
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .layout { measurable, constraints ->
+                                val placeable = measurable.measure(constraints)
+                                val overlapPx = 75.dp.roundToPx()
+                                val calculatedHeight = (placeable.height - overlapPx).coerceAtLeast(0)
+                                layout(placeable.width, calculatedHeight) {
+                                    placeable.placeRelative(0, -overlapPx)
                                 }
-                                .drawWithCache {
-                                    onDrawWithContent {
-                                        drawContent()
-                                        drawRect(
-                                            brush = AppColors.MainGradient,
-                                            blendMode = BlendMode.SrcIn
+                            }
+                    ) {
+                        // Tiêu đề AI Speaking Hub luôn hiển thị
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(54.dp)
+                                    .background(Color(0xFFEEF2F6), CircleShape)
+                                    .border(1.dp, Color(0xFFE2E8F0), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.SmartToy,
+                                    contentDescription = "AI Assistant",
+                                    tint = Color.White,
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .graphicsLayer {
+                                            compositingStrategy = CompositingStrategy.Offscreen
+                                        }
+                                        .drawWithCache {
+                                            onDrawWithContent {
+                                                drawContent()
+                                                drawRect(
+                                                    brush = AppColors.MainGradient,
+                                                    blendMode = BlendMode.SrcIn
+                                                )
+                                            }
+                                        }
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(16.dp))
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "AI Speaking Hub",
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF0F172A)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Icon(
+                                        imageVector = Icons.Default.AutoAwesome,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier
+                                            .size(18.dp)
+                                            .graphicsLayer {
+                                                compositingStrategy = CompositingStrategy.Offscreen
+                                            }
+                                            .drawWithCache {
+                                                onDrawWithContent {
+                                                    drawContent()
+                                                    drawRect(
+                                                        brush = AppColors.MainGradient,
+                                                        blendMode = BlendMode.SrcIn
+                                                    )
+                                                }
+                                            }
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "Choose a topic and start talking",
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF64748B),
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // StateWrapper bọc cục bộ riêng vùng danh sách chủ đề
+                        StateWrapper(
+                            uiState = state.topicsState,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .defaultMinSize(minHeight = 280.dp), // Bổ sung chiều cao tối thiểu tại đây để tránh bị sập về 0 khi loading
+                            snackbarHostState = snackBar,
+                            loadingType = LoadingType.CIRCULAR,
+                            enablePullToRefresh = false, // Vô hiệu hoá PullToRefresh ở đây vì chúng ta đã bọc toàn màn hình ở ngoài cùng
+                            onRetry = { onEvent(PracticeEvent.OnRetry) }
+                        ) { topics ->
+
+                            // Nếu xảy ra lỗi kết nối mạng và chưa có dữ liệu tải về:
+                            if (state.topicsState.error != null && (topics == null || topics.isEmpty())) {
+                                // Ta tạo một Box trống có chiều cao cố định để nhường không gian cho
+                                // StateWrapper tự vẽ ErrorOverlay căn giữa gọn gàng dưới mục "AI Speaking Hub"
+                                Box(modifier = Modifier.fillMaxWidth().height(280.dp))
+                            } else {
+                                // Nếu có dữ liệu thành công, tiến hành vẽ lưới các thẻ bài bình thường
+                                val allTopics = topics ?: emptyList()
+
+                                Column(
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                    ) {
+                                        AiTopicCard(
+                                            topic = VocabTopic(
+                                                id = "free_talk",
+                                                name = "Free Talk",
+                                                imageUrl = "https://cdn-icons-png.flaticon.com/512/2040/2040946.png",
+                                                description = "Explore this topic",
+                                                totalWords = 0
+                                            ),
+                                            onClick = {
+                                                onEvent(PracticeEvent.OnAiTopicClick("free_talk", "Free Talk"))
+                                            },
+                                            modifier = Modifier.weight(1f)
+                                        )
+
+                                        allTopics.getOrNull(0)?.let { topic ->
+                                            AiTopicCard(
+                                                topic = topic,
+                                                onClick = {
+                                                    onEvent(PracticeEvent.OnAiTopicClick(topic.id, topic.name))
+                                                },
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                        } ?: Spacer(modifier = Modifier.weight(1f))
+                                    }
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                    ) {
+                                        allTopics.getOrNull(1)?.let { topic ->
+                                            AiTopicCard(
+                                                topic = topic,
+                                                onClick = {
+                                                    onEvent(PracticeEvent.OnAiTopicClick(topic.id, topic.name))
+                                                },
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                        } ?: Spacer(modifier = Modifier.weight(1f))
+
+                                        allTopics.getOrNull(2)?.let { topic ->
+                                            AiTopicCard(
+                                                topic = topic,
+                                                onClick = {
+                                                    onEvent(PracticeEvent.OnAiTopicClick(topic.id, topic.name))
+                                                },
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                        } ?: Spacer(modifier = Modifier.weight(1f))
+                                    }
+
+                                    if (!state.isPremium) {
+                                        BannerAd(
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    }
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                    ) {
+                                        allTopics.getOrNull(3)?.let { topic ->
+                                            AiTopicCard(
+                                                topic = topic,
+                                                onClick = {
+                                                    onEvent(PracticeEvent.OnAiTopicClick(topic.id, topic.name))
+                                                },
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                        } ?: Spacer(modifier = Modifier.weight(1f))
+
+                                        SeeAllCard(
+                                            onClick = { onEvent(PracticeEvent.OnExploreMoreAiTopics) },
+                                            modifier = Modifier.weight(1f)
                                         )
                                     }
                                 }
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = "AI Speaking Hub",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF0F172A)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Icon(
-                                imageVector = Icons.Default.AutoAwesome,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier
-                                    .size(18.dp)
-                                    .graphicsLayer {
-                                        compositingStrategy = CompositingStrategy.Offscreen
-                                    }
-                                    .drawWithCache {
-                                        onDrawWithContent {
-                                            drawContent()
-                                            drawRect(
-                                                brush = AppColors.MainGradient,
-                                                blendMode = BlendMode.SrcIn
-                                            )
-                                        }
-                                    }
-                            )
+                            }
                         }
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "Choose a topic and start talking",
-                            fontSize = 14.sp,
-                            color = Color(0xFF64748B),
-                            fontWeight = FontWeight.Medium
-                        )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                StateWrapper(uiState = state.topicsState) { topics ->
-                    val allTopics = topics ?: emptyList()
-
-                    Column(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            AiTopicCard(
-                                topic = VocabTopic(
-                                    id = "free_talk",
-                                    name = "Free Talk",
-                                    imageUrl = "https://cdn-icons-png.flaticon.com/512/2040/2040946.png",
-                                    description = "Explore this topic",
-                                    totalWords = 0
-                                ),
-                                onClick = {
-                                    onEvent(PracticeEvent.OnAiTopicClick("free_talk", "Free Talk"))
-                                },
-                                modifier = Modifier.weight(1f)
-                            )
-
-                            allTopics.getOrNull(0)?.let { topic ->
-                                AiTopicCard(
-                                    topic = topic,
-                                    onClick = {
-                                        onEvent(PracticeEvent.OnAiTopicClick(topic.id, topic.name))
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                )
-                            } ?: Spacer(modifier = Modifier.weight(1f))
-                        }
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            allTopics.getOrNull(1)?.let { topic ->
-                                AiTopicCard(
-                                    topic = topic,
-                                    onClick = {
-                                        onEvent(PracticeEvent.OnAiTopicClick(topic.id, topic.name))
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                )
-                            } ?: Spacer(modifier = Modifier.weight(1f))
-
-                            allTopics.getOrNull(2)?.let { topic ->
-                                AiTopicCard(
-                                    topic = topic,
-                                    onClick = {
-                                        onEvent(PracticeEvent.OnAiTopicClick(topic.id, topic.name))
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                )
-                            } ?: Spacer(modifier = Modifier.weight(1f))
-                        }
-
-                        if (!state.isPremium) {
-                            BannerAd(
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-
-                        // Hàng 3
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            allTopics.getOrNull(3)?.let { topic ->
-                                AiTopicCard(
-                                    topic = topic,
-                                    onClick = {
-                                        onEvent(PracticeEvent.OnAiTopicClick(topic.id, topic.name))
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                )
-                            } ?: Spacer(modifier = Modifier.weight(1f))
-
-                            SeeAllCard(
-                                onClick = { onEvent(PracticeEvent.OnExploreMoreAiTopics) },
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
-        }
-        item {
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

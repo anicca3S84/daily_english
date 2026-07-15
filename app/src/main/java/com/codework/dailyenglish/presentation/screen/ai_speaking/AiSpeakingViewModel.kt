@@ -11,11 +11,14 @@ import com.codework.dailyenglish.core.network.onError
 import com.codework.dailyenglish.core.network.onErrorDetails
 import com.codework.dailyenglish.core.network.onSuccess
 import com.codework.dailyenglish.domain.ai.model.ChatMessage
-import com.codework.dailyenglish.domain.ai.usecase.SendAgentMessageUseCase // SỬ DỤNG USE CASE MỚI CỦA AGENT
+import com.codework.dailyenglish.domain.ai.usecase.SendAgentMessageUseCase
+import com.codework.dailyenglish.domain.ai.usecase.GetAgentHistorySessionsUseCase // BỔ SUNG
+import com.codework.dailyenglish.domain.ai.usecase.GetSessionMessagesUseCase // BỔ SUNG
 import com.codework.dailyenglish.domain.auth.usecase.GetMyProfileUseCase
 import com.codework.dailyenglish.domain.user.usecase.GetUserInfoUseCase
 import com.codework.dailyenglish.core.utils.TextToSpeechParser
 import com.codework.dailyenglish.core.utils.VoiceToTextParser
+import com.codework.dailyenglish.presentation.components.AppAdManager
 import com.codework.dailyenglish.presentation.screen.ai_speaking.mvi.AiSpeakingEffect
 import com.codework.dailyenglish.presentation.screen.ai_speaking.mvi.AiSpeakingEvent
 import com.codework.dailyenglish.presentation.screen.ai_speaking.mvi.AiSpeakingState
@@ -32,6 +35,8 @@ import javax.inject.Inject
 @HiltViewModel
 class AiSpeakingViewModel @Inject constructor(
     private val sendAgentMessageUseCase: SendAgentMessageUseCase,
+    private val getAgentHistorySessionsUseCase: GetAgentHistorySessionsUseCase, // BỔ SUNG
+    private val getSessionMessagesUseCase: GetSessionMessagesUseCase, // BỔ SUNG
     private val getUserInfoUseCase: GetUserInfoUseCase,
     private val getMyProfileUseCase: GetMyProfileUseCase,
     private val textToSpeechParser: TextToSpeechParser,
@@ -52,9 +57,23 @@ class AiSpeakingViewModel @Inject constructor(
                 )
             )
         }
+        loadHistory() // BỔ SUNG LOAD LỊCH SỬ
         checkUserPremiumStatus()
         observeVoiceInput()
         sendInitMessage()
+    }
+
+    // BỔ SUNG HÀM TẢI LỊCH SỬ THEO TOPIC_ID CỦA AGENT
+    private fun loadHistory() {
+        viewModelScope.launch {
+            getAgentHistorySessionsUseCase(type = "AGENT", topicId = topicId)
+                .onSuccess { sessions ->
+                    _state.update { it.copy(historySessions = sessions) }
+                }
+                .onError { err ->
+                    sendGlobalEffect(BaseEffect.ShowToast(err.asUiText()))
+                }
+        }
     }
 
     private fun checkUserPremiumStatus() {
@@ -64,11 +83,11 @@ class AiSpeakingViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     isPremium = initialPremium,
-                    // Giới hạn mặc định của AI Agent: Free = 3, Premium = 50
                     remainingMessages = if (initialPremium) 50 else it.remainingMessages,
                     maxCharLimit = if (initialPremium) 300 else 150
                 )
             }
+            AppAdManager.isPremiumUser = initialPremium // <--- THÊM DÒNG NÀY
 
             getMyProfileUseCase().onSuccess { freshUser ->
                 _state.update {
@@ -78,6 +97,7 @@ class AiSpeakingViewModel @Inject constructor(
                         maxCharLimit = if (freshUser.isPremium) 300 else it.maxCharLimit
                     )
                 }
+                AppAdManager.isPremiumUser = freshUser.isPremium // <--- THÊM DÒNG NÀY
             }
         }
     }
@@ -85,6 +105,7 @@ class AiSpeakingViewModel @Inject constructor(
     override fun onEvent(event: AiSpeakingEvent) {
         when (event) {
             is AiSpeakingEvent.OnSendMessage -> {
+                textToSpeechParser.release()
                 _state.update { it.copy(isSuggestionsVisible = false) }
                 sendMessage(event.text)
             }
@@ -99,6 +120,59 @@ class AiSpeakingViewModel @Inject constructor(
                 sendInitMessage()
             }
             is AiSpeakingEvent.OnStopRecording -> stopRecording()
+
+            // BỔ SUNG XỬ LÝ SỰ KIỆN NEW CHAT CHO AGENT
+            AiSpeakingEvent.OnNewChat -> {
+                textToSpeechParser.release()
+                _state.update { state ->
+                    val resetData = (state.uiState.data ?: AiSpeakingUiData(topicName = topicName)).copy(
+                        currentSessionId = "new",
+                        messages = emptyList(),
+                        suggestions = emptyList()
+                    )
+                    state.copy(
+                        uiState = state.uiState.copy(data = resetData, isLoading = true, error = null)
+                    )
+                }
+                sendInitMessage()
+                loadHistory()
+            }
+
+            // BỔ SUNG XỬ LÝ SỰ KIỆN LOAD SESSION CHO AGENT
+            is AiSpeakingEvent.OnLoadSession -> {
+                textToSpeechParser.release()
+                _state.update { state ->
+                    val currentData = state.uiState.data ?: AiSpeakingUiData(topicName = topicName)
+                    state.copy(
+                        uiState = state.uiState.copy(
+                            data = currentData.copy(currentSessionId = event.sessionId),
+                            isLoading = true,
+                            error = null
+                        )
+                    )
+                }
+                viewModelScope.launch {
+                    getSessionMessagesUseCase(event.sessionId)
+                        .onSuccess { oldMessages ->
+                            _state.update { state ->
+                                val currentData = state.uiState.data ?: AiSpeakingUiData(topicName = topicName)
+                                state.copy(
+                                    uiState = state.uiState.copy(
+                                        data = currentData.copy(messages = oldMessages, suggestions = emptyList()),
+                                        isLoading = false
+                                    )
+                                )
+                            }
+                        }
+                        .onError { err ->
+                            _state.update { state ->
+                                state.copy(uiState = state.uiState.copy(isLoading = false))
+                            }
+                            sendGlobalEffect(BaseEffect.ShowToast(err.asUiText()))
+                        }
+                }
+            }
+
             is AiSpeakingEvent.OnDismissLimitConfirmDialog -> {
                 _state.update { it.copy(isShowLimitConfirmDialog = false) }
             }
@@ -204,6 +278,8 @@ class AiSpeakingViewModel @Inject constructor(
                 topicName = topicName,
                 isNeedSuggestions = true
             ).onSuccess { aiMsg ->
+                val isNewSessionCreated = currentData.currentSessionId == "new" // BỔ SUNG KIỂM TRA SESSION MỚI
+
                 _state.update { state ->
                     val updatedData = (state.uiState.data ?: AiSpeakingUiData()).copy(
                         currentSessionId = aiMsg.sessionId.ifBlank { currentData.currentSessionId },
@@ -217,10 +293,14 @@ class AiSpeakingViewModel @Inject constructor(
                         uiState = BaseUiState(data = updatedData, isLoading = false, error = null)
                     )
                 }
+                AppAdManager.isPremiumUser = aiMsg.isPremium
+                if (isNewSessionCreated) {
+                    loadHistory()
+                }
 
                 playAiResponse(aiMsg.text)
 
-            }.onErrorDetails { err, serverMessage -> // Sử dụng onErrorDetails để bắt lỗi "Limited" chính xác từ Server
+            }.onErrorDetails { err, serverMessage ->
                 _state.update { state ->
                     if (isSystemInit && currentData.messages.isEmpty()) {
                         state.copy(uiState = BaseUiState<AiSpeakingUiData>(isLoading = false, error = err.asUiText()))

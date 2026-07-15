@@ -1,5 +1,6 @@
 package com.codework.dailyenglish.presentation.screen.more.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -13,10 +14,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codework.dailyenglish.presentation.screen.more.BluePrimary
+import com.codework.dailyenglish.presentation.theme.AppColors // Import hệ thống màu AppColors chứa MainGradient
 
 @Composable
 fun ProfileMenuItem(
@@ -37,23 +39,26 @@ fun ProfileMenuItem(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Nền cho Icon dùng BluePrimary nhạt
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = BluePrimary.copy(alpha = 0.1f),
-                modifier = Modifier.size(48.dp)
+            // Nền cho Icon sử dụng dải màu AppColors.MainGradient thông qua Box
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(
+                        brush = AppColors.MainGradient, // Áp dụng dải màu Gradient
+                        shape = RoundedCornerShape(12.dp)
+                    ),
+                contentAlignment = Alignment.Center // Đưa Icon vào chính giữa Box
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
                     modifier = Modifier.padding(12.dp),
-                    tint = BluePrimary // Icon dùng màu chủ đạo
+                    tint = Color.White
                 )
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Text section
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
@@ -75,9 +80,10 @@ fun ProfileMenuItem(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = value,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = BluePrimary, // Chữ English màu xanh
-                    fontWeight = FontWeight.Medium
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        brush = AppColors.MainGradient,
+                        fontWeight = FontWeight.Medium
+                    )
                 )
             }
 

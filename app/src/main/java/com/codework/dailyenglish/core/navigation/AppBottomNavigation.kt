@@ -9,11 +9,14 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.compose.ui.platform.LocalContext
+
 
 @Composable
 fun AppBottomNavigation(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val context = LocalContext.current // Lấy context hiện tại ở đây
 
     val items = listOf(
         BottomNavItem.Home,
@@ -41,7 +44,8 @@ fun AppBottomNavigation(navController: NavHostController) {
                     )
                 },
                 onClick = {
-                    navController.navigate(item.route) {
+                    // Thay thế .navigate bằng .navigateWithAd
+                    navController.navigateWithAd(context, item.route) {
                         popUpTo(Route.HomeScreen) {
                             saveState = true
                         }

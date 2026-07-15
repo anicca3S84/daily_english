@@ -20,10 +20,8 @@ class AuthRepositoryImpl @Inject constructor(
 ) : AuthRepository {
 
     override suspend fun loginWithGoogle(idToken: String): AppResult<User> = withContext(dispatchers.io) {
-        // Gọi API qua RemoteDataSource (Đã được bọc safeApiCall bên trong)
         val responseResult = remoteDataSource.loginWithGoogle(idToken)
 
-        // Phân rã kết quả trả về bằng when để kiểm soát hoàn toàn luồng dữ liệu
         when (responseResult) {
             is AppResult.Success -> {
                 try {
@@ -49,7 +47,6 @@ class AuthRepositoryImpl @Inject constructor(
                 }
             }
             is AppResult.Error -> {
-                // 🎯 TRẢ VỀ NGUYÊN VẸN: Giữ nguyên AppError.Http và cái "message" từ server (Ví dụ: Bạn đã hết lượt...)
                 responseResult
             }
         }
@@ -74,10 +71,6 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun isUserLoggedIn(): Boolean = withContext(dispatchers.io) {
         val token = localDataSource.getAccessToken()
         !token.isNullOrBlank()
-    }
-
-    override suspend fun logout() = withContext(dispatchers.io) {
-        localDataSource.clearSession()
     }
 
     override suspend fun getMyProfile(): AppResult<User> = withContext(dispatchers.io) {
@@ -113,6 +106,23 @@ class AuthRepositoryImpl @Inject constructor(
             is AppResult.Error -> {
                 responseResult
             }
+        }
+    }
+
+    override suspend fun logout() = withContext(dispatchers.io) {
+        try {
+            // 1. Lấy refresh token từ bộ nhớ local
+            val refreshToken = localDataSource.getRefreshToken()
+
+            // 2. Nếu có token, gọi API lên server để hủy token này ở Database phía backend
+            if (!refreshToken.isNullOrBlank()) {
+                remoteDataSource.logout(refreshToken)
+            }
+        } catch (e: Exception) {
+            // Ghi log lỗi nếu cần, nhưng không chặn luồng đăng xuất local
+        } finally {
+            // 3. Luôn luôn xóa sạch session ở client (SharedPreferences) dù API có thành công hay không
+            localDataSource.clearSession()
         }
     }
 }

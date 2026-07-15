@@ -8,7 +8,8 @@ fun LessonResultResponseDto.toResultDomain(): LessonResult {
     return LessonResult(
         scorePercentage = this.scorePercentage ?: 0,
         starsEarned = this.starsEarned ?: 0,
-        xpEarned = this.xpEarned ?: 0
+        xpEarned = this.xpEarned ?: 0,
+        streak = this.streak,
     )
 }
 

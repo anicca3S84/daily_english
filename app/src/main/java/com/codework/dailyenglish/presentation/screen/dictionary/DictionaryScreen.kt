@@ -94,7 +94,8 @@ fun DictionaryScreen(
 
                 StateWrapper(
                     uiState = state.searchResults,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    onRetry = { onEvent(DictionaryEvent.OnSearchQueryChange(state.query)) }
                 ) { data ->
 
                     val currentList = data ?: emptyList()
@@ -199,20 +200,28 @@ fun DictionaryScreen(
                                 }
                                 Spacer(modifier = Modifier.height(12.dp))
 
-                                val allTopics = state.topicsState.data ?: emptyList()
-                                val displayList = allTopics.take(6)
+                                // Bọc riêng phần danh sách Topic trong StateWrapper (Không bọc Header)
+                                StateWrapper(
+                                    uiState = state.topicsState,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    onRetry = { onEvent(DictionaryEvent.LoadTopics) } // Gọi event tải lại danh sách topics
+                                ) { topics ->
+                                    val allTopics = topics ?: emptyList()
+                                    val displayList = allTopics.take(6)
 
-                                LazyRow(
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                    contentPadding = PaddingValues(horizontal = 4.dp)
-                                ) {
-                                    items(displayList) { topic ->
-                                        TopicCard(
-                                            topic = topic,
-                                            onClick = {
-                                                onEvent(DictionaryEvent.OnTopicClick(topic.id, topic.name))
-                                            }
-                                        )
+                                    LazyRow(
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        contentPadding = PaddingValues(horizontal = 4.dp),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        items(displayList) { topic ->
+                                            TopicCard(
+                                                topic = topic,
+                                                onClick = {
+                                                    onEvent(DictionaryEvent.OnTopicClick(topic.id, topic.name))
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }

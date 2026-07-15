@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.codework.dailyenglish.core.network.AppError
+import com.codework.dailyenglish.presentation.components.AppAdManager
 
 @HiltViewModel
 class AiViewModel @Inject constructor(
@@ -44,7 +45,7 @@ class AiViewModel @Inject constructor(
 
     private fun loadHistory() {
         viewModelScope.launch {
-            getHistorySessionsUseCase()
+            getHistorySessionsUseCase("CHATBOT")
                 .onSuccess { sessions ->
                     _state.update { it.copy(historySessions = sessions) }
                 }
@@ -65,6 +66,7 @@ class AiViewModel @Inject constructor(
                     maxCharLimit = if (initialPremium) 300 else 150
                 )
             }
+            AppAdManager.isPremiumUser = initialPremium // <--- THÊM DÒNG NÀY
 
             getMyProfileUseCase().onSuccess { freshUser ->
                 _state.update {
@@ -74,6 +76,7 @@ class AiViewModel @Inject constructor(
                         maxCharLimit = if (freshUser.isPremium) 300 else it.maxCharLimit
                     )
                 }
+                AppAdManager.isPremiumUser = freshUser.isPremium // <--- THÊM DÒNG NÀY
             }
         }
     }
@@ -116,6 +119,8 @@ class AiViewModel @Inject constructor(
                         currentSessionId = chatMessage.sessionId
                     )
                 }
+
+                AppAdManager.isPremiumUser = chatMessage.isPremium
 
                 if (sessionId == "new") {
                     loadHistory()

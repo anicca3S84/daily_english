@@ -1,5 +1,8 @@
 package com.codework.dailyenglish.core.navigation
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -11,14 +14,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.toRoute
-import com.codework.dailyenglish.presentation.components.AppCongratulationsScreen
+import com.codework.dailyenglish.presentation.screen.lessons.lesson_result.AppCongratulationsScreen
 import com.codework.dailyenglish.presentation.screen.ai.*
 import com.codework.dailyenglish.presentation.screen.ai.mvi.AiEffect
 import com.codework.dailyenglish.presentation.screen.ai.mvi.AiEvent
@@ -103,6 +109,7 @@ import com.codework.dailyenglish.presentation.screen.word_detail.mvi.WordDetailS
 import kotlinx.coroutines.delay
 import com.codework.dailyenglish.core.session.SessionEvent
 import com.codework.dailyenglish.presentation.MainViewModel
+import com.codework.dailyenglish.presentation.components.AppAdManager // Import AdManager
 import com.codework.dailyenglish.presentation.screen.user.UserInfoScreen
 import com.codework.dailyenglish.presentation.screen.user.UserInfoViewModel
 import com.codework.dailyenglish.presentation.screen.user.mvi.UserInfoEffect
@@ -116,7 +123,7 @@ fun NavGraph(
     startDestination: Any,
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
-
+    val context = LocalContext.current // Lấy context của ứng dụng tại đây
     var showSessionExpiredDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -135,7 +142,6 @@ fun NavGraph(
             confirmButton = {
                 Button(
                     onClick = {
-                        showSessionExpiredDialog = false
                         navController.navigate(Route.LoginScreen) {
                             popUpTo(navController.graph.id) { inclusive = true }
                         }
@@ -149,7 +155,7 @@ fun NavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = startDestination, // Áp dụng ở đây
+        startDestination = startDestination,
         modifier = Modifier.padding(bottom = 0.dp)
     ) {
         composableScreen<Route.LoginScreen, LoginViewModel, LoginState, LoginEvent, LoginEffect>(
@@ -159,7 +165,7 @@ fun NavGraph(
                     is LoginEffect.NavigateToSignUp -> {}
                     is LoginEffect.NavigateToEmailLogin -> {}
                     is LoginEffect.NavigateToHome -> {
-                        // Khi Login thành công, xóa LoginScreen khỏi BackStack
+                        // Khi Login thành công, xóa LoginScreen khỏi BackStack (Không chèn quảng cáo tại bước này để tránh trải nghiệm xấu)
                         navController.navigate(Route.HomeScreen) {
                             popUpTo(Route.LoginScreen) { inclusive = true }
                         }
@@ -173,13 +179,13 @@ fun NavGraph(
         composableScreen<Route.HomeScreen, HomeViewModel, HomeState, HomeEvent, HomeEffect>(
             onNavigate = { effect ->
                 when (effect) {
-                    is HomeEffect.NavigateToAi -> navController.navigate(Route.AIScreen)
-                    is HomeEffect.NavigateToDictionary -> navController.navigate(Route.DictionaryScreen)
-                    is HomeEffect.NavigateToSavedWord -> navController.navigate(Route.VocabularyListScreen)
-                    is HomeEffect.NavigateToTranslate -> navController.navigate(Route.TranslateScreen)
-                    is HomeEffect.NavigateToSubscription -> navController.navigate(Route.SubscriptionScreen)
+                    // Áp dụng quảng cáo giãn cách 3 phút cho các tính năng chính từ màn hình Home
+                    is HomeEffect.NavigateToAi -> navController.navigateWithAd(context, Route.AIScreen)
+                    is HomeEffect.NavigateToDictionary -> navController.navigateWithAd(context, Route.DictionaryScreen)
+                    is HomeEffect.NavigateToSavedWord -> navController.navigateWithAd(context, Route.VocabularyListScreen)
+                    is HomeEffect.NavigateToTranslate -> navController.navigateWithAd(context, Route.TranslateScreen)
+                    is HomeEffect.NavigateToSubscription -> navController.navigate(Route.SubscriptionScreen) // Không quảng cáo khi người dùng muốn mua VIP
                     else -> {}
-
                 }
             }
         ) { state, onEvent ->
@@ -190,7 +196,8 @@ fun NavGraph(
             onNavigate = { effect ->
                 when (effect) {
                     is CourseEffect.NavigateToCourseDetails -> {
-                        navController.navigate(
+                        navController.navigateWithAd(
+                            context,
                             Route.CourseDetailScreen(
                                 courseId = effect.courseId,
                                 courseCode = effect.courseCode
@@ -224,11 +231,13 @@ fun NavGraph(
                 when (effect) {
                     is LessonEffect.NavigateBack -> navController.popBackStack()
                     is LessonEffect.NavigateToResult -> {
+                        // Chuyển sang màn hình kết quả sau khi hoàn thành bài học
                         navController.navigate(
                             Route.LessonResultScreen(
                                 scorePercentage = effect.scorePercentage,
                                 starsEarned = effect.starsEarned,
-                                lessonId = effect.lessonId
+                                lessonId = effect.lessonId,
+                                streak = effect.streak
                             )
                         )
                     }
@@ -239,7 +248,6 @@ fun NavGraph(
         }
 
         composable<Route.LessonResultScreen> { backStackEntry ->
-
             val route = backStackEntry.toRoute<Route.LessonResultScreen>()
 
             LaunchedEffect(Unit) {
@@ -253,7 +261,8 @@ fun NavGraph(
             }
             AppCongratulationsScreen(
                 scorePercentage = route.scorePercentage,
-                starsEarned = route.starsEarned
+                starsEarned = route.starsEarned,
+                streak = route.streak,
             )
         }
 
@@ -267,7 +276,8 @@ fun NavGraph(
             onNavigate = { effect ->
                 when (effect) {
                     is PracticeEffect.NavigateToAiSpeaking -> {
-                        navController.navigate(
+                        navController.navigateWithAd(
+                            context,
                             Route.AiSpeakingScreen(
                                 topicId = effect.topicId,
                                 topicName = effect.topicName
@@ -276,7 +286,7 @@ fun NavGraph(
                     }
 
                     is PracticeEffect.NavigateToTopicSelection -> {
-                        navController.navigate(Route.TopicScreen(origin = effect.origin))
+                        navController.navigateWithAd(context, Route.TopicScreen(origin = effect.origin))
                     }
                     else -> {}
                 }
@@ -302,13 +312,11 @@ fun NavGraph(
                         }
                     }
                     is MoreEffect.NavigateToLeaderBoard -> {
-                        navController.navigate(Route.LeaderboardScreen)
+                        navController.navigateWithAd(context, Route.LeaderboardScreen)
                     }
                 }
             }
         ) { state, onEvent ->
-
-            // 1. Lắng nghe back stack entry
             val currentEntry by navController.currentBackStackEntryAsState()
 
             LaunchedEffect(currentEntry) {
@@ -318,7 +326,7 @@ fun NavGraph(
                     val shouldRefresh = savedStateHandle.get<Boolean>("should_refresh_profile") ?: false
                     if (shouldRefresh) {
                         onEvent(MoreEvent.OnRefreshData)
-                        savedStateHandle["should_refresh_profile"] = false // Reset lại cờ
+                        savedStateHandle["should_refresh_profile"] = false
                     }
                 }
             }
@@ -365,7 +373,8 @@ fun NavGraph(
                     }
 
                     is DictionaryEffect.NavigateToTopicWords -> {
-                        navController.navigate(
+                        navController.navigateWithAd(
+                            context,
                             Route.TopicWordsScreen(
                                 topicId = effect.topicId,
                                 topicName = effect.topicName
@@ -374,7 +383,8 @@ fun NavGraph(
                     }
 
                     is DictionaryEffect.NavigateToWordDetail -> {
-                        navController.navigate(
+                        navController.navigateWithAd(
+                            context,
                             Route.WordDetailScreen(
                                 wordId = effect.wordId
                             )
@@ -382,13 +392,13 @@ fun NavGraph(
                     }
 
                     is DictionaryEffect.NavigateToTopicSelection -> {
-                        navController.navigate(
+                        navController.navigateWithAd(
+                            context,
                             Route.TopicScreen(
                                 origin = effect.origin
                             )
                         )
                     }
-
                 }
             }
         ) { state, onEvent ->
@@ -416,8 +426,8 @@ fun NavGraph(
             onNavigate = { effect ->
                 when (effect) {
                     is QuizReviewEffect.NavigateBack -> navController.popBackStack()
-                    is QuizReviewEffect.NavigateToListening -> navController.navigate(Route.ListeningScreen)
-                    is QuizReviewEffect.NavigateToGrammar -> navController.navigate(Route.SentenceBuilderScreen)
+                    is QuizReviewEffect.NavigateToListening -> navController.navigateWithAd(context, Route.ListeningScreen)
+                    is QuizReviewEffect.NavigateToGrammar -> navController.navigateWithAd(context, Route.SentenceBuilderScreen)
                 }
             }
         ) { state, onEvent ->
@@ -432,12 +442,10 @@ fun NavGraph(
                 when (effect) {
                     is GrammarEffect.NavigateBack -> navController.popBackStack()
                     is GrammarEffect.NavigateToTopic -> {
-                        navController.navigate(Route.LessonScreen)
+                        navController.navigateWithAd(context, Route.LessonScreen)
                     }
-
                     is GrammarEffect.OpenSearch -> { /* TODO: Mở thanh tìm kiếm */
                     }
-
                     is GrammarEffect.ShowToast -> {
                     }
                 }
@@ -448,23 +456,6 @@ fun NavGraph(
                 onEvent = onEvent,
                 onBackClick = { navController.popBackStack() })
         }
-
-//        composableScreen<Route.SentenceBuilderScreen, SentenceBuilderViewModel, SentenceBuilderState, SentenceBuilderEvent, SentenceBuilderEffect>(
-//            onNavigate = { effect ->
-//                when (effect) {
-//                    is SentenceBuilderEffect.NavigateBack -> navController.popBackStack()
-//                    is SentenceBuilderEffect.NavigateToSpeaking -> navController.navigate(Route.SpeakingScreen)
-//                    is SentenceBuilderEffect.ShowToast -> { /* Hiện Toast */
-//                    }
-//                }
-//            }
-//        ) { state, onEvent ->
-//            SentenceBuilderScreen(
-//                state = state,
-//                onEvent = onEvent,
-//                onBackClick = { navController.popBackStack() })
-//        }
-
 
         composableScreen<Route.CourseDetailScreen, CourseDetailViewModel, CourseDetailState, CourseDetailEvent, CourseDetailEffect>(
             onNavigate = { effect ->
@@ -507,7 +498,7 @@ fun NavGraph(
             onNavigate = { effect ->
                 when (effect) {
                     is VocabularyListEffect.NavigateToFlashCard -> {
-                        navController.navigate(Route.FlashcardScreen)
+                        navController.navigateWithAd(context, Route.FlashcardScreen)
                     }
                 }
             }
@@ -538,7 +529,7 @@ fun NavGraph(
             onNavigate = { effect ->
                 when (effect) {
                     is VocabularyListEffect.NavigateToFlashCard -> {
-                        navController.navigate(Route.FlashcardScreen)
+                        navController.navigateWithAd(context, Route.FlashcardScreen)
                     }
                 }
             }
@@ -549,7 +540,6 @@ fun NavGraph(
                 onBackClick = { navController.popBackStack() }
             )
         }
-
 
         composableScreen<Route.FlashcardScreen, FlashcardViewModel, FlashcardState, FlashcardEvent, FlashcardEffect>(
             onNavigate = { effect ->
@@ -612,7 +602,8 @@ fun NavGraph(
             onNavigate = { effect ->
                 when (effect) {
                     is TopicEffect.NavigateToVocabList -> {
-                        navController.navigate(
+                        navController.navigateWithAd(
+                            context,
                             Route.TopicWordsScreen(
                                 topicId = effect.topicId,
                                 topicName = effect.topicName
@@ -621,7 +612,8 @@ fun NavGraph(
                     }
 
                     is TopicEffect.NavigateToAiPractice -> {
-                        navController.navigate(
+                        navController.navigateWithAd(
+                            context,
                             Route.AiSpeakingScreen(
                                 topicId = effect.topicId,
                                 topicName = effect.topicName
@@ -656,5 +648,30 @@ fun NavGraph(
             )
         }
     }
+}
 
+// =========================================================================
+// HÀM MỞ RỘNG TIỆN ÍCH HỖ TRỢ CHUYỂN TRANG CÓ QUẢNG CÁO XEN KẼ
+// BẠN CÓ THỂ ĐỂ LUÔN ĐOẠN NÀY DƯỚI ĐÂY MÀ KHÔNG CẦN TẠO FILE MỚI
+// =========================================================================
+
+fun NavController.navigateWithAd(
+    context: Context,
+    route: Any,
+    builder: NavOptionsBuilder.() -> Unit = {}
+) {
+    val activity = context.findActivity()
+    if (activity != null) {
+        AppAdManager.showAdIfAllowed(activity) {
+            this.navigate(route, builder)
+        }
+    } else {
+        this.navigate(route, builder)
+    }
+}
+
+fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }

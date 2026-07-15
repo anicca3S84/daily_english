@@ -28,7 +28,7 @@ class ReminderReceiver : BroadcastReceiver() {
 
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("🔥 Protect Your Learning Streak!")
+            .setContentTitle("Protect Your Learning Streak!")
             .setContentText("Don't let your hard-earned English learning streak end. Keep learning today and stay on track!")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(openAppPendingIntent) // <-- THÊM DÒNG NÀY ĐỂ CLICK VÀO MỞ APP

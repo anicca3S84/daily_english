@@ -101,6 +101,11 @@ class VoiceToTextParser @Inject constructor() : RecognitionListener {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, languageCode)
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+
+            // TỐI ƯU HÓA: Cấu hình thêm thời gian chờ im lặng để tránh ngắt mic quá sớm
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 3000L) // Giữ mic mở ít nhất 3 giây
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 2000L) // Chờ 2 giây im lặng hoàn toàn trước khi ngắt kết nối
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 1500L) // Chờ 1.5 giây nghỉ ngơi giữa các từ
         }
 
         try {

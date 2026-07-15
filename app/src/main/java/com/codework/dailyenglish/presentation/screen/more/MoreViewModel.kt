@@ -20,7 +20,7 @@ import com.codework.dailyenglish.domain.user_statistic.usecase.StudyTimeManagerU
 class MoreViewModel @Inject constructor(
     private val getUserInfoUseCase: GetUserInfoUseCase,
     private val logoutUseCase: LogoutUseCase,
-    private val studyTimeManager: StudyTimeManagerUseCase 
+    private val studyTimeManager: StudyTimeManagerUseCase,
 ) : BaseViewModel<MoreState, MoreEvent, MoreEffect>(
     initialState = MoreState()
 ) {
