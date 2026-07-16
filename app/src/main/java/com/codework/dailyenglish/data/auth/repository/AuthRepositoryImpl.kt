@@ -111,17 +111,12 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun logout() = withContext(dispatchers.io) {
         try {
-            // 1. Lấy refresh token từ bộ nhớ local
             val refreshToken = localDataSource.getRefreshToken()
-
-            // 2. Nếu có token, gọi API lên server để hủy token này ở Database phía backend
             if (!refreshToken.isNullOrBlank()) {
                 remoteDataSource.logout(refreshToken)
             }
         } catch (e: Exception) {
-            // Ghi log lỗi nếu cần, nhưng không chặn luồng đăng xuất local
         } finally {
-            // 3. Luôn luôn xóa sạch session ở client (SharedPreferences) dù API có thành công hay không
             localDataSource.clearSession()
         }
     }

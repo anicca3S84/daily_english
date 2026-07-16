@@ -48,7 +48,6 @@ fun AiScreen(
     var inputText by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    // Dialog thông báo hết lượt dùng thử
     if (state.isShowLimitConfirmDialog) {
         AppConfirmDialog(
             title = "Message Limit Reached",
@@ -60,7 +59,6 @@ fun AiScreen(
         )
     }
 
-    // Launcher yêu cầu quyền ghi âm
     val recordAudioPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -71,7 +69,6 @@ fun AiScreen(
         }
     }
 
-    // Xử lý click nút Micro
     val handleMicClick = {
         val hasPermission = ContextCompat.checkSelfPermission(
             context,
@@ -85,15 +82,12 @@ fun AiScreen(
         }
     }
 
-    // Cập nhật text khi nhận diện giọng nói thành công
     LaunchedEffect(state.voiceCapturedText) {
         if (state.voiceCapturedText.isNotBlank()) {
             inputText = state.voiceCapturedText.take(state.maxCharLimit)
         }
     }
 
-    // Tự động xóa text ô chat khi tạo New Chat (danh sách trống) hoặc đổi Chat Session mới
-    // Giải quyết triệt để lỗi "Assigned value is never read"
     LaunchedEffect(state.messages) {
         if (state.messages.isEmpty()) {
             inputText = ""
@@ -149,9 +143,11 @@ fun AiScreen(
                     if (state.messages.isEmpty()) {
                         AutoScrollingSuggestionSection(
                             suggestions = listOf(
-                                "Correct my grammar ✍️",
-                                "Practice Speaking 🗣️",
-                                "Translate to English 🌐"
+                                "Practice daily conversation",
+                                "Correct my grammar",
+                                "Improve my writing",
+                                "Learn 5 new words today",
+                                "Prepare for an IELTS speaking test"
                             )
                         ) { onEvent(AiEvent.OnSuggestionClick(it)) }
                     }

@@ -34,25 +34,25 @@ class ReminderManager(private val context: Context) {
     }
 
     fun rescheduleDailyReminders() {
-        // Hủy bỏ lịch hẹn cũ trước đó để tránh trùng lặp
+        // 1. Hủy lịch hẹn cũ trước để đảm bảo không bị trùng lặp
         cancelAllReminders()
 
-        // 1. Chỉ lên lịch duy nhất 1 lần sau 5 giây nữa
+        // 2. Chỉ đặt lịch duy nhất 1 lần sau 5 giây
         val calendar = Calendar.getInstance().apply {
             add(Calendar.SECOND, 5)
         }
 
         val intent = Intent(context, ReminderReceiver::class.java).apply {
-            // Fix cứng ID thông báo là 100
-            putExtra("notification_id", 100)
+            // Gửi kèm notification_id là 1
+            putExtra("notification_id", 1)
         }
 
-        // 2. Fix cứng requestCode là 100 (Không cần vòng lặp nữa)
+        // Sử dụng ID là 1 và giữ lại cờ FLAG_MUTABLE để tránh bị lỗi hệ thống
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            100,
+            1,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
         )
 
         try {
@@ -66,7 +66,7 @@ class ReminderManager(private val context: Context) {
                         calendar.timeInMillis,
                         pendingIntent
                     )
-                    android.util.Log.d("DailyEnglishDebug", "Đã lên lịch test thông báo sau 5 giây")
+                    android.util.Log.d("DailyEnglishDebug", "Đã lên lịch báo thức chính xác sau 5 giây")
                 } else {
                     alarmManager.setAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
@@ -93,19 +93,19 @@ class ReminderManager(private val context: Context) {
         }
     }
 
-    // Hàm hủy lịch hẹn cũng được cập nhật để dọn dẹp đúng ID số 100
+    // Hàm hủy lịch cũng thu gọn lại để dọn duy nhất ID số 1
     private fun cancelAllReminders() {
         val intent = Intent(context, ReminderReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            100, // Khớp với ID lúc tạo
+            1, // Khớp với ID 1 lúc tạo
             intent,
             PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
         )
         if (pendingIntent != null) {
             alarmManager.cancel(pendingIntent)
             pendingIntent.cancel()
-            android.util.Log.d("DailyEnglishDebug", "Đã hủy lịch test cũ thành công")
+            android.util.Log.d("DailyEnglishDebug", "Đã hủy lịch cũ thành công")
         }
     }
 }

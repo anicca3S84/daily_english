@@ -45,7 +45,7 @@ class LessonViewModel @Inject constructor(
     private val textToSpeechParser: TextToSpeechParser,
     private val speachToTextParser: VoiceToTextParser,
     private val toggleSaveWordUseCase: ToggleSaveWordUseCase,
-    @ApplicationContext private val context: Context, // Inject Application Context từ Hilt
+    @ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle
 ) : BaseViewModel<LessonState, LessonEvent, LessonEffect>(
     initialState = BaseUiState(isLoading = true)

@@ -63,6 +63,7 @@
 
         <receiver
             android:name=".notification.ReminderReceiver"
+            android:enabled="true"
             android:exported="false" />
 
         <meta-data
