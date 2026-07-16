@@ -77,11 +77,12 @@ fun LeaderboardScreen(
                 .fillMaxSize()
                 .padding(paddingValues),
             onRetry = {
-                if(state.selectedTab.isEmpty()) {
+                if (state.selectedTab.isEmpty()) {
                     onEvent(LeaderboardEvent.LoadLeaderboard)
-                }else{
-                    onEvent(LeaderboardEvent.OnTabChanged(state.selectedTab)) }
+                } else {
+                    onEvent(LeaderboardEvent.OnTabChanged(state.selectedTab))
                 }
+            }
         ) { wrapper ->
 
             if (state.leaderboardState.error != null && wrapper == null) {
@@ -97,80 +98,91 @@ fun LeaderboardScreen(
             val top3 = listData.find { it.rank == 3 }
             val remainingUsers = listData.filter { it.rank > 3 }
 
-            LazyColumn(
+            // Dùng Column tổng để phân tách phần Cố định (Header) và phần Cuộn (List)
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White),
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .background(Color.White)
             ) {
-                item {
+                // ================= PHẦN HEADER CỐ ĐỊNH =================
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     ExpStreakToggle(
                         selectedTab = state.selectedTab,
                         onTabSelected = { onEvent(LeaderboardEvent.OnTabChanged(it)) }
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
 
-                if (state.selectedTab == "EXP") {
-                    item {
+                    if (state.selectedTab == "EXP") {
+                        Spacer(modifier = Modifier.height(16.dp))
                         TimeFilterRow(
                             selectedFilter = state.selectedTimeFilter,
                             onFilterSelected = { onEvent(LeaderboardEvent.OnTimeFilterChanged(it)) }
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
                     }
-                }
 
-                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     CurrentPositionCard(rank = currentUserRank)
-                    Spacer(modifier = Modifier.height(40.dp))
                 }
 
-                item {
-                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        Box(
-                            modifier = Modifier
-                                .size(180.dp)
-                                .background(
-                                    brush = Brush.radialGradient(
-                                        colors = listOf(Color(0xFFFEF3C7), Color.Transparent)
-                                    ),
-                                    shape = CircleShape
+                // ================= PHẦN CUỘN TRÒN (LIST) =================
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f), // Chiếm trọn không gian còn lại và tự cuộn bên trong
+                    contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Cục bục vinh quang (Top 1, 2, 3) nay nằm ở vị trí đầu tiên của List cuộn
+                    item {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            Box(
+                                modifier = Modifier
+                                    .size(180.dp)
+                                    .background(
+                                        brush = Brush.radialGradient(
+                                            colors = listOf(Color(0xFFFEF3C7), Color.Transparent)
+                                        ),
+                                        shape = CircleShape
+                                    )
+                                    .align(Alignment.TopCenter)
+                            )
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.Bottom
+                            ) {
+                                PodiumAvatar(
+                                    profile = top2, rank = 2, avatarSize = 80.dp,
+                                    color = Top2Color, isStreak = isStreak,
+                                    modifier = Modifier.weight(1f)
                                 )
-                                .align(Alignment.TopCenter)
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.Bottom
-                        ) {
-                            PodiumAvatar(
-                                profile = top2, rank = 2, avatarSize = 80.dp,
-                                color = Top2Color, isStreak = isStreak,
-                                modifier = Modifier.weight(1f)
-                            )
-                            PodiumAvatar(
-                                profile = top1, rank = 1, avatarSize = 100.dp,
-                                color = Top1Color, hasCrown = true, isStreak = isStreak,
-                                modifier = Modifier.weight(1f)
-                            )
-                            PodiumAvatar(
-                                profile = top3, rank = 3, avatarSize = 70.dp,
-                                color = Top3Color, isStreak = isStreak,
-                                modifier = Modifier.weight(1f)
-                            )
+                                PodiumAvatar(
+                                    profile = top1, rank = 1, avatarSize = 100.dp,
+                                    color = Top1Color, hasCrown = true, isStreak = isStreak,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                PodiumAvatar(
+                                    profile = top3, rank = 3, avatarSize = 70.dp,
+                                    color = Top3Color, isStreak = isStreak,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
                         }
+                        Spacer(modifier = Modifier.height(32.dp))
                     }
-                    Spacer(modifier = Modifier.height(32.dp))
-                }
 
-                items(items = remainingUsers, key = { it.userId }) { user ->
-                    LeaderboardRowItem(user = user, isStreak = isStreak)
+                    // Danh sách các user xếp hạng sau Top 3
+                    items(items = remainingUsers, key = { it.userId }) { user ->
+                        LeaderboardRowItem(user = user, isStreak = isStreak)
+                    }
                 }
-
-                // Dòng chữ "Keep learning to climb higher!" đã được ẩn đi hoàn toàn khỏi item cuối
             }
         }
     }

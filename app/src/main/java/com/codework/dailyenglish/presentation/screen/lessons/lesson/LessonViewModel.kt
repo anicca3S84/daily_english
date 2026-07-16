@@ -51,7 +51,6 @@ class LessonViewModel @Inject constructor(
     initialState = BaseUiState(isLoading = true)
 ) {
     private val lessonId: String = checkNotNull(savedStateHandle["lessonId"])
-    private val streak: Int = checkNotNull(savedStateHandle["streak"])
     private val isCompleted: Boolean = checkNotNull(savedStateHandle["isCompleted"])
     private val isReview: Boolean = savedStateHandle["isReview"] ?: false
 

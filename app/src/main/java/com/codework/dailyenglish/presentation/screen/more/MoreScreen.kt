@@ -119,19 +119,22 @@ fun MoreScreen(
                         .fillMaxWidth()
                         .height(52.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
+                        // Dùng tông màu đỏ hồng pastel siêu dịu mắt thay cho màu errorContainer nguyên bản
+                        containerColor = Color(0xFFFFF1F2)
                     ),
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Logout,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error
+                        // Dùng màu đỏ sẫm/đỏ đô để icon nổi bật sắc nét trên nền hồng pastel
+                        tint = Color(0xFFE11D48)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Log Out",
-                        color = MaterialTheme.colorScheme.error,
+                        // Đồng bộ chữ màu đỏ sẫm giúp giao diện hài hòa và rất dễ đọc
+                        color = Color(0xFFE11D48),
                         fontWeight = FontWeight.Bold
                     )
                 }

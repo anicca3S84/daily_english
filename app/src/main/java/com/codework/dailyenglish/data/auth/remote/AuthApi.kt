@@ -34,7 +34,7 @@ interface AuthApi {
     ): BaseResponse<AuthDto>
 
     @POST("auth/refresh")
-    fun refreshToken(@Header("Authorization") refreshToken: String): Call<AuthDto>
+    fun refreshToken(@Header("Authorization") refreshToken: String): Call<BaseResponse<AuthDto>>
 
     @GET("users/me")
     suspend fun getMyProfile(): BaseResponse<UserDto>

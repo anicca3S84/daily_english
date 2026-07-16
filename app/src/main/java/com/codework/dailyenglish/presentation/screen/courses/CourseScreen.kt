@@ -53,7 +53,6 @@ fun CourseScreen(
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Tích hợp PullToRefreshBox ngoài cùng để kéo làm mới toàn bộ màn hình (bao gồm cả cập nhật lại chỉ số Header)
             PullToRefreshBox(
                 isRefreshing = state.dashboardState.isRefreshing,
                 onRefresh = { onEvent(CourseEvent.OnRefreshData) },
@@ -65,7 +64,6 @@ fun CourseScreen(
                     verticalArrangement = Arrangement.spacedBy(Spaces.Space16),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // 1. Sticky Header chứa thông tin học tập của người dùng luôn luôn hiển thị
                     stickyHeader {
                         CurvedHeaderWrapper(
                             content = {

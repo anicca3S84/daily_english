@@ -1,5 +1,6 @@
 package com.codework.dailyenglish.presentation.screen.lessons.preview
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -14,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -130,25 +132,17 @@ private fun LessonPreviewMainContent(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Emoji Box
-                Box(
-                    modifier = Modifier
-                        .size(Spaces.Space96)
-                        .background(
-                            Color(0xFFDBEAFE),
-                            RoundedCornerShape(AppRadius.RadiusExtraLarge)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "👋", fontSize = AppTextSizes.TextSize48)
-                }
-
-                Spacer(modifier = Modifier.height(Spaces.Space24))
-
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(Spaces.Space8)
                 ) {
+
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_app_logo),
+                        contentDescription = "App Logo",
+                        modifier = Modifier.size(120.dp)
+                    )
+
                     Text(
                         text = preview.title,
                         color = Color(0xFF1F2937),
@@ -305,7 +299,9 @@ private fun LessonPreviewMainContent(
                     }
                 } else {
                     Button(
-                        onClick = { onStartClick(preview.id) },
+                        onClick = {
+                            onStartClick(preview.id)
+                                  },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(Spaces.Space56),

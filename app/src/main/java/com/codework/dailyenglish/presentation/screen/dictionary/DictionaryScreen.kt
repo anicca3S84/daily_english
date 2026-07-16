@@ -139,15 +139,21 @@ fun DictionaryScreen(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
+
                                         Text(
                                             text = "Recent Searches",
-                                            style = MaterialTheme.typography.titleMedium
+                                            style = MaterialTheme.typography.titleMedium.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF1E293B)
+                                            )
                                         )
+
                                         Text(
                                             text = "Clear all",
-                                            fontWeight = FontWeight.SemiBold,
-                                            fontSize = 14.sp,
-                                            color = Color(0xFF3B82F6),
+                                            style = MaterialTheme.typography.titleMedium.copy(
+                                                color = Color(0xFF3B82F6),
+                                                fontSize = 14.sp
+                                            ),
                                             modifier = Modifier.clickable {
                                                 onEvent(DictionaryEvent.OnClearRecentSearches)
                                             }
@@ -168,6 +174,7 @@ fun DictionaryScreen(
                             }
 
                             item {
+                                Spacer(modifier = Modifier.height(8.dp))
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -175,7 +182,10 @@ fun DictionaryScreen(
                                 ) {
                                     Text(
                                         text = "Explore Topics",
-                                        style = MaterialTheme.typography.titleMedium
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            color = Color(0xFF1E293B),
+                                            fontWeight = FontWeight.Bold,
+                                        )
                                     )
                                     Row(
                                         modifier = Modifier.clickable {
@@ -183,11 +193,13 @@ fun DictionaryScreen(
                                         },
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
+
                                         Text(
                                             text = "See All Topics",
-                                            fontWeight = FontWeight.SemiBold,
-                                            fontSize = 14.sp,
-                                            color = Color(0xFF3B82F6)
+                                            style = MaterialTheme.typography.titleMedium.copy(
+                                                color = Color(0xFF3B82F6),
+                                                fontSize = 14.sp
+                                            )
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Icon(

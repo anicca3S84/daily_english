@@ -7,6 +7,5 @@ sealed interface LoginEvent {
     object OnAppleLoginClick : LoginEvent
     object OnSignUpClick : LoginEvent
 
-    //already exists token
     data class LoginWithGoogle(val idToken: String) : LoginEvent
 }

@@ -13,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.codework.dailyenglish.presentation.theme.AppColors
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,7 +49,7 @@ fun AppBottomSheet(
             onDismissRequest = onDismiss,
             sheetState = sheetState,
             modifier = modifier,
-            containerColor = Color.White,
+            containerColor = AppColors.AppBackground,
             dragHandle = if (enableDrag) {
                 { BottomSheetDefaults.DragHandle() }
             } else {

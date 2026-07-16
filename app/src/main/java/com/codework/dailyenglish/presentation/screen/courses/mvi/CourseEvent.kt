@@ -6,4 +6,6 @@ sealed interface CourseEvent {
                              val isLocked: Boolean) : CourseEvent
     object OnRefreshData : CourseEvent
     object OnDismissSubscriptionPopup : CourseEvent
+    object OnCheckPremiumStatus : CourseEvent
+
 }

@@ -190,7 +190,7 @@ fun IntroAndPacksSectionContent(
             subscriptionPacks.forEach { pack ->
                 val isSelected = state.selectedPackId == pack.id
 
-                val isBestValuePack = pack.name.contains("PRO", ignoreCase = true) || pack.durationDays == 90
+                val isBestValuePack = pack.name.contains("Annual", ignoreCase = true) || pack.durationDays == 90
 
                 val icon = if (isBestValuePack) Icons.Rounded.Star else Icons.Rounded.Diamond
                 val iconTint = if (isBestValuePack) Color(0xFFD97706) else Color(0xFF2563EB)

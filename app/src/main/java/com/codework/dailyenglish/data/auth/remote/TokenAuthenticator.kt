@@ -38,9 +38,9 @@ class TokenAuthenticator @Inject constructor(
                 val refreshResponse = authApi.refreshToken("Bearer $refreshToken").execute()
 
                 if (refreshResponse.isSuccessful && refreshResponse.body() != null) {
-                    val newAuthDto = refreshResponse.body()!!
-                    val newAccessToken = newAuthDto.accessToken.orEmpty()
-                    val newRefreshToken = newAuthDto.refreshToken.orEmpty()
+                    val newAuthDto = refreshResponse.body()?.data
+                    val newAccessToken = newAuthDto?.accessToken.orEmpty()
+                    val newRefreshToken = newAuthDto?.refreshToken.orEmpty()
 
                     runBlocking {
                         localDataSource.saveTokens(newAccessToken, newRefreshToken)

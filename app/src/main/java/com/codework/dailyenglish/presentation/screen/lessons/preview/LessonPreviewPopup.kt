@@ -43,7 +43,7 @@ fun LessonPreviewPopup(
     AppBottomSheet(
         visible = visible,
         onDismiss = onDismiss,
-        enableDrag = true
+        enableDrag = true,
     ) { animateClose ->
         LessonPreviewSheet(
             state = state,

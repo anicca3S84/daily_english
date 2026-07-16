@@ -42,9 +42,10 @@ class CourseViewModel @Inject constructor(
                         _state.update { it.copy(showSubscriptionPopup = true) }
                     } else {
                     sendEffect(NavigateToCourseDetails(event.courseId, event.courseCode))
-
                 }
             }
+
+            CourseEvent.OnCheckPremiumStatus -> checkPremiumStatus()
 
             CourseEvent.OnRefreshData -> loadDashboardData()
 
@@ -58,6 +59,18 @@ class CourseViewModel @Inject constructor(
 
             is CourseEvent.OnDismissSubscriptionPopup -> {
                 _state.update { it.copy(showSubscriptionPopup = false) }
+                loadDashboardData()
+            }
+        }
+    }
+
+    private fun checkPremiumStatus() {
+        viewModelScope.launch {
+            val localUser = getUserInfoUseCase()
+            val isPremiumLocal = localUser?.isPremium ?: false
+            if (isPremiumLocal != _state.value.isPremium) {
+                _state.update { it.copy(isPremium = isPremiumLocal) }
+                AppAdManager.isPremiumUser = isPremiumLocal
                 loadDashboardData()
             }
         }

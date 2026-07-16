@@ -97,7 +97,7 @@ fun FlashcardScreen(
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = AppColors.BluePrimary)
                     ) {
-                        Text(text = "Review forgotten words", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                        Text(text = "Review forgotten words", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))

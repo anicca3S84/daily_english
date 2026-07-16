@@ -11,7 +11,7 @@
     <string name="login_sign_up">Sign up</string>
 
     <!--Common-->
-    <string name="app_name">Daily English App</string>
+    <string name="app_name">Daily English</string>
 
     <!--Loading-->
     <string name="common_loading">Loading…</string>
@@ -134,7 +134,7 @@
     <!--Message-->
     <string name="msg_no_lesson_available">No lessons available</string>
     <string name="msg_study_to_keep_streak">Study at least 1 lesson a day to keep your streak alive!</string>
-    <string name="msg_quit_lesson">Your progress will not be saved. Are you sure you want to exit?</string>
+    <string name="msg_quit_lesson">Are you sure you want to exit?</string>
     <string name="msg_exit_lesson">Exit lesson?</string>
 
 

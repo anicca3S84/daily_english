@@ -1,8 +1,13 @@
 package com.codework.dailyenglish.core.navigation
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -16,7 +21,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptionsBuilder
@@ -134,6 +142,46 @@ fun NavGraph(
         }
     }
 
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        navController.navigate(Route.HomeScreen) {
+            popUpTo(Route.LoginScreen) { inclusive = true }
+        }
+    }
+
+    val navigateToHomeWithPermissionCheck = {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val hasPermission = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (hasPermission) {
+                // Đã có quyền, chuyển thẳng sang Home
+                navController.navigate(Route.HomeScreen) {
+                    popUpTo(Route.LoginScreen) { inclusive = true }
+                }
+            } else {
+                // Chưa có quyền, kích hoạt hộp thoại xin quyền của hệ thống
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            // Các phiên bản Android thấp hơn API 33 không cần xin quyền động
+            navController.navigate(Route.HomeScreen) {
+                popUpTo(Route.LoginScreen) { inclusive = true }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        mainViewModel.sessionEvents.collect { event ->
+            if (event is SessionEvent.ForceLogout) {
+                showSessionExpiredDialog = true
+            }
+        }
+    }
+
     if (showSessionExpiredDialog) {
         AlertDialog(
             onDismissRequest = { /* Không cho tắt khi bấm ra ngoài */ },
@@ -165,10 +213,7 @@ fun NavGraph(
                     is LoginEffect.NavigateToSignUp -> {}
                     is LoginEffect.NavigateToEmailLogin -> {}
                     is LoginEffect.NavigateToHome -> {
-                        // Khi Login thành công, xóa LoginScreen khỏi BackStack (Không chèn quảng cáo tại bước này để tránh trải nghiệm xấu)
-                        navController.navigate(Route.HomeScreen) {
-                            popUpTo(Route.LoginScreen) { inclusive = true }
-                        }
+                        navigateToHomeWithPermissionCheck()
                     }
                 }
             }
@@ -220,6 +265,10 @@ fun NavGraph(
                         savedStateHandle["should_refresh"] = false
                     }
                 }
+            }
+
+            LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+                onEvent(CourseEvent.OnCheckPremiumStatus)
             }
 
             CourseScreen(state = state, onEvent = onEvent)

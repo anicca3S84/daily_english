@@ -104,7 +104,6 @@ fun UserInfoScreen(
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // --- Avatar Section ---
                     AvatarSection(
                         avatarUrl = state.editedAvatarUrl,
                         onAvatarClick = {
@@ -115,7 +114,6 @@ fun UserInfoScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // --- Full Name TextField ---
                     OutlinedTextField(
                         value = state.editedFullName,
                         onValueChange = { onEvent(UserInfoEvent.OnFullNameChanged(it)) },
@@ -123,19 +121,35 @@ fun UserInfoScreen(
                         leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null, tint = AppColors.TextMain) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
-                        singleLine = true
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            // Đảm bảo chữ bên trong Full Name luôn là màu đen đậm rõ nét
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black
+                        )
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // --- Email (Read Only) ---
                     OutlinedTextField(
                         value = data.email,
                         onValueChange = {},
                         label = { Text("Email Address") },
                         leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = false
+                        enabled = false,
+                        shape = RoundedCornerShape(12.dp),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            // Màu chữ và label Email được chỉnh sang tông bạc sáng (rất dễ nhìn)
+                            disabledTextColor = Color(0xFF8E8E93),
+                            disabledLabelColor = Color(0xFF8E8E93),
+                            disabledLeadingIconColor = Color(0xFF8E8E93),
+
+                            // Đồng bộ viền y hệt màu viền mặc định khi chưa focus của Full Name
+                            disabledBorderColor = MaterialTheme.colorScheme.outline,
+                            disabledContainerColor = Color.Transparent
+                        )
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -236,13 +250,31 @@ private fun PremiumStatusCard(isPremium: Boolean, expiresAt: String?) {
         border = BorderStroke(1.dp, if (isPremium) Color(0xFFFFD700) else MaterialTheme.colorScheme.outlineVariant),
         colors = CardDefaults.cardColors(containerColor = if (isPremium) Color(0xFFFFFDF0) else Color(0xFFEFF6FF))
     ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Filled.Star, null, tint = if (isPremium) Color(0xFFFFA500) else AppColors.BluePrimary)
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Star,
+                contentDescription = null,
+                tint = if (isPremium) Color(0xFFFFA500) else AppColors.BluePrimary
+            )
+
             Spacer(modifier = Modifier.width(12.dp))
+
             Column {
-                Text(if (isPremium) "Premium Member" else "Standard Account", fontWeight = FontWeight.Bold)
+                Text(
+                    text = if (isPremium) "Premium Member" else "Standard Account",
+                    fontWeight = FontWeight.Bold,
+                    // Premium hiển thị chữ vàng cam (đọc rõ trên nền sáng), Standard hiển thị chữ xanh dương
+                    color = if (isPremium) Color(0xFFD97706) else AppColors.BluePrimary
+                )
                 if (isPremium && expiresAt != null) {
-                    Text("Expires at: $expiresAt", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                    Text(
+                        text = "Expires at: $expiresAt",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
                 }
             }
         }

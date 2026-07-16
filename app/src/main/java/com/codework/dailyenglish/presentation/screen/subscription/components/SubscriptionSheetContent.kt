@@ -39,7 +39,7 @@ fun SubscriptionSheetContent(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = Color.White,
+                color = AppColors.AppBackground,
                 shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
             )
     ) {

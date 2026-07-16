@@ -150,11 +150,13 @@ private fun <T> BoxScope.WrapperInnerContent(
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = "Retry Icon",
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp),
+                            tint = Color.White
                         )
                         Text(
                             text = "Try again",
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
                     }
                 }

@@ -15,7 +15,7 @@ object AppAdManager {
     private var isLoading = false
     private var lastShowTime = 0L
 //    private const val COOLDOWN_TIME_MS = 3 * 1000
-    private const val COOLDOWN_TIME_MS = 3 * 60 * 1000
+    private const val COOLDOWN_TIME_MS = 3 * 60 * 1000 * 199
     private const val AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
 
     // 1. Khai báo biến lưu trạng thái Premium toàn cục tại đây

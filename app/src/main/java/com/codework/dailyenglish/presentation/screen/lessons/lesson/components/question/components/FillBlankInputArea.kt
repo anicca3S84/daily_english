@@ -40,26 +40,7 @@ fun FillBlankInputArea(
         hintMask.indices.lastOrNull { hintMask[it] == null } ?: -1
     }
 
-    val words = remember(hintMask) {
-        val result = mutableListOf<List<Int>>()
-        var currentWord = mutableListOf<Int>()
-        for (i in hintMask.indices) {
-            if (hintMask[i] == " ") {
-                if (currentWord.isNotEmpty()) {
-                    result.add(currentWord)
-                    currentWord = mutableListOf()
-                }
-            } else {
-                currentWord.add(i)
-            }
-        }
-        if (currentWord.isNotEmpty()) {
-            result.add(currentWord)
-        }
-        result
-    }
-
-    // Khởi tạo mảng dưới dạng TextFieldValue để kiểm soát vị trí con trỏ (luôn ở sau ký tự)
+    // Khởi tạo mảng dưới dạng TextFieldValue
     val userInputChars = remember(hintMask, initialAnswer) {
         mutableStateListOf<TextFieldValue>().apply {
             for (i in hintMask.indices) {
@@ -96,118 +77,110 @@ fun FillBlankInputArea(
         onAnswerSelected(combinedAnswer)
     }
 
+    // Sử dụng FlowRow trực tiếp cho từng ký tự để tự động xuống dòng khi hết chỗ
     FlowRow(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        words.forEachIndexed { wordIndex, wordIndices ->
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                wordIndices.forEach { charIndex ->
-                    val isHint = hintMask[charIndex] != null
-                    val textFieldValue = userInputChars.getOrNull(charIndex) ?: TextFieldValue(" ", TextRange(1))
+        hintMask.indices.forEach { charIndex ->
+            val isSpace = hintMask[charIndex] == " "
 
-                    if (isHint) {
-                        Box(
-                            modifier = Modifier
-                                .size(38.dp)
-                                .background(Color(0xFFEFF6FF), RoundedCornerShape(8.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = hintMask[charIndex] ?: "",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1D4ED8)
-                            )
-                        }
-                    } else {
-                        val borderColor = when (isCorrect) {
-                            true -> Color(0xFF10B981)
-                            false -> Color(0xFFEF4444)
-                            null -> Color(0xFFD1D5DB)
-                        }
+            if (isSpace) {
+                // Tạo một khoảng trống vừa đủ đại diện cho dấu cách giữa các từ
+                Spacer(
+                    modifier = Modifier
+                        .width(16.dp)
+                        .height(38.dp)
+                )
+            } else {
+                val isHint = hintMask[charIndex] != null
+                val textFieldValue = userInputChars.getOrNull(charIndex) ?: TextFieldValue(" ", TextRange(1))
 
-                        val isLastEditable = charIndex == lastEditableIndex
-
-                        BasicTextField(
-                            value = textFieldValue,
-                            onValueChange = { newValue ->
-                                val text = newValue.text
-                                if (text.isEmpty()) {
-                                    // Người dùng nhấn nút xóa (Backspace)
-                                    if (textFieldValue.text == " ") {
-                                        // Nếu ô hiện tại đã trống sẵn (" "), tìm ô nhập gần nhất phía trước để xóa và chuyển focus
-                                        var prevEditableIndex = -1
-                                        for (i in (charIndex - 1) downTo 0) {
-                                            if (hintMask[i] == null) {
-                                                prevEditableIndex = i
-                                                break
-                                            }
-                                        }
-                                        if (prevEditableIndex != -1) {
-                                            // Xóa ký tự ở ô trước đó và ép con trỏ nằm sau khoảng trắng
-                                            userInputChars[prevEditableIndex] = TextFieldValue(" ", TextRange(1))
-                                            updateAnswer()
-                                            focusRequesters[prevEditableIndex].requestFocus()
-                                        }
-                                    } else {
-                                        // Nếu ô hiện tại đang có chữ, đưa nó về trạng thái trống " "
-                                        userInputChars[charIndex] = TextFieldValue(" ", TextRange(1))
-                                        updateAnswer()
-                                    }
-                                } else {
-                                    // Người dùng nhập ký tự mới
-                                    val filtered = text.replace(" ", "").takeLast(1)
-                                    if (filtered.isNotEmpty()) {
-                                        userInputChars[charIndex] = TextFieldValue(filtered, TextRange(filtered.length))
-                                        updateAnswer()
-
-                                        if (isLastEditable) {
-                                            focusManager.clearFocus()
-                                        } else {
-                                            focusNext(charIndex)
-                                        }
-                                    } else {
-                                        // Phòng trường hợp người dùng chỉ nhập khoảng trắng
-                                        userInputChars[charIndex] = TextFieldValue(" ", TextRange(1))
-                                        updateAnswer()
-                                    }
-                                }
-                            },
-                            textStyle = TextStyle(
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1F2937),
-                                textAlign = TextAlign.Center
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Text,
-                                imeAction = if (isLastEditable) ImeAction.Done else ImeAction.Next
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onNext = {
-                                    focusNext(charIndex)
-                                },
-                                onDone = {
-                                    focusManager.clearFocus()
-                                }
-                            ),
-                            modifier = Modifier
-                                .size(38.dp)
-                                .focusRequester(focusRequesters[charIndex])
-                                .border(2.dp, borderColor, RoundedCornerShape(8.dp))
-                                .background(Color.White, RoundedCornerShape(8.dp))
-                                .wrapContentHeight(Alignment.CenterVertically)
+                if (isHint) {
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .background(Color(0xFFEFF6FF), RoundedCornerShape(8.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = hintMask[charIndex] ?: "",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1D4ED8)
                         )
                     }
+                } else {
+                    val borderColor = when (isCorrect) {
+                        true -> Color(0xFF10B981)
+                        false -> Color(0xFFEF4444)
+                        null -> Color(0xFFD1D5DB)
+                    }
+
+                    val isLastEditable = charIndex == lastEditableIndex
+
+                    BasicTextField(
+                        value = textFieldValue,
+                        onValueChange = { newValue ->
+                            val text = newValue.text
+                            if (text.isEmpty()) {
+                                if (textFieldValue.text == " ") {
+                                    var prevEditableIndex = -1
+                                    for (i in (charIndex - 1) downTo 0) {
+                                        if (hintMask[i] == null) {
+                                            prevEditableIndex = i
+                                            break
+                                        }
+                                    }
+                                    if (prevEditableIndex != -1) {
+                                        userInputChars[prevEditableIndex] = TextFieldValue(" ", TextRange(1))
+                                        updateAnswer()
+                                        focusRequesters[prevEditableIndex].requestFocus()
+                                    }
+                                } else {
+                                    userInputChars[charIndex] = TextFieldValue(" ", TextRange(1))
+                                    updateAnswer()
+                                }
+                            } else {
+                                val filtered = text.replace(" ", "").takeLast(1)
+                                if (filtered.isNotEmpty()) {
+                                    userInputChars[charIndex] = TextFieldValue(filtered, TextRange(filtered.length))
+                                    updateAnswer()
+
+                                    if (isLastEditable) {
+                                        focusManager.clearFocus()
+                                    } else {
+                                        focusNext(charIndex)
+                                    }
+                                } else {
+                                    userInputChars[charIndex] = TextFieldValue(" ", TextRange(1))
+                                    updateAnswer()
+                                }
+                            }
+                        },
+                        textStyle = TextStyle(
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1F2937),
+                            textAlign = TextAlign.Center
+                        ),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = if (isLastEditable) ImeAction.Done else ImeAction.Next
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = { focusNext(charIndex) },
+                            onDone = { focusManager.clearFocus() }
+                        ),
+                        modifier = Modifier
+                            .size(38.dp)
+                            .focusRequester(focusRequesters[charIndex])
+                            .border(2.dp, borderColor, RoundedCornerShape(8.dp))
+                            .background(Color.White, RoundedCornerShape(8.dp))
+                            .wrapContentHeight(Alignment.CenterVertically)
+                    )
                 }
-            }
-            if (wordIndex < words.lastIndex) {
-                Spacer(modifier = Modifier.width(8.dp))
             }
         }
     }
