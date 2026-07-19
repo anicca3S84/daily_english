@@ -59,15 +59,6 @@ fun LanguageChip(
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
-
-            Spacer(modifier = Modifier.width(Spaces.Space4))
-
-            Icon(
-                imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = null,
-                tint = if (isTarget) AppColors.BluePrimary else Color.Gray,
-                modifier = Modifier.size(Spaces.Space20)
-            )
         }
     }
 }

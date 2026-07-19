@@ -94,7 +94,8 @@ fun DictionaryScreen(
 
                 StateWrapper(
                     uiState = state.searchResults,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize()
+                        .defaultMinSize(minHeight = 200.dp),
                     onRetry = { onEvent(DictionaryEvent.OnSearchQueryChange(state.query)) }
                 ) { data ->
 

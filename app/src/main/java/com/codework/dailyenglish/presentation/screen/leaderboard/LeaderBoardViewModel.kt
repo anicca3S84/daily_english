@@ -40,7 +40,16 @@ class LeaderboardViewModel @Inject constructor(
     }
 
     private fun fetchLeaderboard() {
-        _state.update { it.copy(leaderboardState = it.leaderboardState.copy(isLoading = true, error = null)) }
+        // Thêm data = null để xóa danh sách cũ trước khi gọi API mới
+        _state.update {
+            it.copy(
+                leaderboardState = it.leaderboardState.copy(
+                    isLoading = true,
+                    error = null,
+                    data = null
+                )
+            )
+        }
 
         val type = _state.value.selectedTab
         val timeFilter = if (type == "STREAK") {

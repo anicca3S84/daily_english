@@ -174,14 +174,6 @@ fun NavGraph(
         }
     }
 
-    LaunchedEffect(Unit) {
-        mainViewModel.sessionEvents.collect { event ->
-            if (event is SessionEvent.ForceLogout) {
-                showSessionExpiredDialog = true
-            }
-        }
-    }
-
     if (showSessionExpiredDialog) {
         AlertDialog(
             onDismissRequest = { /* Không cho tắt khi bấm ra ngoài */ },

@@ -18,7 +18,6 @@ object AppAdManager {
     private const val COOLDOWN_TIME_MS = 3 * 60 * 1000 * 199
     private const val AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
 
-    // 1. Khai báo biến lưu trạng thái Premium toàn cục tại đây
     var isPremiumUser: Boolean = false
 
     fun initialize(context: Context) {
@@ -26,7 +25,6 @@ object AppAdManager {
     }
 
     private fun loadAd(context: Context) {
-        // 2. Nếu là tài khoản Premium, KHÔNG tải quảng cáo để tiết kiệm băng thông và pin
         if (isPremiumUser || interstitialAd != null || isLoading) return
         isLoading = true
 

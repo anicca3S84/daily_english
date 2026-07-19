@@ -28,12 +28,14 @@ import com.codework.dailyenglish.domain.dictionary.usecase.ToggleSaveWordUseCase
 import com.codework.dailyenglish.notification.ReminderManager
 import com.codework.dailyenglish.presentation.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext // Thêm import ApplicationContext
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 
 @HiltViewModel
 class LessonViewModel @Inject constructor(
@@ -101,6 +103,15 @@ class LessonViewModel @Inject constructor(
             is LessonEvent.OnStopSpeech -> speachToTextParser.stopListening()
             else -> {}
         }
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+        val network = connectivityManager?.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
     }
 
     private fun checkAnswer() {
@@ -249,6 +260,11 @@ class LessonViewModel @Inject constructor(
     }
 
     private suspend fun submitLesson() {
+        if (!isNetworkAvailable()) {
+            sendGlobalEffect(BaseEffect.ShowToast(UiText.StringResource(R.string.error_network)))
+            return
+        }
+
         _state.update { currentState ->
             val currentData = currentState.data
             currentState.copy(
@@ -392,7 +408,6 @@ class LessonViewModel @Inject constructor(
                 }
 
                 if (voiceState.spokenText.isNotBlank()) {
-                    // Truyền thêm cờ đánh dấu nếu mic đã ngừng lắng nghe (!voiceState.isListening)
                     updateUserAnswer(
                         answer = voiceState.spokenText,
                         indices = emptyList(),

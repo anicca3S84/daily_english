@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -52,10 +53,21 @@ fun TranslateScreen(
     onBackClick: () -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
-    val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
     val focusManager = LocalFocusManager.current
+
+    // SỬA LỖI: Tạo một biến cờ để kiểm soát việc ngắt ghi âm
+    var wasRecording by remember { mutableStateOf(false) }
+
+    // CHỈ đóng bàn phím và clear focus khi TRẠNG THÁI GHI ÂM (isRecording) chuyển từ true -> false
+    LaunchedEffect(state.isRecording) {
+        if (wasRecording && !state.isRecording) {
+            keyboardController?.hide()
+            focusManager.clearFocus()
+        }
+        wasRecording = state.isRecording
+    }
 
     var hasMicPermission by remember {
         mutableStateOf(
@@ -87,7 +99,6 @@ fun TranslateScreen(
 
     Scaffold(
         containerColor = AppColors.AppBackground,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppTopBar(
                 onBackClick = onBackClick,
@@ -125,6 +136,7 @@ fun TranslateScreen(
                     InputCard(
                         text = state.sourceText,
                         hint = stringResource(R.string.hint_type_to_translate),
+                        isRecording = state.isRecording,
                         onValueChange = { onEvent(TranslateEvent.OnTextChange(it)) },
                         onClear = { onEvent(TranslateEvent.OnClearText) },
                         onPlayAudio = { onEvent(TranslateEvent.OnPlaySourceAudio) },
@@ -143,6 +155,9 @@ fun TranslateScreen(
                             }
                         },
                         onMicClick = {
+                            // Gõ phím vẫn thoải mái, chỉ đóng khi chủ động bấm mic
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
                             if (hasMicPermission) {
                                 onEvent(TranslateEvent.OnMicClick(context))
                             } else {
@@ -220,7 +235,6 @@ fun TranslateScreen(
                         ) {
                             StateWrapper(
                                 uiState = state.historyState,
-                                snackbarHostState = snackbarHostState,
                                 onRetry = { onEvent(TranslateEvent.OnRefreshHistory) }
                             ) { historyList ->
                                 Column(

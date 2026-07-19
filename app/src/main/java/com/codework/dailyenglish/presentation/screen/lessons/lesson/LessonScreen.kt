@@ -29,12 +29,10 @@ fun LessonScreen(
     state: LessonState,
     onEvent: (LessonEvent) -> Unit
 ) {
-    val snackBar = remember { SnackbarHostState() }
     val data = state.data
     val context = LocalContext.current
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackBar) },
         containerColor = AppColors.AppBackground,
         topBar = {
             if (data != null) {
@@ -81,7 +79,6 @@ fun LessonScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
-                snackbarHostState = snackBar,
                 onRetry = { /* TODO */ }
             ) { config ->
                 val validData = config ?: return@StateWrapper

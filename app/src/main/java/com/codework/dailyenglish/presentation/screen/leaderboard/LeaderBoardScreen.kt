@@ -77,11 +77,7 @@ fun LeaderboardScreen(
                 .fillMaxSize()
                 .padding(paddingValues),
             onRetry = {
-                if (state.selectedTab.isEmpty()) {
                     onEvent(LeaderboardEvent.LoadLeaderboard)
-                } else {
-                    onEvent(LeaderboardEvent.OnTabChanged(state.selectedTab))
-                }
             }
         ) { wrapper ->
 
@@ -98,13 +94,11 @@ fun LeaderboardScreen(
             val top3 = listData.find { it.rank == 3 }
             val remainingUsers = listData.filter { it.rank > 3 }
 
-            // Dùng Column tổng để phân tách phần Cố định (Header) và phần Cuộn (List)
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.White)
             ) {
-                // ================= PHẦN HEADER CỐ ĐỊNH =================
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()

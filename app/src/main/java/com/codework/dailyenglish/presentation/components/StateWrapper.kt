@@ -17,7 +17,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -36,9 +35,7 @@ import com.codework.dailyenglish.presentation.theme.AppColors
 @Composable
 fun <T> StateWrapper(
     uiState: BaseUiState<T>,
-
     modifier: Modifier = Modifier,
-    snackbarHostState: SnackbarHostState? = null,
     onRetry: (() -> Unit)? = null,
     enablePullToRefresh: Boolean = false,
     loadingType: LoadingType = LoadingType.SHIMMER,
@@ -64,7 +61,6 @@ fun <T> StateWrapper(
                     isLoading = isLoading,
                     loadingType = loadingType,
                     shimmerContent = shimmerContent,
-                    snackbarHostState = snackbarHostState,
                     onRetry = onRetry,
                     content = content
                 )
@@ -77,7 +73,6 @@ fun <T> StateWrapper(
                 isLoading = isLoading,
                 loadingType = loadingType,
                 shimmerContent = shimmerContent,
-                snackbarHostState = snackbarHostState,
                 onRetry = onRetry,
                 content = content
             )
@@ -93,7 +88,6 @@ private fun <T> BoxScope.WrapperInnerContent(
     isLoading: Boolean,
     loadingType: LoadingType,
     shimmerContent: @Composable () -> Unit,
-    snackbarHostState: SnackbarHostState?,
     onRetry: (() -> Unit)?,
     content: @Composable (T?) -> Unit
 ) {
@@ -159,12 +153,6 @@ private fun <T> BoxScope.WrapperInnerContent(
                             color = Color.White
                         )
                     }
-                }
-            }
-        } else {
-            if (snackbarHostState != null) {
-                LaunchedEffect(message) {
-                    snackbarHostState.showSnackbar(message = message)
                 }
             }
         }

@@ -10,6 +10,11 @@ import java.util.Locale
 import android.util.Log
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+// BỔ SUNG CÁC IMPORT PHỤC VỤ CHECK MẠNG VÀ HIỂN THỊ TOAST
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.widget.Toast
+import com.codework.dailyenglish.R
 
 class TextToSpeechParser(context: Context) {
     private val appContext = context.applicationContext
@@ -22,6 +27,16 @@ class TextToSpeechParser(context: Context) {
 
     init {
         initializeTTS()
+    }
+
+    // Hàm Helper kiểm tra trạng thái Internet
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+        val network = connectivityManager?.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
     }
 
     private fun initializeTTS() {
@@ -86,6 +101,16 @@ class TextToSpeechParser(context: Context) {
         locale: Locale = Locale.US,
         scope: CoroutineScope
     ) {
+        // TỰ ĐỘNG CHECK MẠNG: Nếu mất mạng, hiện Toast và dừng luôn không chạy tiếp
+        if (!isNetworkAvailable()) {
+            Toast.makeText(
+                appContext,
+                appContext.getString(R.string.error_network),
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
         timeoutJob?.cancel()
         if (textToSpeech == null) {
             initializeTTS()

@@ -53,13 +53,10 @@ fun PracticeScreen(
     state: PracticeState,
     onEvent: (PracticeEvent) -> Unit
 ) {
-    val snackBar = remember { SnackbarHostState() }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackBar) },
         containerColor = Color(0xFFF8FAFC)
     ) { _ ->
-        // Bọc PullToRefreshBox ngoài cùng để có thể vuốt kéo tải lại toàn bộ màn hình (bao gồm cả Header)
         PullToRefreshBox(
             isRefreshing = state.topicsState.isRefreshing,
             onRefresh = { onEvent(PracticeEvent.OnRetry) },
@@ -70,7 +67,6 @@ fun PracticeScreen(
                     .fillMaxSize()
                     .background(Color(0xFFF8FAFC)),
             ) {
-                // 1. Phần Header luôn hiển thị (Kể cả khi mất kết nối)
                 item {
                     Box(
                         modifier = Modifier
@@ -118,7 +114,6 @@ fun PracticeScreen(
                     }
                 }
 
-                // 2. Phần danh sách chủ đề học
                 item {
                     Spacer(modifier = Modifier.height(30.dp))
 
@@ -134,7 +129,6 @@ fun PracticeScreen(
                                 }
                             }
                     ) {
-                        // Tiêu đề AI Speaking Hub luôn hiển thị
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -218,19 +212,14 @@ fun PracticeScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .defaultMinSize(minHeight = 280.dp), // Bổ sung chiều cao tối thiểu tại đây để tránh bị sập về 0 khi loading
-                            snackbarHostState = snackBar,
                             loadingType = LoadingType.CIRCULAR,
                             enablePullToRefresh = false, // Vô hiệu hoá PullToRefresh ở đây vì chúng ta đã bọc toàn màn hình ở ngoài cùng
                             onRetry = { onEvent(PracticeEvent.OnRetry) }
                         ) { topics ->
 
-                            // Nếu xảy ra lỗi kết nối mạng và chưa có dữ liệu tải về:
                             if (state.topicsState.error != null && (topics == null || topics.isEmpty())) {
-                                // Ta tạo một Box trống có chiều cao cố định để nhường không gian cho
-                                // StateWrapper tự vẽ ErrorOverlay căn giữa gọn gàng dưới mục "AI Speaking Hub"
                                 Box(modifier = Modifier.fillMaxWidth().height(280.dp))
                             } else {
-                                // Nếu có dữ liệu thành công, tiến hành vẽ lưới các thẻ bài bình thường
                                 val allTopics = topics ?: emptyList()
 
                                 Column(

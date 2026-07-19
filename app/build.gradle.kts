@@ -170,4 +170,7 @@ dependencies {
 
     implementation(libs.play.services.ads)
 
+    implementation(libs.androidx.exifinterface)
+
+
 }

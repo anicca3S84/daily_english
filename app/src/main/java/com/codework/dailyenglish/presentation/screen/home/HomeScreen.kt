@@ -30,7 +30,6 @@ fun HomeScreen(
     state: HomeState,
     onEvent: (HomeEvent) -> Unit
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         onEvent(HomeEvent.OnEnterHomeScreen)
@@ -39,7 +38,6 @@ fun HomeScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFFF8FAFC),
-        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -55,7 +53,6 @@ fun HomeScreen(
                 HomeContent(
                     state = state,
                     onEvent = onEvent,
-                    snackbarHostState = snackbarHostState
                 )
             }
 
@@ -71,7 +68,6 @@ fun HomeScreen(
 fun HomeContent(
     state: HomeState,
     onEvent: (HomeEvent) -> Unit,
-    snackbarHostState: SnackbarHostState
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -143,7 +139,6 @@ fun HomeContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 200.dp),
-                snackbarHostState = snackbarHostState,
                 loadingType = LoadingType.CIRCULAR,
                 enablePullToRefresh = false, // Tắt kéo ở đây vì đã bọc PullToRefresh ở ngoài HomeScreen
                 onRetry = { onEvent(HomeEvent.OnRetry) }

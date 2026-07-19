@@ -55,6 +55,8 @@ import com.codework.dailyenglish.R
 import com.codework.dailyenglish.presentation.screen.subscription.mvi.SubscriptionEvent
 import com.codework.dailyenglish.presentation.screen.subscription.mvi.SubscriptionState
 import com.codework.dailyenglish.presentation.theme.AppColors
+import androidx.compose.runtime.LaunchedEffect
+
 
 @Composable
 fun IntroAndPacksSectionContent(
@@ -63,6 +65,22 @@ fun IntroAndPacksSectionContent(
     textDark: Color,
     textLight: Color
 ) {
+    // 1. SẮP XẾP: Đưa các gói "Best Value" lên đầu danh sách hiển thị
+    val subscriptionPacks = state.packsUiState.data.orEmpty().sortedByDescending { pack ->
+        pack.name.contains("Annual", ignoreCase = true) || pack.durationDays == 90
+    }
+
+    // 2. MẶC ĐỊNH CHỌN: Tự động gửi Event chọn gói Best Value đầu tiên khi danh sách được tải xong
+    LaunchedEffect(subscriptionPacks) {
+        if (state.selectedPackId.isEmpty() && subscriptionPacks.isNotEmpty()) {
+            val defaultPack = subscriptionPacks.firstOrNull { pack ->
+                pack.name.contains("Annual", ignoreCase = true) || pack.durationDays == 90
+            } ?: subscriptionPacks.first()
+
+            onEvent(SubscriptionEvent.OnSelectPack(defaultPack.id))
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -185,12 +203,10 @@ fun IntroAndPacksSectionContent(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(7.dp)
         ) {
-            val subscriptionPacks = state.packsUiState.data.orEmpty()
-
             subscriptionPacks.forEach { pack ->
                 val isSelected = state.selectedPackId == pack.id
 
-                val isBestValuePack = pack.name.contains("Annual", ignoreCase = true) || pack.durationDays == 90
+                val isBestValuePack = pack.name.contains("Annual", ignoreCase = true)
 
                 val icon = if (isBestValuePack) Icons.Rounded.Star else Icons.Rounded.Diamond
                 val iconTint = if (isBestValuePack) Color(0xFFD97706) else Color(0xFF2563EB)
@@ -365,7 +381,6 @@ fun IntroAndPacksSectionContent(
         }
     }
 }
-
 private fun formatPrice(price: Any): String {
     val number: Double? = when (price) {
         is Number -> price.toDouble()

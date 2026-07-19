@@ -7,7 +7,6 @@ import com.codework.dailyenglish.data.auth.remote.AuthApi
 import com.codework.dailyenglish.data.auth.remote.dto.AuthDto
 import com.codework.dailyenglish.data.auth.remote.dto.GoogleLoginDto
 import com.codework.dailyenglish.data.auth.remote.dto.LogoutRequestDto
-import com.codework.dailyenglish.data.auth.remote.dto.UpdateUserRequest
 import com.codework.dailyenglish.data.auth.remote.dto.UserDto
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody

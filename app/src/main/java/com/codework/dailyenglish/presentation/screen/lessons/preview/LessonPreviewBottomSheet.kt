@@ -44,12 +44,10 @@ fun LessonPreviewSheet(
     onEvent: (LessonPreviewEvent) -> Unit,
     onClose: () -> Unit
 ) {
-    val snackBar = remember { SnackbarHostState() }
 
     StateWrapper(
         uiState = state.previewDataState,
         modifier = Modifier.fillMaxWidth(),
-        snackbarHostState = snackBar,
         loadingType = LoadingType.CIRCULAR,
         onRetry = { onEvent(LessonPreviewEvent.OnRefresh) }
     ) { previewData ->

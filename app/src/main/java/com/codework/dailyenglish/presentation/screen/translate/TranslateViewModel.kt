@@ -31,7 +31,7 @@ import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-
+import android.util.Log
 
 private data class TranslationRequest(
     val text: String,
@@ -86,11 +86,11 @@ class TranslateViewModel @Inject constructor(
                     it.copy(
                         isRecording = voiceState.isListening,
                         sourceText = voiceState.spokenText.ifBlank { it.sourceText },
-                        isTranslating = voiceState.spokenText.isNotBlank()
+                        isTranslating = voiceState.spokenText.isNotBlank() && !voiceState.isListening
                     )
                 }
 
-                if (voiceState.spokenText.isNotBlank()) {
+                if (voiceState.spokenText.isNotBlank() && !voiceState.isListening) {
                     sourceTextFlow.value = TranslationRequest(voiceState.spokenText, shouldTranslate = true)
                 }
             }
@@ -101,32 +101,44 @@ class TranslateViewModel @Inject constructor(
         translateJob?.cancel()
         translateJob = viewModelScope.launch {
             val currentState = _state.value
-            translateTextUseCase(
-                text = text,
-                sourceLang = currentState.sourceLang,
-                targetLang = currentState.targetLang
-            )
-                .onSuccess { result ->
-                    _state.update {
-                        it.copy(
-                            targetText = result.translatedText,
-                            isTranslating = false
-                        )
-                    }
-                    result.historyItem?.let { item ->
-                        launch {
-                            runCatching { saveHistoryUseCase(item) }
+            _state.update { it.copy(isTranslating = true) }
+
+            try {
+                translateTextUseCase(
+                    text = text,
+                    sourceLang = currentState.sourceLang,
+                    targetLang = currentState.targetLang
+                )
+                    .onSuccess { result ->
+                        _state.update {
+                            it.copy(
+                                targetText = result.translatedText,
+                                isTranslating = false
+                            )
+                        }
+                        result.historyItem?.let { item ->
+                            launch {
+                                runCatching { saveHistoryUseCase(item) }
+                            }
                         }
                     }
-                }
-                .onError { appError ->
-                    _state.update {
-                        it.copy(
-                            isTranslating = false,
-                            historyState = it.historyState.copy(error = appError.asUiText())
-                        )
+                    .onError { appError ->
+                        _state.update {
+                            it.copy(
+                                isTranslating = false,
+                                historyState = it.historyState.copy(error = appError.asUiText())
+                            )
+                        }
                     }
+            } catch (e: Exception) {
+                // SỬA LỖI: Bẫy mọi ngoại lệ mạng/phân tích dữ liệu để đảm bảo tắt Translating an toàn
+                Log.e("TranslateViewModel", "Lỗi trong quá trình dịch thuật: ${e.message}", e)
+                _state.update {
+                    it.copy(
+                        isTranslating = false
+                    )
                 }
+            }
         }
     }
 
@@ -169,7 +181,6 @@ class TranslateViewModel @Inject constructor(
                         historyState = it.historyState.copy(error = null)
                     )
                 }
-                // Tự gõ chữ -> Cần dịch
                 sourceTextFlow.value = TranslationRequest(event.text, shouldTranslate = true)
             }
 
@@ -232,17 +243,36 @@ class TranslateViewModel @Inject constructor(
             is TranslateEvent.OnMicClick -> {
                 if (voiceToTextParser.state.value.isListening) {
                     voiceToTextParser.stopListening()
+
+                    // SỬA LỖI: Dịch ngay văn bản thô đang hiển thị khi bấm dừng thủ công
+                    val currentText = _state.value.sourceText
+                    if (currentText.isNotBlank()) {
+                        _state.update {
+                            it.copy(
+                                isRecording = false,
+                                isTranslating = true
+                            )
+                        }
+                        sourceTextFlow.value = TranslationRequest(currentText, shouldTranslate = true)
+                    }
                 } else {
                     _state.update {
                         it.copy(
                             sourceText = "",
                             targetText = "",
-                            isTranslating = true
+                            isTranslating = false
                         )
                     }
                     sourceTextFlow.value = TranslationRequest("", shouldTranslate = false)
                     val langCode = getLocaleFromLangCode(_state.value.sourceLang).toLanguageTag()
-                    voiceToTextParser.startListening(event.context, langCode)
+
+                    voiceToTextParser.startListening(
+                        context = event.context,
+                        languageCode = langCode,
+                        minDurationMillis = 1500L,
+                        completeSilenceMillis = 1200L,
+                        possiblyCompleteSilenceMillis = 1000L
+                    )
                 }
             }
 

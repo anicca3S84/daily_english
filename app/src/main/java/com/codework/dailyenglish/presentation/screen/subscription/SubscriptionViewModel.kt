@@ -94,10 +94,12 @@ class SubscriptionViewModel @Inject constructor(
         viewModelScope.launch {
             getSubscriptionPacksUseCase()
                 .onSuccess { packs ->
+                    val sortedPacks = packs.sortedByDescending { it.durationDays }
+
                     _state.update {
                         it.copy(
-                            packsUiState = BaseUiState(data = packs, isLoading = false),
-                            selectedPackId = packs.firstOrNull()?.id.orEmpty()
+                            packsUiState = BaseUiState(data = sortedPacks, isLoading = false),
+                            selectedPackId = sortedPacks.firstOrNull()?.id.orEmpty()
                         )
                     }
                 }

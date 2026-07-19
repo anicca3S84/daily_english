@@ -44,7 +44,6 @@ fun AiSpeakingScreen(
     onEvent: (AiSpeakingEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
     val context = LocalContext.current
 
@@ -121,7 +120,6 @@ fun AiSpeakingScreen(
         }
     ) {
         Scaffold(
-            snackbarHost = { SnackbarHost(snackbarHostState) },
             containerColor = Color(0xFFF8FAFC),
             topBar = {
                 // THAY THẾ CENTER ALIGNED TOP APP BAR BẰNG APP TOP BAR ĐỂ MỞ DRAWER
@@ -178,7 +176,6 @@ fun AiSpeakingScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(top = padding.calculateTopPadding()),
-                snackbarHostState = snackbarHostState,
                 onRetry = { onEvent(AiSpeakingEvent.OnRetryChat) }
             ) { config ->
                 val data = config ?: return@StateWrapper

@@ -44,10 +44,8 @@ fun CourseScreen(
     state: CourseState,
     onEvent: (CourseEvent) -> Unit,
 ) {
-    val snackBar = remember { SnackbarHostState() }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackBar) },
         containerColor = AppColors.AppBackground
     ) { _ ->
         Box(
@@ -179,7 +177,6 @@ fun CourseScreen(
                         StateWrapper(
                             uiState = state.dashboardState,
                             modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 250.dp),
-                            snackbarHostState = snackBar,
                             loadingType = LoadingType.CIRCULAR,
                             enablePullToRefresh = false, // Vô hiệu hóa ở đây vì đã bọc PullToRefreshBox ở ngoài cùng
                             onRetry = { onEvent(CourseEvent.OnRefreshData) }

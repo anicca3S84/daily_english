@@ -23,7 +23,7 @@ fun ExpStreakToggle(selectedTab: String, onTabSelected: (String) -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         TabItem(
-            text = "Exp",
+            text = "Xp",
             isSelected = selectedTab == "EXP",
             modifier = Modifier.weight(1f),
             onClick = { onTabSelected("EXP") }

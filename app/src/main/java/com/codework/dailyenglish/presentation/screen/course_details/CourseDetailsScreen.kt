@@ -44,13 +44,11 @@ fun CourseDetailsScreen(
     onBackClick: () -> Unit,
     navController: NavController
 ) {
-    val snackBar = remember { SnackbarHostState() }
     var showPreview by remember { mutableStateOf(false) }
     var selectedLessonId by remember { mutableStateOf("") }
     var expandedModuleIndex by remember { mutableIntStateOf(0) }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackBar) },
         containerColor = AppColors.AppBackground,
         topBar = {
             CenterAlignedTopAppBar(
@@ -95,7 +93,6 @@ fun CourseDetailsScreen(
             StateWrapper(
                 uiState = state.modulesState,
                 modifier = Modifier.fillMaxSize(),
-                snackbarHostState = snackBar,
                 enablePullToRefresh = true,
                 loadingType = LoadingType.CIRCULAR,
                 onRetry = { onEvent(CourseDetailEvent.OnRefresh) }

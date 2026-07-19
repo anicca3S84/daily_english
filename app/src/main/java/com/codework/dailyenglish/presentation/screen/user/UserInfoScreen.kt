@@ -1,5 +1,6 @@
 package com.codework.dailyenglish.presentation.screen.user
 
+import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
@@ -26,13 +28,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
-import com.codework.dailyenglish.presentation.components.StateWrapper
 import com.codework.dailyenglish.presentation.screen.user.mvi.UserInfoEvent
 import com.codework.dailyenglish.presentation.screen.user.mvi.UserInfoState
+import com.codework.dailyenglish.presentation.utils.createTempPictureUri
+import com.codework.dailyenglish.presentation.components.StateWrapper // Hãy đảm bảo import StateWrapper của bạn
 import com.codework.dailyenglish.presentation.theme.AppColors
 import com.codework.dailyenglish.presentation.theme.AppTextSizes
-import com.codework.dailyenglish.presentation.utils.createTempPictureUri // Đảm bảo import hàm này
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,8 +48,9 @@ fun UserInfoScreen(
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
 
-    // --- STATES CHO CHỌN ẢNH ---
-    var showImagePickerOptions by remember { mutableStateOf(false) }
+    // --- TRẠNG THÁI HIỂN THỊ ---
+    var showFullScreenPreview by remember { mutableStateOf(false) } // Xem ảnh phóng to
+    var showImagePickerOptions by remember { mutableStateOf(false) } // Hộp thoại chọn Camera/Gallery
     var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
 
     // --- LAUNCHERS ---
@@ -95,7 +100,7 @@ fun UserInfoScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            onRetry = {onEvent(UserInfoEvent.OnLoadProfile)}
+            onRetry = { onEvent(UserInfoEvent.OnLoadProfile) }
         ) { profile ->
             profile?.let { data ->
                 Column(
@@ -104,11 +109,16 @@ fun UserInfoScreen(
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // --- AVATAR SECTION ---
                     AvatarSection(
                         avatarUrl = state.editedAvatarUrl,
                         onAvatarClick = {
                             focusManager.clearFocus()
-                            showImagePickerOptions = true // Mở Dialog
+                            showFullScreenPreview = true // Click vào ảnh -> Xem ảnh đại diện
+                        },
+                        onEditClick = {
+                            focusManager.clearFocus()
+                            showImagePickerOptions = true // Click vào icon Camera -> Mở chọn nguồn ảnh
                         }
                     )
 
@@ -123,7 +133,6 @@ fun UserInfoScreen(
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
-                            // Đảm bảo chữ bên trong Full Name luôn là màu đen đậm rõ nét
                             focusedTextColor = Color.Black,
                             unfocusedTextColor = Color.Black
                         )
@@ -141,12 +150,9 @@ fun UserInfoScreen(
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
-                            // Màu chữ và label Email được chỉnh sang tông bạc sáng (rất dễ nhìn)
                             disabledTextColor = Color(0xFF8E8E93),
                             disabledLabelColor = Color(0xFF8E8E93),
                             disabledLeadingIconColor = Color(0xFF8E8E93),
-
-                            // Đồng bộ viền y hệt màu viền mặc định khi chưa focus của Full Name
                             disabledBorderColor = MaterialTheme.colorScheme.outline,
                             disabledContainerColor = Color.Transparent
                         )
@@ -183,7 +189,48 @@ fun UserInfoScreen(
         }
     }
 
-    // --- DIALOG CHỌN NGUỒN ẢNH ---
+    // --- 1. GIAO DIỆN PREVIEW ẢNH FULL SCREEN ---
+    if (showFullScreenPreview) {
+        Dialog(
+            onDismissRequest = { showFullScreenPreview = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false) // Cho phép phủ rộng toàn màn hình
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.95f))
+                    .clickable { showFullScreenPreview = false },
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model = state.editedAvatarUrl.ifBlank { "https://via.placeholder.com/150" },
+                    contentDescription = "Full Screen Avatar",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .padding(16.dp),
+                    contentScale = ContentScale.Fit
+                )
+
+                // Nút đóng (X) ở góc trên bên phải
+                IconButton(
+                    onClick = { showFullScreenPreview = false },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 40.dp, end = 24.dp)
+                        .background(Color.White.copy(alpha = 0.2f), CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = Color.White
+                    )
+                }
+            }
+        }
+    }
+
+    // --- 2. DIALOG CHỌN NGUỒN ẢNH ---
     if (showImagePickerOptions) {
         AlertDialog(
             onDismissRequest = { showImagePickerOptions = false },
@@ -192,7 +239,7 @@ fun UserInfoScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showImagePickerOptions = false
-                    // Tạo Uri và mở Camera
+                    // Tạo Uri tạm và mở Camera
                     val newUri = context.createTempPictureUri()
                     tempCameraUri = newUri
                     cameraLauncher.launch(newUri)
@@ -203,7 +250,7 @@ fun UserInfoScreen(
             dismissButton = {
                 TextButton(onClick = {
                     showImagePickerOptions = false
-                    // Mở Thư viện
+                    // Mở Thư viện ảnh
                     galleryLauncher.launch("image/*")
                 }) {
                     Text("Choose Gallery")
@@ -214,11 +261,13 @@ fun UserInfoScreen(
 }
 
 @Composable
-private fun AvatarSection(avatarUrl: String, onAvatarClick: () -> Unit) {
+private fun AvatarSection(
+    avatarUrl: String,
+    onAvatarClick: () -> Unit,
+    onEditClick: () -> Unit
+) {
     Box(
-        modifier = Modifier
-            .size(100.dp)
-            .clickable { onAvatarClick() },
+        modifier = Modifier.size(100.dp),
         contentAlignment = Alignment.BottomEnd
     ) {
         AsyncImage(
@@ -226,7 +275,8 @@ private fun AvatarSection(avatarUrl: String, onAvatarClick: () -> Unit) {
             contentDescription = "User Avatar",
             modifier = Modifier
                 .fillMaxSize()
-                .clip(CircleShape),
+                .clip(CircleShape)
+                .clickable { onAvatarClick() }, // Nhấn vào ảnh để xem (Preview)
             contentScale = ContentScale.Crop
         )
         Box(
@@ -234,10 +284,16 @@ private fun AvatarSection(avatarUrl: String, onAvatarClick: () -> Unit) {
                 .size(32.dp)
                 .clip(CircleShape)
                 .background(AppColors.BluePrimary)
+                .clickable { onEditClick() } // Nhấn vào icon Camera để chỉnh sửa ảnh
                 .padding(6.dp),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Filled.CameraAlt, null, tint = Color.White, modifier = Modifier.size(16.dp))
+            Icon(
+                imageVector = Icons.Filled.CameraAlt,
+                contentDescription = "Edit Avatar",
+                tint = Color.White,
+                modifier = Modifier.size(16.dp)
+            )
         }
     }
 }
@@ -266,7 +322,6 @@ private fun PremiumStatusCard(isPremium: Boolean, expiresAt: String?) {
                 Text(
                     text = if (isPremium) "Premium Member" else "Standard Account",
                     fontWeight = FontWeight.Bold,
-                    // Premium hiển thị chữ vàng cam (đọc rõ trên nền sáng), Standard hiển thị chữ xanh dương
                     color = if (isPremium) Color(0xFFD97706) else AppColors.BluePrimary
                 )
                 if (isPremium && expiresAt != null) {

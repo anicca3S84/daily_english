@@ -88,7 +88,7 @@ fun PaymentSectionContent(
                 }
 
                 Text(
-                    text = "Payment Successful! 🎉",
+                    text = "Payment Successful!",
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Black,
                         color = textDark,
