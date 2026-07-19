@@ -219,7 +219,11 @@ fun NavGraph(
                     // Áp dụng quảng cáo giãn cách 3 phút cho các tính năng chính từ màn hình Home
                     is HomeEffect.NavigateToAi -> navController.navigateWithAd(context, Route.AIScreen)
                     is HomeEffect.NavigateToDictionary -> navController.navigateWithAd(context, Route.DictionaryScreen)
-                    is HomeEffect.NavigateToSavedWord -> navController.navigateWithAd(context, Route.VocabularyListScreen)
+                    is HomeEffect.NavigateToSavedWord -> navController.navigateWithAd(
+                        context,
+                        Route.VocabularyListScreen
+                    )
+
                     is HomeEffect.NavigateToTranslate -> navController.navigateWithAd(context, Route.TranslateScreen)
                     is HomeEffect.NavigateToSubscription -> navController.navigate(Route.SubscriptionScreen) // Không quảng cáo khi người dùng muốn mua VIP
                     else -> {}
@@ -329,6 +333,7 @@ fun NavGraph(
                     is PracticeEffect.NavigateToTopicSelection -> {
                         navController.navigateWithAd(context, Route.TopicScreen(origin = effect.origin))
                     }
+
                     else -> {}
                 }
             }
@@ -342,16 +347,19 @@ fun NavGraph(
                     is MoreEffect.NavigateToEditProfile -> {
                         navController.navigate(Route.UserInfoScreen)
                     }
+
                     is MoreEffect.HandleLogout -> {
                         navController.navigate(Route.LoginScreen) {
                             popUpTo(0) { inclusive = true }
                         }
                     }
+
                     is MoreEffect.NavigateToMenu -> {
                         if (effect.label == "Personal") {
                             navController.navigate(Route.UserInfoScreen)
                         }
                     }
+
                     is MoreEffect.NavigateToLeaderBoard -> {
                         navController.navigateWithAd(context, Route.LeaderboardScreen)
                     }
@@ -467,8 +475,15 @@ fun NavGraph(
             onNavigate = { effect ->
                 when (effect) {
                     is QuizReviewEffect.NavigateBack -> navController.popBackStack()
-                    is QuizReviewEffect.NavigateToListening -> navController.navigateWithAd(context, Route.ListeningScreen)
-                    is QuizReviewEffect.NavigateToGrammar -> navController.navigateWithAd(context, Route.SentenceBuilderScreen)
+                    is QuizReviewEffect.NavigateToListening -> navController.navigateWithAd(
+                        context,
+                        Route.ListeningScreen
+                    )
+
+                    is QuizReviewEffect.NavigateToGrammar -> navController.navigateWithAd(
+                        context,
+                        Route.SentenceBuilderScreen
+                    )
                 }
             }
         ) { state, onEvent ->
@@ -485,8 +500,10 @@ fun NavGraph(
                     is GrammarEffect.NavigateToTopic -> {
                         navController.navigateWithAd(context, Route.LessonScreen)
                     }
+
                     is GrammarEffect.OpenSearch -> { /* TODO: Mở thanh tìm kiếm */
                     }
+
                     is GrammarEffect.ShowToast -> {
                     }
                 }
@@ -541,16 +558,28 @@ fun NavGraph(
                     is VocabularyListEffect.NavigateToFlashCard -> {
                         navController.navigateWithAd(context, Route.FlashcardScreen)
                     }
+                    is VocabularyListEffect.NavigateToWordDetail -> {
+                        navController.navigateWithAd(
+                            context,
+                            Route.WordDetailScreen(
+                                wordId = effect.wordId
+                            )
+                        )
+                    }
                 }
             }
         ) { state, onEvent ->
-            val currentBackStackEntry = navController.currentBackStackEntry
-            LaunchedEffect(currentBackStackEntry) {
-                currentBackStackEntry?.lifecycle?.addObserver(androidx.lifecycle.LifecycleEventObserver { _, event ->
-                    if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+            val currentEntry by navController.currentBackStackEntryAsState()
+            LaunchedEffect(currentEntry) {
+                val entry = currentEntry ?: return@LaunchedEffect
+                if (entry.destination.route?.contains("VocabularyListScreen") == true) {
+                    val savedStateHandle = entry.savedStateHandle
+                    val shouldRefresh = savedStateHandle.get<Boolean>("should_refresh") ?: false
+                    if (shouldRefresh) {
                         onEvent(VocabularyListEvent.OnRefresh)
+                        savedStateHandle["should_refresh"] = false // Reset lại cờ sau khi đã làm mới
                     }
-                })
+                }
             }
 
             VocabularyListScreen(
@@ -559,7 +588,6 @@ fun NavGraph(
                 onBackClick = { navController.popBackStack() }
             )
         }
-
         composableScreen<
                 Route.TopicWordsScreen,
                 VocabularyListViewModel,
@@ -572,9 +600,31 @@ fun NavGraph(
                     is VocabularyListEffect.NavigateToFlashCard -> {
                         navController.navigateWithAd(context, Route.FlashcardScreen)
                     }
+                    is VocabularyListEffect.NavigateToWordDetail -> {
+                        navController.navigateWithAd(
+                            context,
+                            Route.WordDetailScreen(
+                                wordId = effect.wordId
+                            )
+                        )
+                    }
                 }
             }
         ) { state, onEvent ->
+            val currentEntry by navController.currentBackStackEntryAsState()
+            LaunchedEffect(currentEntry) {
+                val entry = currentEntry ?: return@LaunchedEffect
+                // Kiểm tra xem đích đến hiện tại có phải là màn TopicWordsScreen hay không
+                if (entry.destination.route?.contains("TopicWordsScreen") == true) {
+                    val savedStateHandle = entry.savedStateHandle
+                    val shouldRefresh = savedStateHandle.get<Boolean>("should_refresh") ?: false
+                    if (shouldRefresh) {
+                        onEvent(VocabularyListEvent.OnRefresh)
+                        savedStateHandle["should_refresh"] = false // Reset lại cờ sau khi đã làm mới
+                    }
+                }
+            }
+
             VocabularyListScreen(
                 state = state,
                 onEvent = onEvent,
@@ -613,6 +663,7 @@ fun NavGraph(
             )
         }
 
+
         composableScreen<
                 Route.WordDetailScreen,
                 WordDetailViewModel,
@@ -629,7 +680,10 @@ fun NavGraph(
             WordDetailScreen(
                 state = state,
                 onEvent = onEvent,
-                onBackClick = { navController.popBackStack() }
+                onBackClick = {
+                    navController.previousBackStackEntry?.savedStateHandle?.set("should_refresh", true)
+                    navController.popBackStack()
+                }
             )
         }
 

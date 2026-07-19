@@ -21,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bookmark
 import androidx.compose.material.icons.rounded.BookmarkBorder
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.VolumeUp
 import androidx.compose.material3.Card
@@ -37,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codework.dailyenglish.domain.dictionary.model.Word
@@ -87,13 +90,18 @@ fun WordResultCard(
     index: Int = 0,
     isSavedMode: Boolean = false,
     isSelected: Boolean = false,
+    showSelection: Boolean = false,       // Mặc định ẩn ô tích chọn
     onClick: () -> Unit = {},
+    onSelectToggle: () -> Unit = {},
     onPlayAudio: () -> Unit = {},
     onPlayAudioUk: () -> Unit = onPlayAudio,
     onPlayAudioUs: () -> Unit = onPlayAudio,
     onToggleSave: () -> Unit = {}
 ) {
     val theme = cardThemes[index % cardThemes.size]
+
+    // Gộp điều kiện trạng thái đã lưu
+    val isWordSaved = word.isSaved || isSavedMode
 
     Card(
         colors = CardDefaults.cardColors(
@@ -109,13 +117,14 @@ fun WordResultCard(
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clickable { onClick() }
-    )
-       {
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(IntrinsicSize.Min)
+                .height(IntrinsicSize.Min),
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            // Thanh màu đứng bên trái
             Box(
                 modifier = Modifier
                     .width(6.dp)
@@ -129,10 +138,28 @@ fun WordResultCard(
                     .background(theme.primaryColor)
             )
 
+            // Hiển thị nút tích chọn nếu showSelection = true
+            if (showSelection) {
+                IconButton(
+                    onClick = onSelectToggle,
+                    modifier = Modifier.padding(start = 6.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isSelected) Icons.Rounded.CheckCircle else Icons.Rounded.RadioButtonUnchecked,
+                        contentDescription = "Select status",
+                        tint = if (isSelected) theme.primaryColor else Color(0xFFCBD5E1),
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+            }
+
+            // Tự động căn lề trái dựa vào việc có hiển thị nút chọn hay không
+            val paddingStart = if (showSelection) 0.dp else 14.dp
+
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = 14.dp, vertical = 12.dp)
+                    .padding(start = paddingStart, end = 14.dp, top = 12.dp, bottom = 12.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -146,12 +173,16 @@ fun WordResultCard(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            // Giới hạn độ dài của từ để tránh đè lên nhãn phân loại loại từ
                             Text(
                                 text = word.word,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF1E293B),
-                                fontSize = 15.sp
+                                fontSize = 15.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f, fill = false)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Surface(
@@ -170,7 +201,8 @@ fun WordResultCard(
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
                                 text = word.usPhonetic.ifEmpty { word.ukPhonetic },
@@ -183,12 +215,16 @@ fun WordResultCard(
                                 color = Color(0xFFCBD5E1),
                                 fontSize = 13.sp
                             )
+                            // Sử dụng weight(1f) để nghĩa của từ tự động xuống dòng khi quá dài
                             Text(
                                 text = word.meaning,
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 12.sp,
-                                color = Color(0xFF475569)
+                                color = Color(0xFF475569),
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f)
                             )
                         }
                     }
@@ -228,10 +264,11 @@ fun WordResultCard(
                                 onClick = onToggleSave,
                                 modifier = Modifier.fillMaxSize()
                             ) {
+                                // Đã cập nhật: Sử dụng biến isWordSaved để tự động tô màu đúng trạng thái
                                 Icon(
-                                    imageVector = if (word.isSaved) Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder,
+                                    imageVector = if (isWordSaved) Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder,
                                     contentDescription = "Save Word",
-                                    tint = if (word.isSaved) theme.primaryColor else Color(0xFF94A3B8),
+                                    tint = if (isWordSaved) theme.primaryColor else Color(0xFF94A3B8),
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -290,16 +327,6 @@ fun WordResultCard(
                                 color = Color(0xFF1E293B),
                                 lineHeight = 18.sp
                             )
-
-//                            val exampleVi = word.examples.getOrNull(1)
-//                            if (!exampleVi.isNullOrBlank()) {
-//                                Text(
-//                                    text = exampleVi,
-//                                    style = MaterialTheme.typography.bodySmall,
-//                                    color = Color(0xFF64748B),
-//                                    lineHeight = 16.sp
-//                                )
-//                            }
                         }
                     }
                 }

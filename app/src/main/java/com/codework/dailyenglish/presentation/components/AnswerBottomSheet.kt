@@ -1,5 +1,6 @@
 package com.codework.dailyenglish.presentation.components
 
+import android.media.MediaPlayer // Thêm import này
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext // Thêm import này
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
@@ -23,6 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.codework.dailyenglish.R // Đảm bảo đã import R để gọi file raw
+import com.codework.dailyenglish.presentation.screen.lessons.lesson.components.FlatStyleButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +41,22 @@ fun AnswerBottomSheet(
     exampleTranslation: String? = null,
     onNextClicked: () -> Unit
 ) {
+    val context = LocalContext.current
+
+    // Tự động phát âm thanh khi Bottom Sheet hiển thị
+    DisposableEffect(isCorrect) {
+        val soundRes = if (isCorrect) R.raw.correct_sound else R.raw.wrong_sound
+        val mediaPlayer = MediaPlayer.create(context, soundRes)
+
+        mediaPlayer?.start()
+
+        onDispose {
+            // Giải phóng bộ nhớ khi Bottom Sheet bị đóng hoặc hủy
+            mediaPlayer?.stop()
+            mediaPlayer?.release()
+        }
+    }
+
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
         confirmValueChange = { newValue ->
@@ -69,20 +89,19 @@ fun AnswerBottomSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
-                // Giảm bớt padding phía trên và dưới để giao diện gọn gàng hơn
                 .padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 12.dp)
         ) {
             // ====== TIÊU ĐỀ ======
             Text(
                 text = titleText,
                 color = mainColor,
-                fontSize = 20.sp, // Điều chỉnh nhỏ lại một chút để cân đối
+                fontSize = 20.sp,
                 fontWeight = FontWeight.ExtraBold
             )
 
             // ====== MÔ TẢ (Chỉ hiển thị khi trả lời đúng) ======
             if (descText != null) {
-                Spacer(modifier = Modifier.height(4.dp)) // Giảm khoảng cách từ 8.dp xuống 4.dp
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = descText,
                     color = textDarkColor,
@@ -93,13 +112,13 @@ fun AnswerBottomSheet(
 
             // ====== TRƯỜNG HỢP ĐÚNG ======
             if (isCorrect && word != null && meaning != null) {
-                Spacer(modifier = Modifier.height(12.dp)) // Giảm khoảng cách từ 20.dp xuống 12.dp
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Color.White.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
-                        .padding(12.dp) // Tiết kiệm không gian đệm trong hộp thoại
+                        .padding(12.dp)
                 ) {
                     Text(
                         text = word,
@@ -158,7 +177,6 @@ fun AnswerBottomSheet(
             }
             // ====== TRƯỜNG HỢP SAI (ĐÃ GỘP DÒNG) ======
             else if (!isCorrect && correctAnswer != null) {
-                // Gộp nhãn hiển thị và giá trị đáp án trên cùng 1 dòng để tránh xuống dòng trống trải
                 Text(
                     text = buildAnnotatedString {
                         withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
@@ -176,41 +194,14 @@ fun AnswerBottomSheet(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // Giảm khoảng cách đệm trước khi tới nút bấm chính
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ====== NÚT BẤM DẠNG PHẲNG ======
             FlatStyleButton(
                 text = btnText,
                 backgroundColor = mainColor,
                 onClick = onNextClicked
             )
-            Spacer(modifier = Modifier.height(8.dp)) // Thu nhỏ khoảng cách dưới cùng
+            Spacer(modifier = Modifier.height(8.dp))
         }
-    }
-}
-
-@Composable
-private fun FlatStyleButton(
-    text: String,
-    backgroundColor: Color,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(52.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .background(backgroundColor)
-            .clickable { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            color = Color.White,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold
-        )
     }
 }

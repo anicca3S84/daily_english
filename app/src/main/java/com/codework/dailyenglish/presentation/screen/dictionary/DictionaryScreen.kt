@@ -117,6 +117,7 @@ fun DictionaryScreen(
                                     WordResultCard(
                                         word = word,
                                         index = index,
+                                        showSelection = false,
                                         onClick = {
                                             focusManager.clearFocus()
                                             onEvent(DictionaryEvent.OnWordClick(word))

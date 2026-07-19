@@ -4,4 +4,6 @@ import com.codework.dailyenglish.core.base.BaseEffect
 
 sealed interface VocabularyListEffect : BaseEffect {
     object NavigateToFlashCard : VocabularyListEffect
+    data class NavigateToWordDetail(val wordId: String) : VocabularyListEffect
+
 }

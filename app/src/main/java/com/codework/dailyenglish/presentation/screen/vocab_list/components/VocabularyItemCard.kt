@@ -40,16 +40,17 @@ fun VocabularyItemCard(
     isSavedMode: Boolean,
     isSelected: Boolean,
     onSelectToggle: () -> Unit,
+    onCardClick: () -> Unit, // Thêm callback này
     onPlayAudio: () -> Unit,
     onToggleSave: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onSelectToggle() },
+            .clickable { onCardClick() }, // Thay đổi ở đây: Click vào Card sẽ kích hoạt chi tiết từ
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) Color(0xFFF0F7FF) else Color.White // Đổi màu nền nhẹ nếu được chọn
+            containerColor = if (isSelected) Color(0xFFF0F7FF) else Color.White
         ),
         border = BorderStroke(
             width = 1.dp,
@@ -70,7 +71,7 @@ fun VocabularyItemCard(
                 tint = if (isSelected) AppColors.BluePrimary else Color(0xFFCBD5E1),
                 modifier = Modifier
                     .size(24.dp)
-                    .clickable { onSelectToggle() }
+                    .clickable { onSelectToggle() } // Giữ nguyên ở đây: Click vào checkbox để chọn/bỏ chọn
             )
 
             Spacer(modifier = Modifier.width(14.dp))
@@ -85,7 +86,6 @@ fun VocabularyItemCard(
                         color = AppColors.TextMain
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    // Nút bấm phát âm dạng nhỏ cạnh chữ
                     Icon(
                         imageVector = Icons.Rounded.VolumeUp,
                         contentDescription = "Play Audio",

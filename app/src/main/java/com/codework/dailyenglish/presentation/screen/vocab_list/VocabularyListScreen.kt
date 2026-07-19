@@ -61,7 +61,6 @@ fun VocabularyListScreen(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
             )
         },
-
         floatingActionButton = {
             if (state.selectedWordIds.isNotEmpty()) {
                 Box(
@@ -150,12 +149,16 @@ fun VocabularyListScreen(
                             WordResultCard(
                                 word = word,
                                 index = index,
-                                isSavedMode = state.isSavedMode,
+                                showSelection = true,
+                                isSavedMode = word.isSaved,
                                 isSelected = isSelected,
                                 onClick = {
+                                    onEvent(VocabularyListEvent.OnWordClick(word.id))
+                                },
+                                onSelectToggle = {
                                     onEvent(VocabularyListEvent.OnSelectWordToggle(word.id))
                                 },
-                                onPlayAudio = { onEvent(VocabularyListEvent.OnPlayAudio(word)) },
+                                onPlayAudioUs = { onEvent(VocabularyListEvent.OnPlayAudio(word)) },
                                 onToggleSave = { onEvent(VocabularyListEvent.OnToggleSaveClick(word)) }
                             )
 

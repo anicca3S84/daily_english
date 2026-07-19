@@ -109,7 +109,12 @@ class VocabularyListViewModel @Inject constructor(
             }
 
             is VocabularyListEvent.OnRefresh -> {
-                loadSavedWords()
+                val currentTopicId = topicId
+                if (currentTopicId != null) {
+                    loadTopicWords(currentTopicId)
+                } else {
+                    loadSavedWords()
+                }
             }
 
             is VocabularyListEvent.OnSelectAllToggle -> {
@@ -122,6 +127,10 @@ class VocabularyListViewModel @Inject constructor(
                     }
                     currentState.copy(selectedWordIds = newSelected)
                 }
+            }
+
+            is VocabularyListEvent.OnWordClick -> {
+                sendEffect(VocabularyListEffect.NavigateToWordDetail(event.wordId))
             }
 
             is VocabularyListEvent.OnToggleSaveClick -> {
