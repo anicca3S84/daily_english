@@ -118,6 +118,7 @@ import kotlinx.coroutines.delay
 import com.codework.dailyenglish.core.session.SessionEvent
 import com.codework.dailyenglish.presentation.MainViewModel
 import com.codework.dailyenglish.presentation.components.AppAdManager // Import AdManager
+import com.codework.dailyenglish.presentation.components.SessionExpiredDialog
 import com.codework.dailyenglish.presentation.screen.user.UserInfoScreen
 import com.codework.dailyenglish.presentation.screen.user.UserInfoViewModel
 import com.codework.dailyenglish.presentation.screen.user.mvi.UserInfoEffect
@@ -144,12 +145,11 @@ fun NavGraph(
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
+    ) { _ ->
         navController.navigate(Route.HomeScreen) {
             popUpTo(Route.LoginScreen) { inclusive = true }
         }
     }
-
     val navigateToHomeWithPermissionCheck = {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val hasPermission = ContextCompat.checkSelfPermission(
@@ -175,19 +175,11 @@ fun NavGraph(
     }
 
     if (showSessionExpiredDialog) {
-        AlertDialog(
-            onDismissRequest = { /* Không cho tắt khi bấm ra ngoài */ },
-            title = { Text(text = "Phiên đăng nhập hết hạn") },
-            text = { Text(text = "Phiên làm việc của bạn đã kết thúc. Vui lòng đăng nhập lại để tiếp tục học tập.") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        navController.navigate(Route.LoginScreen) {
-                            popUpTo(navController.graph.id) { inclusive = true }
-                        }
-                    }
-                ) {
-                    Text(text = "Đăng nhập lại")
+        SessionExpiredDialog(
+            onConfirm = {
+                showSessionExpiredDialog = false
+                navController.navigate(Route.LoginScreen) {
+                    popUpTo(navController.graph.id) { inclusive = true }
                 }
             }
         )

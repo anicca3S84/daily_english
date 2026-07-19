@@ -18,6 +18,7 @@ import com.codework.dailyenglish.domain.auth.usecase.GetMyProfileUseCase
 import com.codework.dailyenglish.domain.user.usecase.GetUserInfoUseCase
 import com.codework.dailyenglish.core.utils.TextToSpeechParser
 import com.codework.dailyenglish.core.utils.VoiceToTextParser
+import com.codework.dailyenglish.domain.translate.usecase.TranslateTextUseCase
 import com.codework.dailyenglish.presentation.components.AppAdManager
 import com.codework.dailyenglish.presentation.screen.ai_speaking.mvi.AiSpeakingEffect
 import com.codework.dailyenglish.presentation.screen.ai_speaking.mvi.AiSpeakingEvent
@@ -41,6 +42,7 @@ class AiSpeakingViewModel @Inject constructor(
     private val getMyProfileUseCase: GetMyProfileUseCase,
     private val textToSpeechParser: TextToSpeechParser,
     private val voiceToTextParser: VoiceToTextParser,
+    private val translateTextUseCase: TranslateTextUseCase,
     savedStateHandle: SavedStateHandle
 ) : BaseViewModel<AiSpeakingState, AiSpeakingEvent, AiSpeakingEffect>(
     AiSpeakingState(uiState = BaseUiState(data = AiSpeakingUiData(), isLoading = true))
@@ -187,6 +189,47 @@ class AiSpeakingViewModel @Inject constructor(
             is AiSpeakingEvent.OnDismissSubscriptionPopup -> {
                 _state.update { it.copy(isShowPremiumUpgradeDialog = false) }
                 checkUserPremiumStatus()
+            }
+
+            is AiSpeakingEvent.OnTranslateMessage -> {
+                val originalText = event.message.text
+
+                if (_state.value.activeTranslations.contains(originalText)) {
+                    // Nếu đang hiển thị tiếng Việt -> Quay lại tiếng Anh gốc
+                    _state.update { state ->
+                        state.copy(activeTranslations = state.activeTranslations - originalText)
+                    }
+                } else {
+                    // Nếu đã từng dịch rồi -> Chỉ cần chuyển trạng thái hiển thị
+                    if (_state.value.translatedMessages.containsKey(originalText)) {
+                        _state.update { state ->
+                            state.copy(activeTranslations = state.activeTranslations + originalText)
+                        }
+                    } else {
+                        // Nếu chưa từng dịch -> Gọi UseCase dịch Anh sang Việt
+                        viewModelScope.launch {
+                            translateTextUseCase(
+                                text = originalText,
+                                sourceLang = "en",
+                                targetLang = "vi"
+                            ).onSuccess { result ->
+                                _state.update { state ->
+                                    state.copy(
+                                        translatedMessages = state.translatedMessages + (originalText to result.translatedText),
+                                        activeTranslations = state.activeTranslations + originalText
+                                    )
+                                }
+                            }.onError { err ->
+                                sendGlobalEffect(BaseEffect.ShowToast(err.asUiText()))
+                            }
+                        }
+                    }
+                }
+            }
+
+            // XỬ LÝ SỰ KIỆN PHÁT LẠI ÂM THANH
+            is AiSpeakingEvent.OnPlayMessageAudio -> {
+                playAiResponse(event.text)
             }
         }
     }

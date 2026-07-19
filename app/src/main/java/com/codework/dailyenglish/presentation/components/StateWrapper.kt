@@ -118,7 +118,15 @@ private fun <T> BoxScope.WrapperInnerContent(
     // 3. Xử lý hiển thị lỗi
     errorString?.let { message ->
         LaunchedEffect(message) {
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            // Kiểm tra xem thông báo lỗi có chứa từ khóa liên quan đến token hoặc hết hạn không
+            val isTokenError = message.contains("token", ignoreCase = true) ||
+                    message.contains("expired", ignoreCase = true) ||
+                    message.contains("unauthorized", ignoreCase = true)
+
+            // Chỉ hiển thị Toast nếu ĐÂY KHÔNG PHẢI là lỗi liên quan tới token
+            if (!isTokenError) {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            }
         }
 
         if (isDataEmpty) {

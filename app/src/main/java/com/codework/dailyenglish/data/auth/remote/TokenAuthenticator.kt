@@ -1,6 +1,8 @@
 package com.codework.dailyenglish.data.auth.remote
 
 import com.codework.dailyenglish.data.auth.local.datasource.AuthLocalDataSource
+import com.codework.dailyenglish.core.session.SessionEvent      // Thêm import này
+import com.codework.dailyenglish.core.session.SessionEventBus   // Thêm import này
 import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator
 import okhttp3.Request
@@ -11,7 +13,8 @@ import javax.inject.Provider
 
 class TokenAuthenticator @Inject constructor(
     private val authApiProvider: Provider<AuthApi>,
-    private val localDataSource: AuthLocalDataSource
+    private val localDataSource: AuthLocalDataSource,
+    private val sessionEventBus: SessionEventBus // 1. Inject SessionEventBus tại đây
 ) : Authenticator {
 
     override fun authenticate(route: Route?, response: Response): Request? {
@@ -63,8 +66,7 @@ class TokenAuthenticator @Inject constructor(
     private fun handleForceLogout() {
         runBlocking {
             localDataSource.clearSession()
-            // Tùy chọn: Gửi một sự kiện EventBus toàn cục hoặc Broadcast
-            // để MainActivity nhận biết và đá User về màn hình đăng nhập nếu đang ở trong App.
         }
+        sessionEventBus.emit(SessionEvent.ForceLogout)
     }
 }

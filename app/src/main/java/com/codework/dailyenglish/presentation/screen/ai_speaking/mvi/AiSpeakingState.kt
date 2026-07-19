@@ -23,5 +23,7 @@ data class AiSpeakingState(
     val remainingMessages: Int = 3,
     val maxCharLimit: Int = 150,
     val isShowLimitConfirmDialog: Boolean = false,
-    val isShowPremiumUpgradeDialog: Boolean = false
+    val isShowPremiumUpgradeDialog: Boolean = false,
+    val translatedMessages: Map<String, String> = emptyMap(),
+    val activeTranslations: Set<String> = emptySet(),
 )

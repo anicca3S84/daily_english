@@ -50,6 +50,11 @@ class VoiceToTextParser @Inject constructor() : RecognitionListener {
             stopListening()
         }
     }
+    fun reset() {
+        silenceJob?.cancel()
+        _state.update { VoiceToTextParserState() }
+    }
+
 
     private fun isNetworkAvailable(context: Context): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
@@ -197,7 +202,13 @@ class VoiceToTextParser @Inject constructor() : RecognitionListener {
     }
 
     override fun onError(error: Int) {
-        silenceJob?.cancel() // Hủy bộ đếm im lặng khi gặp lỗi
+        silenceJob?.cancel()
+
+        if (!_state.value.isListening) {
+            Log.d("VoiceToTextParser", "Bỏ qua onError mã $error vì không trong phiên nhận diện.")
+            return
+        }
+
         val errorMessage = when (error) {
             SpeechRecognizer.ERROR_AUDIO -> "Audio recording error"
             SpeechRecognizer.ERROR_CLIENT -> "Client side error"

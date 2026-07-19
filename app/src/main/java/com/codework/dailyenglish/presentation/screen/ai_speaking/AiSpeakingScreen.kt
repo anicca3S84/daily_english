@@ -199,7 +199,26 @@ fun AiSpeakingScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(data.messages) { msg ->
-                        EnhancedMessageBubble(message = msg)
+                        // Kiểm tra xem tin nhắn hiện tại có đang hiển thị bản dịch không
+                        val isTranslated = state.activeTranslations.contains(msg.text)
+                        val displayedText = if (isTranslated) {
+                            state.translatedMessages[msg.text] ?: msg.text
+                        } else {
+                            msg.text
+                        }
+
+                        EnhancedMessageBubble(
+                            message = msg,
+                            showFeatures = true, // CHỈ kích hoạt ở màn Agent này
+                            isTranslated = isTranslated,
+                            displayedText = displayedText,
+                            onTranslateClick = {
+                                onEvent(AiSpeakingEvent.OnTranslateMessage(msg))
+                            },
+                            onSpeakClick = {
+                                onEvent(AiSpeakingEvent.OnPlayMessageAudio(msg.text))
+                            }
+                        )
                     }
 
                     if (state.uiState.isRefreshing) {

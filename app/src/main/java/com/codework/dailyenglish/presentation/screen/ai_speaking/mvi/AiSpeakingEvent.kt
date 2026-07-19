@@ -1,5 +1,7 @@
 package com.codework.dailyenglish.presentation.screen.ai_speaking.mvi
 
+import com.codework.dailyenglish.domain.ai.model.ChatMessage
+
 sealed interface AiSpeakingEvent {
     data class OnSendMessage(val text: String) : AiSpeakingEvent
     data class OnToggleRecording(val context: android.content.Context) : AiSpeakingEvent
@@ -14,4 +16,6 @@ sealed interface AiSpeakingEvent {
     data object OnDismissLimitConfirmDialog : AiSpeakingEvent
     data object OnConfirmLimitUpgrade : AiSpeakingEvent
     data object OnDismissSubscriptionPopup : AiSpeakingEvent
+    data class OnTranslateMessage(val message: ChatMessage) : AiSpeakingEvent
+    data class OnPlayMessageAudio(val text: String) : AiSpeakingEvent
 }

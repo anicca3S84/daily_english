@@ -211,7 +211,10 @@ class AiViewModel @Inject constructor(
                     val finalSpeechText = voiceState.spokenText
                     _state.update { it.copy(voiceCapturedText = "") }
                     sendMessage(finalSpeechText)
-                    voiceToTextParser.stopListening()
+
+                    // XÓA BỎ: voiceToTextParser.stopListening()
+                    // THAY THẾ BẰNG:
+                    voiceToTextParser.reset() // Reset trạng thái StateFlow của parser để chuẩn bị cho lần sau
                 }
 
                 voiceState.error?.let { err ->
