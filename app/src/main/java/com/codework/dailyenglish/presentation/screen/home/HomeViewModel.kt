@@ -35,7 +35,9 @@ class HomeViewModel @Inject constructor(
             HomeEvent.OnEnterHomeScreen -> loadHomeData()
             HomeEvent.OnContinueLesson -> { /* TODO */ }
             HomeEvent.OnDailyQuestClick -> toggleDailyQuest()
-            HomeEvent.OnProfileClick -> {}
+            HomeEvent.OnProfileClick -> {
+                sendEffect(HomeEffect.NavigateToProfile)
+            }
             HomeEvent.OnRetry -> loadHomeData()
             HomeEvent.OnQuickActionGemini -> sendEffect(HomeEffect.NavigateToAi)
             HomeEvent.OnQuickActionDictionary -> sendEffect(HomeEffect.NavigateToDictionary)

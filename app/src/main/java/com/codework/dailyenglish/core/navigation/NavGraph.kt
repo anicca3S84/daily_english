@@ -217,7 +217,8 @@ fun NavGraph(
                     )
 
                     is HomeEffect.NavigateToTranslate -> navController.navigateWithAd(context, Route.TranslateScreen)
-                    is HomeEffect.NavigateToSubscription -> navController.navigate(Route.SubscriptionScreen) // Không quảng cáo khi người dùng muốn mua VIP
+                    is HomeEffect.NavigateToProfile -> navController.navigateWithAd(context, Route.UserInfoScreen)
+                    is HomeEffect.NavigateToSubscription -> navController.navigate(Route.SubscriptionScreen)
                     else -> {}
                 }
             }

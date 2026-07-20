@@ -35,7 +35,8 @@ fun HomeHeader(
     avatarUrl: String?,
     isPremium: Boolean,
     onPremiumClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
 ) {
     Row(
         modifier = modifier
@@ -48,8 +49,11 @@ fun HomeHeader(
             contentDescription = "User Avatar",
             modifier = Modifier
                 .size(46.dp)
-                .clip(CircleShape),
-            contentScale = ContentScale.Crop
+                .clip(CircleShape)
+                .clickable{
+                    onClick()
+                },
+            contentScale = ContentScale.Crop,
         )
 
         Spacer(modifier = Modifier.width(16.dp))

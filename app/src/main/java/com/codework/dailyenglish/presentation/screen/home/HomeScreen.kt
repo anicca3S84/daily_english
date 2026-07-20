@@ -44,7 +44,6 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(top = paddingValues.calculateTopPadding())
         ) {
-            // Tích hợp PullToRefreshBox để người dùng vuốt kéo tải lại toàn bộ thông tin màn hình Home
             PullToRefreshBox(
                 isRefreshing = state.weeklyStatsState.isRefreshing,
                 onRefresh = { onEvent(HomeEvent.OnRetry) },
@@ -79,7 +78,8 @@ fun HomeContent(
                 name = state.userName,
                 avatarUrl = state.avatarUrl,
                 isPremium = state.isPremium,
-                onPremiumClick  = { onEvent(HomeEvent.OnPremiumCrownClick) }
+                onPremiumClick  = { onEvent(HomeEvent.OnPremiumCrownClick) },
+                onClick = {onEvent(HomeEvent.OnProfileClick)}
             )
         }
 
@@ -133,23 +133,19 @@ fun HomeContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // StateWrapper quản lý riêng cho phần biểu đồ học tập
             StateWrapper(
                 uiState = state.weeklyStatsState,
                 modifier = Modifier
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 200.dp),
                 loadingType = LoadingType.CIRCULAR,
-                enablePullToRefresh = false, // Tắt kéo ở đây vì đã bọc PullToRefresh ở ngoài HomeScreen
+                enablePullToRefresh = false,
                 onRetry = { onEvent(HomeEvent.OnRetry) }
             ) { data ->
 
-                // --- ĐOẠN XỬ LÝ TRÁNH ĐÈ GIAO DIỆN ---
                 if (state.weeklyStatsState.error != null && (data == null || data.isEmpty())) {
-                    // Trả về một Box trống cao 200.dp để ErrorOverlay tự căn giữa gọn gàng dưới tiêu đề
                     Box(modifier = Modifier.fillMaxWidth().height(200.dp))
                 } else {
-                    // Nếu có dữ liệu, hiển thị biểu đồ thống kê học tập bình thường
                     WeeklyProgressCard(weeklyStats = data ?: emptyList())
                 }
             }
