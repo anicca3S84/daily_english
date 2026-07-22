@@ -1,7 +1,6 @@
 package com.codework.dailyenglish.presentation.screen.subscription.components
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,13 +13,12 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.Button
@@ -34,10 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
@@ -48,14 +42,18 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import com.codework.dailyenglish.core.base.BaseUiState
+import com.codework.dailyenglish.domain.subscription.model.PaymentDetails
+import com.codework.dailyenglish.presentation.components.StateWrapper
 
 @Composable
 fun PaymentSectionContent(
-    paymentDetails: com.codework.dailyenglish.domain.subscription.model.PaymentDetails,
+    paymentUiState: BaseUiState<PaymentDetails>, // Thay đổi từ paymentDetails sang paymentUiState
     isPaymentSuccess: Boolean,
     onBackToSelection: () -> Unit,
     onClose: () -> Unit,
     onCopyClick: () -> Unit,
+    onRetryPayment: () -> Unit, // Thêm lambda để xử lý khi nhấn "Try again" nếu có lỗi
     BluePrimary: Color
 ) {
     val textDark = Color(0xFF1E293B)
@@ -142,81 +140,98 @@ fun PaymentSectionContent(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Box(
+                // Bọc khu vực QR và Reference vào StateWrapper để quản lý trạng thái loading/error
+                StateWrapper(
+                    uiState = paymentUiState,
                     modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .aspectRatio(1f)
-                        .background(Color.White, shape = RoundedCornerShape(24.dp))
-                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(24.dp))
-                        .clip(RoundedCornerShape(24.dp))
-                ) {
-                    AsyncImage(
-                        model = paymentDetails.qrCodeUrl,
-                        contentDescription = "QR Code",
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(12.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Column(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = "Reference",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = textLight,
-                            fontSize = 14.sp
-                        ),
-                        modifier = Modifier.padding(start = 4.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                            .background(Color(0xFFF1F5F9), shape = RoundedCornerShape(12.dp))
-                            .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(12.dp))
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable {
-                                clipboardManager.setText(AnnotatedString(paymentDetails.transactionRef))
-                                onCopyClick()
-                            }
-                            .padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = paymentDetails.transactionRef,
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = textDark,
-                                fontSize = 16.sp
-                            )
-                        )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        .fillMaxWidth()
+                        .heightIn(min = 320.dp), // Đặt chiều cao tối thiểu để Spinner hiển thị ở trung tâm khi đang tải
+                    onRetry = onRetryPayment
+                ) { paymentDetails ->
+                    // Sử dụng khối an toàn để đảm bảo dữ liệu đã tải xong mới dựng layout này lên
+                    paymentDetails?.let { details ->
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.ContentCopy,
-                                contentDescription = "Copy Reference",
-                                tint = BluePrimary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Text(
-                                text = "Copy",
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = BluePrimary,
-                                    fontSize = 14.sp
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(0.9f)
+                                    .aspectRatio(1f)
+                                    .background(Color.White, shape = RoundedCornerShape(24.dp))
+                                    .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(24.dp))
+                                    .clip(RoundedCornerShape(24.dp))
+                            ) {
+                                AsyncImage(
+                                    model = details.qrCodeUrl,
+                                    contentDescription = "QR Code",
+                                    contentScale = ContentScale.Fit,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(12.dp)
                                 )
-                            )
+                            }
+
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            Column(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Reference",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = textLight,
+                                        fontSize = 14.sp
+                                    ),
+                                    modifier = Modifier.padding(start = 4.dp)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(56.dp)
+                                        .background(Color(0xFFF1F5F9), shape = RoundedCornerShape(12.dp))
+                                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(12.dp))
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .clickable {
+                                            clipboardManager.setText(AnnotatedString(details.transactionRef))
+                                            onCopyClick()
+                                        }
+                                        .padding(horizontal = 16.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = details.transactionRef,
+                                        style = MaterialTheme.typography.bodyLarge.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = textDark,
+                                            fontSize = 16.sp
+                                        )
+                                    )
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.ContentCopy,
+                                            contentDescription = "Copy Reference",
+                                            tint = BluePrimary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Text(
+                                            text = "Copy",
+                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = BluePrimary,
+                                                fontSize = 14.sp
+                                            )
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }

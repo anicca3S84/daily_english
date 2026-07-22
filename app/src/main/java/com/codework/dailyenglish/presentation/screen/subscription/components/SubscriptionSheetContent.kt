@@ -30,7 +30,7 @@ fun SubscriptionSheetContent(
     state: SubscriptionState,
     onEvent: (SubscriptionEvent) -> Unit,
     onClose: () -> Unit,
-    onCopySuccess:() -> Unit
+    onCopySuccess: () -> Unit
 ) {
     val textDark = Color(0xFF1E293B)
     val textLight = Color(0xFF64748B)
@@ -78,22 +78,18 @@ fun SubscriptionSheetContent(
                     BluePrimary = AppColors.BluePrimary
                 )
             }
+            // Trạng thái đang tải QR hoặc đã có dữ liệu QR
             state.paymentUiState.data != null || state.paymentUiState.isLoading -> {
-                StateWrapper(
-                    uiState = state.paymentUiState,
-                    onRetry = { onEvent(SubscriptionEvent.OnBuyClick) }
-                ) { paymentDetails ->
-                    if (paymentDetails != null) {
-                        PaymentSectionContent(
-                            paymentDetails = paymentDetails,
-                            isPaymentSuccess = state.isPaymentSuccess,
-                            onBackToSelection = { onEvent(SubscriptionEvent.OnDismissBottomSheet) },
-                            onClose = onClose,
-                            BluePrimary = AppColors.BluePrimary,
-                            onCopyClick = { onCopySuccess() }
-                        )
-                    }
-                }
+                // Gọi trực tiếp PaymentSectionContent và truyền paymentUiState vào trong
+                PaymentSectionContent(
+                    paymentUiState = state.paymentUiState,
+                    isPaymentSuccess = state.isPaymentSuccess,
+                    onBackToSelection = { onEvent(SubscriptionEvent.OnDismissBottomSheet) },
+                    onClose = onClose,
+                    onCopyClick = { onCopySuccess() },
+                    onRetryPayment = { onEvent(SubscriptionEvent.OnBuyClick) },
+                    BluePrimary = AppColors.BluePrimary
+                )
             }
             else -> {
                 StateWrapper(
