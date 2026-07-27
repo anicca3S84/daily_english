@@ -14,7 +14,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,10 +23,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.codework.dailyenglish.presentation.components.AppConfirmDialog
-import com.codework.dailyenglish.presentation.components.AppTopBar // BỔ SUNG TOP BAR DÙNG CHUNG
+import com.codework.dailyenglish.presentation.components.AppTopBar
 import com.codework.dailyenglish.presentation.components.StateWrapper
 import com.codework.dailyenglish.presentation.screen.ai.components.EnhancedMessageBubble
-import com.codework.dailyenglish.presentation.screen.ai.components.HistoryDrawerContent // BỔ SUNG DRAWER LỊCH SỬ
+import com.codework.dailyenglish.presentation.screen.ai.components.HistoryDrawerContent
 import com.codework.dailyenglish.presentation.screen.ai.components.ModernTypingIndicator
 import com.codework.dailyenglish.presentation.screen.ai_speaking.components.SpeakingInputBar
 import com.codework.dailyenglish.presentation.screen.ai_speaking.components.SuggestionDropdown
@@ -47,7 +46,6 @@ fun AiSpeakingScreen(
     val listState = rememberLazyListState()
     val context = LocalContext.current
 
-    // BỔ SUNG CẤU HÌNH DRAWER
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -102,7 +100,6 @@ fun AiSpeakingScreen(
         )
     }
 
-    // BỔ SUNG MODAL NAVIGATION DRAWER CHO AI AGENT
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -122,7 +119,6 @@ fun AiSpeakingScreen(
         Scaffold(
             containerColor = Color(0xFFF8FAFC),
             topBar = {
-                // THAY THẾ CENTER ALIGNED TOP APP BAR BẰNG APP TOP BAR ĐỂ MỞ DRAWER
                 AppTopBar(
                     onBackClick = onBackClick,
                     onMenuClick = { scope.launch { drawerState.open() } },
@@ -199,7 +195,6 @@ fun AiSpeakingScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(data.messages) { msg ->
-                        // Kiểm tra xem tin nhắn hiện tại có đang hiển thị bản dịch không
                         val isTranslated = state.activeTranslations.contains(msg.text)
                         val displayedText = if (isTranslated) {
                             state.translatedMessages[msg.text] ?: msg.text
@@ -209,7 +204,7 @@ fun AiSpeakingScreen(
 
                         EnhancedMessageBubble(
                             message = msg,
-                            showFeatures = true, // CHỈ kích hoạt ở màn Agent này
+                            showFeatures = true,
                             isTranslated = isTranslated,
                             displayedText = displayedText,
                             onTranslateClick = {

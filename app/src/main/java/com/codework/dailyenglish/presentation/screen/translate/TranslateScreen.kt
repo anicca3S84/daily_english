@@ -57,10 +57,8 @@ fun TranslateScreen(
     val clipboardManager = LocalClipboardManager.current
     val focusManager = LocalFocusManager.current
 
-    // SỬA LỖI: Tạo một biến cờ để kiểm soát việc ngắt ghi âm
     var wasRecording by remember { mutableStateOf(false) }
 
-    // CHỈ đóng bàn phím và clear focus khi TRẠNG THÁI GHI ÂM (isRecording) chuyển từ true -> false
     LaunchedEffect(state.isRecording) {
         if (wasRecording && !state.isRecording) {
             keyboardController?.hide()
@@ -155,7 +153,6 @@ fun TranslateScreen(
                             }
                         },
                         onMicClick = {
-                            // Gõ phím vẫn thoải mái, chỉ đóng khi chủ động bấm mic
                             keyboardController?.hide()
                             focusManager.clearFocus()
                             if (hasMicPermission) {

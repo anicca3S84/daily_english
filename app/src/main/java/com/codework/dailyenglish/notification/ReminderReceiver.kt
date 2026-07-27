@@ -23,7 +23,7 @@ class ReminderReceiver : BroadcastReceiver() {
             context,
             0,
             openAppIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE // Dùng cờ IMMUTABLE theo chuẩn bảo mật
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val notification = NotificationCompat.Builder(context, channelId)
@@ -31,8 +31,8 @@ class ReminderReceiver : BroadcastReceiver() {
             .setContentTitle("Protect Your Learning Streak!")
             .setContentText("Don't let your hard-earned English learning streak end. Keep learning today and stay on track!")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setContentIntent(openAppPendingIntent) // <-- THÊM DÒNG NÀY ĐỂ CLICK VÀO MỞ APP
-            .setAutoCancel(true) // Tự động xóa thông báo sau khi click
+            .setContentIntent(openAppPendingIntent)
+            .setAutoCancel(true)
             .build()
 
         notificationManager.notify(notificationId, notification)

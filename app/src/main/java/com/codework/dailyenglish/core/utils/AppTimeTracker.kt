@@ -19,29 +19,25 @@ import kotlinx.coroutines.isActive
 fun AppTimeTracker(
     onSaveSessionTime: (Int) -> Unit
 ) {
-    // Biến lưu trữ thời gian tạm thời trong bộ nhớ RAM
     var accumulatedSeconds by remember { mutableStateOf(0) }
 
-    // 1. Chạy hiệu ứng đếm giây
     LaunchedEffect(Unit) {
         while (isActive) {
-            delay(1000L) // Đếm mỗi 1 giây
+            delay(1000L)
             accumulatedSeconds++
         }
     }
 
-    // 2. TỰ ĐỘNG LƯU ĐỊNH KỲ (Ví dụ: Cứ sau mỗi 60 giây thì lưu xuống Local một lần)
     LaunchedEffect(Unit) {
         while (isActive) {
-            delay(60000L) // 60 giây (bạn có thể đổi thành 180000L cho 3 phút)
+            delay(60000L)
             if (accumulatedSeconds > 0) {
                 onSaveSessionTime(accumulatedSeconds)
-                accumulatedSeconds = 0 // Reset lại bộ đếm RAM sau khi đã ghi xuống Local
+                accumulatedSeconds = 0
             }
         }
     }
 
-    // 3. LƯU LẦN CUỐI KHI DISPOSE (Tắt app, Logout)
     DisposableEffect(Unit) {
         onDispose {
             if (accumulatedSeconds > 0) {

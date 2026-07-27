@@ -19,8 +19,6 @@ class TokenAuthenticator @Inject constructor(
 ) : Authenticator {
 
     override fun authenticate(route: Route?, response: Response): Request? {
-        // 1. CHẶN VÒNG LẶP: Nếu request bị lỗi 401 chính là API refresh token,
-        // trả về null để OkHttp dừng lại và ném lỗi ra ngoài, tránh lặp vô tận.
         if (response.request.url.encodedPath.contains("auth/refresh")) {
             return null
         }
@@ -60,7 +58,6 @@ class TokenAuthenticator @Inject constructor(
                         .header("Authorization", "Bearer $newAccessToken")
                         .build()
                 } else {
-                    // Nếu gọi refresh thất bại (ví dụ trả về 401 do hết hạn)
                     handleForceLogout()
                     null
                 }

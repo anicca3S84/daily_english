@@ -9,7 +9,6 @@ class AppPreferencesImpl @Inject constructor(
     context: Context
 ) : AppPreferences {
 
-    // Khởi tạo SharedPreferences (Có sẵn trong Android SDK, không cần thư viện)
     private val prefs: SharedPreferences = context.getSharedPreferences(
         "daily_english_prefs",
         Context.MODE_PRIVATE

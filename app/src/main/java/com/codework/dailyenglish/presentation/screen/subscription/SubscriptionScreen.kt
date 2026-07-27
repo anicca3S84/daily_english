@@ -12,7 +12,6 @@ import com.codework.dailyenglish.presentation.components.AppBottomSheet
 import com.codework.dailyenglish.presentation.screen.subscription.components.SubscriptionSheetContent
 import com.codework.dailyenglish.presentation.screen.subscription.mvi.*
 
-// Trong file SubscriptionPopup.kt
 
 @Composable
 fun SubscriptionPopup(

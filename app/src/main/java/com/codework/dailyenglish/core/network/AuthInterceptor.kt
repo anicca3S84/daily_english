@@ -14,7 +14,6 @@ class AuthInterceptor @Inject constructor(
         val originalRequest = chain.request()
         val requestUrl = originalRequest.url.encodedPath
 
-//        var currentLanguage = Locale.getDefault().language.uppercase()
         var currentLanguage = "EN" //TODO(Multiple Languages)
         if (currentLanguage != "VI" && currentLanguage != "EN") {
             currentLanguage = "EN"
@@ -23,7 +22,6 @@ class AuthInterceptor @Inject constructor(
         val requestBuilder = originalRequest.newBuilder()
             .addHeader("Accept-Language", currentLanguage)
 
-        // Nếu URL chứa "/auth" nhưng KHÔNG PHẢI là "/auth/logout" thì mới bỏ qua việc thêm token
         if (requestUrl.contains("/auth") && !requestUrl.contains("/auth/logout")) {
             return chain.proceed(requestBuilder.build())
         }

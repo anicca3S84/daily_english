@@ -36,13 +36,11 @@ class AuthRepositoryImpl @Inject constructor(
                         AppError.Validation("Refresh Token is missing")
                     )
 
-                    // Lưu local
                     localDataSource.saveTokens(accessToken, refreshToken)
                     localDataSource.saveUser(userDomain)
 
                     AppResult.Success(userDomain)
                 } catch (e: Exception) {
-                    // Bắt các lỗi xảy ra trong quá trình lưu local hoặc lỗi xử lý logic cục bộ
                     AppResult.Error(AppError.Unknown(e), message = "Lỗi xử lý dữ liệu nội bộ")
                 }
             }

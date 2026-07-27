@@ -127,11 +127,10 @@ fun LeaderboardScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f), // Chiếm trọn không gian còn lại và tự cuộn bên trong
+                        .weight(1f),
                     contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Cục bục vinh quang (Top 1, 2, 3) nay nằm ở vị trí đầu tiên của List cuộn
                     item {
                         Spacer(modifier = Modifier.height(12.dp))
                         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -172,7 +171,6 @@ fun LeaderboardScreen(
                         Spacer(modifier = Modifier.height(32.dp))
                     }
 
-                    // Danh sách các user xếp hạng sau Top 3
                     items(items = remainingUsers, key = { it.userId }) { user ->
                         LeaderboardRowItem(user = user, isStreak = isStreak)
                     }

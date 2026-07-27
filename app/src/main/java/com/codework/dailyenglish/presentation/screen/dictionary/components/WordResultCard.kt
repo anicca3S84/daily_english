@@ -90,7 +90,7 @@ fun WordResultCard(
     index: Int = 0,
     isSavedMode: Boolean = false,
     isSelected: Boolean = false,
-    showSelection: Boolean = false,       // Mặc định ẩn ô tích chọn
+    showSelection: Boolean = false,
     onClick: () -> Unit = {},
     onSelectToggle: () -> Unit = {},
     onPlayAudio: () -> Unit = {},
@@ -124,7 +124,6 @@ fun WordResultCard(
                 .height(IntrinsicSize.Min),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Thanh màu đứng bên trái
             Box(
                 modifier = Modifier
                     .width(6.dp)
@@ -138,7 +137,6 @@ fun WordResultCard(
                     .background(theme.primaryColor)
             )
 
-            // Hiển thị nút tích chọn nếu showSelection = true
             if (showSelection) {
                 IconButton(
                     onClick = onSelectToggle,
@@ -153,7 +151,6 @@ fun WordResultCard(
                 }
             }
 
-            // Tự động căn lề trái dựa vào việc có hiển thị nút chọn hay không
             val paddingStart = if (showSelection) 0.dp else 14.dp
 
             Column(
@@ -173,7 +170,6 @@ fun WordResultCard(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Giới hạn độ dài của từ để tránh đè lên nhãn phân loại loại từ
                             Text(
                                 text = word.word,
                                 style = MaterialTheme.typography.titleMedium,
@@ -215,7 +211,6 @@ fun WordResultCard(
                                 color = Color(0xFFCBD5E1),
                                 fontSize = 13.sp
                             )
-                            // Sử dụng weight(1f) để nghĩa của từ tự động xuống dòng khi quá dài
                             Text(
                                 text = word.meaning,
                                 style = MaterialTheme.typography.bodyMedium,
@@ -264,7 +259,6 @@ fun WordResultCard(
                                 onClick = onToggleSave,
                                 modifier = Modifier.fillMaxSize()
                             ) {
-                                // Đã cập nhật: Sử dụng biến isWordSaved để tự động tô màu đúng trạng thái
                                 Icon(
                                     imageVector = if (isWordSaved) Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder,
                                     contentDescription = "Save Word",

@@ -40,7 +40,6 @@ class LeaderboardViewModel @Inject constructor(
     }
 
     private fun fetchLeaderboard() {
-        // Thêm data = null để xóa danh sách cũ trước khi gọi API mới
         _state.update {
             it.copy(
                 leaderboardState = it.leaderboardState.copy(

@@ -62,7 +62,6 @@ fun RecentSearchList(
                         color = Color(0xFF1F2937)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    // Nút X để xóa nhanh từ này khỏi lịch sử
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Delete",

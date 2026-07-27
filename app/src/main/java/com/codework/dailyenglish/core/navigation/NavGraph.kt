@@ -132,7 +132,7 @@ fun NavGraph(
     startDestination: Any,
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current // Lấy context của ứng dụng tại đây
+    val context = LocalContext.current
     var showSessionExpiredDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -158,16 +158,13 @@ fun NavGraph(
             ) == PackageManager.PERMISSION_GRANTED
 
             if (hasPermission) {
-                // Đã có quyền, chuyển thẳng sang Home
                 navController.navigate(Route.HomeScreen) {
                     popUpTo(Route.LoginScreen) { inclusive = true }
                 }
             } else {
-                // Chưa có quyền, kích hoạt hộp thoại xin quyền của hệ thống
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         } else {
-            // Các phiên bản Android thấp hơn API 33 không cần xin quyền động
             navController.navigate(Route.HomeScreen) {
                 popUpTo(Route.LoginScreen) { inclusive = true }
             }
@@ -208,7 +205,6 @@ fun NavGraph(
         composableScreen<Route.HomeScreen, HomeViewModel, HomeState, HomeEvent, HomeEffect>(
             onNavigate = { effect ->
                 when (effect) {
-                    // Áp dụng quảng cáo giãn cách 3 phút cho các tính năng chính từ màn hình Home
                     is HomeEffect.NavigateToAi -> navController.navigateWithAd(context, Route.AIScreen)
                     is HomeEffect.NavigateToDictionary -> navController.navigateWithAd(context, Route.DictionaryScreen)
                     is HomeEffect.NavigateToSavedWord -> navController.navigateWithAd(
@@ -269,7 +265,6 @@ fun NavGraph(
                 when (effect) {
                     is LessonEffect.NavigateBack -> navController.popBackStack()
                     is LessonEffect.NavigateToResult -> {
-                        // Chuyển sang màn hình kết quả sau khi hoàn thành bài học
                         navController.navigate(
                             Route.LessonResultScreen(
                                 scorePercentage = effect.scorePercentage,
@@ -570,7 +565,7 @@ fun NavGraph(
                     val shouldRefresh = savedStateHandle.get<Boolean>("should_refresh") ?: false
                     if (shouldRefresh) {
                         onEvent(VocabularyListEvent.OnRefresh)
-                        savedStateHandle["should_refresh"] = false // Reset lại cờ sau khi đã làm mới
+                        savedStateHandle["should_refresh"] = false
                     }
                 }
             }
@@ -607,13 +602,12 @@ fun NavGraph(
             val currentEntry by navController.currentBackStackEntryAsState()
             LaunchedEffect(currentEntry) {
                 val entry = currentEntry ?: return@LaunchedEffect
-                // Kiểm tra xem đích đến hiện tại có phải là màn TopicWordsScreen hay không
                 if (entry.destination.route?.contains("TopicWordsScreen") == true) {
                     val savedStateHandle = entry.savedStateHandle
                     val shouldRefresh = savedStateHandle.get<Boolean>("should_refresh") ?: false
                     if (shouldRefresh) {
                         onEvent(VocabularyListEvent.OnRefresh)
-                        savedStateHandle["should_refresh"] = false // Reset lại cờ sau khi đã làm mới
+                        savedStateHandle["should_refresh"] = false
                     }
                 }
             }
@@ -737,11 +731,6 @@ fun NavGraph(
         }
     }
 }
-
-// =========================================================================
-// HÀM MỞ RỘNG TIỆN ÍCH HỖ TRỢ CHUYỂN TRANG CÓ QUẢNG CÁO XEN KẼ
-// BẠN CÓ THỂ ĐỂ LUÔN ĐOẠN NÀY DƯỚI ĐÂY MÀ KHÔNG CẦN TẠO FILE MỚI
-// =========================================================================
 
 fun NavController.navigateWithAd(
     context: Context,

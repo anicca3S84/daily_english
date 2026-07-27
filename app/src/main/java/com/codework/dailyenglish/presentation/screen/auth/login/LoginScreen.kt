@@ -84,8 +84,6 @@ fun LoginScreen(
                 drawPath(path, color = Color(0xFFEFF6FF))
             }
 
-            // 2. Các họa tiết trang trí xung quanh (Vòng tròn và Ngôi sao bốn cánh)
-            // Vòng tròn nét đứt/nhạt góc trên bên trái
             OutlineCircle(
                 color = Color(0xFFDBEAFE),
                 modifier = Modifier
@@ -93,7 +91,6 @@ fun LoginScreen(
                     .size(22.dp)
             )
 
-            // Ngôi sao vàng góc trên bên phải
             SparkleIcon(
                 color = Color(0xFFFBBF24),
                 modifier = Modifier
@@ -102,7 +99,6 @@ fun LoginScreen(
                     .size(16.dp)
             )
 
-            // Ngôi sao xanh dương bên trái giữa màn hình
             SparkleIcon(
                 color = Color(0xFF60A5FA),
                 modifier = Modifier
@@ -110,7 +106,6 @@ fun LoginScreen(
                     .size(20.dp)
             )
 
-            // Vòng tròn nhạt bên phải trên ảnh minh họa
             OutlineCircle(
                 color = Color(0xFFDBEAFE),
                 modifier = Modifier
@@ -119,7 +114,6 @@ fun LoginScreen(
                     .size(14.dp)
             )
 
-            // Ngôi sao xanh dương nhỏ bên phải giữa màn hình
             SparkleIcon(
                 color = Color(0xFF60A5FA),
                 modifier = Modifier
@@ -128,7 +122,6 @@ fun LoginScreen(
                     .size(12.dp)
             )
 
-            // Nội dung chính của màn hình
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -162,7 +155,6 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(Spaces.Space12))
 
-                // Mô tả phụ
                 Text(
                     text = "Learn English every day,\nimprove step by step.",
                     fontSize = 16.sp,
@@ -184,7 +176,6 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(Spaces.Space40))
 
-                // Nút "Continue with Google"
                 OutlinedButton(
                     onClick = {
                         coroutineScope.launch {
@@ -227,7 +218,6 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(Spaces.Space24))
 
-                // Cam kết bảo mật phía cuối cùng
                 val inlineContent = mapOf(
                     "lock" to InlineTextContent(
                         Placeholder(
@@ -260,7 +250,6 @@ fun LoginScreen(
     }
 }
 
-// Composable bổ trợ vẽ ngôi sao lấp lánh bằng Canvas
 @Composable
 fun SparkleIcon(color: Color, modifier: Modifier = Modifier) {
     Canvas(modifier = modifier) {
@@ -275,7 +264,6 @@ fun SparkleIcon(color: Color, modifier: Modifier = Modifier) {
     }
 }
 
-// Composable bổ trợ vẽ vòng tròn rỗng
 @Composable
 fun OutlineCircle(color: Color, modifier: Modifier = Modifier) {
     Canvas(modifier = modifier) {

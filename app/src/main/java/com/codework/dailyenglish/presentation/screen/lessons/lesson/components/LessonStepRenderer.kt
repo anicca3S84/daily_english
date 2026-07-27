@@ -18,10 +18,10 @@ import com.codework.dailyenglish.presentation.utils.calculateSimilarity
 fun LessonStepRenderer(
     modifier: Modifier = Modifier,
     step: LessonStep,
-    voiceState: VoiceToTextParserState, // Thêm tham số nhận voiceState
+    voiceState: VoiceToTextParserState,
     onAnswerInput: (String, List<Int>) -> Unit,
-    onStartSpeech: () -> Unit, // Callback start
-    onStopSpeech: () -> Unit,   // Callback stop
+    onStartSpeech: () -> Unit,
+    onStopSpeech: () -> Unit,
     onPlayAudio: (String?, String, Float) -> Unit = { _, _, _ -> },
     onToggleSaveWord: (String) -> Unit = {}
 ) {
@@ -97,7 +97,7 @@ fun LessonStepRenderer(
                         initialAnswer = stepData.userAnswer,
                         isEvaluated = stepData.isAnswerEvaluated,
                         isCorrect = stepData.isCorrect,
-                        score = scoreVal, // TRUYỀN ĐIỂM SỐ ĐÃ TÍNH TOÁN VÀO ĐÂY
+                        score = scoreVal,
                         voiceState = voiceState,
                         onStartSpeech = onStartSpeech,
                         onStopSpeech = onStopSpeech,

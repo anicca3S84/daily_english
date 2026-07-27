@@ -36,8 +36,8 @@ import javax.inject.Inject
 @HiltViewModel
 class AiSpeakingViewModel @Inject constructor(
     private val sendAgentMessageUseCase: SendAgentMessageUseCase,
-    private val getAgentHistorySessionsUseCase: GetAgentHistorySessionsUseCase, // BỔ SUNG
-    private val getSessionMessagesUseCase: GetSessionMessagesUseCase, // BỔ SUNG
+    private val getAgentHistorySessionsUseCase: GetAgentHistorySessionsUseCase,
+    private val getSessionMessagesUseCase: GetSessionMessagesUseCase,
     private val getUserInfoUseCase: GetUserInfoUseCase,
     private val getMyProfileUseCase: GetMyProfileUseCase,
     private val textToSpeechParser: TextToSpeechParser,
@@ -59,13 +59,12 @@ class AiSpeakingViewModel @Inject constructor(
                 )
             )
         }
-        loadHistory() // BỔ SUNG LOAD LỊCH SỬ
+        loadHistory()
         checkUserPremiumStatus()
         observeVoiceInput()
         sendInitMessage()
     }
 
-    // BỔ SUNG HÀM TẢI LỊCH SỬ THEO TOPIC_ID CỦA AGENT
     private fun loadHistory() {
         viewModelScope.launch {
             getAgentHistorySessionsUseCase(type = "AGENT", topicId = topicId)
@@ -89,7 +88,7 @@ class AiSpeakingViewModel @Inject constructor(
                     maxCharLimit = if (initialPremium) 300 else 150
                 )
             }
-            AppAdManager.isPremiumUser = initialPremium // <--- THÊM DÒNG NÀY
+            AppAdManager.isPremiumUser = initialPremium
 
             getMyProfileUseCase().onSuccess { freshUser ->
                 _state.update {
@@ -99,7 +98,7 @@ class AiSpeakingViewModel @Inject constructor(
                         maxCharLimit = if (freshUser.isPremium) 300 else it.maxCharLimit
                     )
                 }
-                AppAdManager.isPremiumUser = freshUser.isPremium // <--- THÊM DÒNG NÀY
+                AppAdManager.isPremiumUser = freshUser.isPremium
             }
         }
     }
@@ -123,7 +122,6 @@ class AiSpeakingViewModel @Inject constructor(
             }
             is AiSpeakingEvent.OnStopRecording -> stopRecording()
 
-            // BỔ SUNG XỬ LÝ SỰ KIỆN NEW CHAT CHO AGENT
             AiSpeakingEvent.OnNewChat -> {
                 textToSpeechParser.release()
                 _state.update { state ->
@@ -140,7 +138,6 @@ class AiSpeakingViewModel @Inject constructor(
                 loadHistory()
             }
 
-            // BỔ SUNG XỬ LÝ SỰ KIỆN LOAD SESSION CHO AGENT
             is AiSpeakingEvent.OnLoadSession -> {
                 textToSpeechParser.release()
                 _state.update { state ->
@@ -195,18 +192,15 @@ class AiSpeakingViewModel @Inject constructor(
                 val originalText = event.message.text
 
                 if (_state.value.activeTranslations.contains(originalText)) {
-                    // Nếu đang hiển thị tiếng Việt -> Quay lại tiếng Anh gốc
                     _state.update { state ->
                         state.copy(activeTranslations = state.activeTranslations - originalText)
                     }
                 } else {
-                    // Nếu đã từng dịch rồi -> Chỉ cần chuyển trạng thái hiển thị
                     if (_state.value.translatedMessages.containsKey(originalText)) {
                         _state.update { state ->
                             state.copy(activeTranslations = state.activeTranslations + originalText)
                         }
                     } else {
-                        // Nếu chưa từng dịch -> Gọi UseCase dịch Anh sang Việt
                         viewModelScope.launch {
                             translateTextUseCase(
                                 text = originalText,
@@ -227,7 +221,6 @@ class AiSpeakingViewModel @Inject constructor(
                 }
             }
 
-            // XỬ LÝ SỰ KIỆN PHÁT LẠI ÂM THANH
             is AiSpeakingEvent.OnPlayMessageAudio -> {
                 playAiResponse(event.text)
             }
@@ -321,7 +314,7 @@ class AiSpeakingViewModel @Inject constructor(
                 topicName = topicName,
                 isNeedSuggestions = true
             ).onSuccess { aiMsg ->
-                val isNewSessionCreated = currentData.currentSessionId == "new" // BỔ SUNG KIỂM TRA SESSION MỚI
+                val isNewSessionCreated = currentData.currentSessionId == "new"
 
                 _state.update { state ->
                     val updatedData = (state.uiState.data ?: AiSpeakingUiData()).copy(

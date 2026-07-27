@@ -18,7 +18,6 @@ class AuthPreferences @Inject constructor(
         private const val KEY_USER_PREMIUM_DATE_EXPIRES = "KEY_USER_PREMIUM_DATE_EXPIRES"
     }
 
-    // Lưu cả cặp (Dùng khi Login mới)
     fun saveTokens(accessToken: String, refreshToken: String) {
         sharedPreferences.edit {
             putString(KEY_ACCESS_TOKEN, accessToken)
@@ -26,12 +25,10 @@ class AuthPreferences @Inject constructor(
         }
     }
 
-    // Lưu lẻ Access Token (Dùng trong Authenticator)
     fun saveAccessToken(token: String) {
         sharedPreferences.edit { putString(KEY_ACCESS_TOKEN, token) }
     }
 
-    // Lưu lẻ Refresh Token (Dùng trong Authenticator)
     fun saveRefreshToken(token: String) {
         sharedPreferences.edit { putString(KEY_REFRESH_TOKEN, token) }
     }
@@ -42,8 +39,8 @@ class AuthPreferences @Inject constructor(
             putString(KEY_USER_EMAIL, email)
             putString(KEY_USER_NAME, fullName)
             putString(KEY_USER_AVATAR, avatarUrl)
-            putBoolean(KEY_USER_PREMIUM, isPremium) // Lưu Boolean
-            putString(KEY_USER_PREMIUM_DATE_EXPIRES, premiumExpiresAt) // Lưu Boolean
+            putBoolean(KEY_USER_PREMIUM, isPremium)
+            putString(KEY_USER_PREMIUM_DATE_EXPIRES, premiumExpiresAt)
         }
     }
 
@@ -60,7 +57,6 @@ class AuthPreferences @Inject constructor(
         sharedPreferences.edit { clear() }
     }
 
-    // Thêm các hàm getter này vào class AuthPreferences
     fun getUserId(): String? = sharedPreferences.getString(KEY_USER_ID, null)
 
     fun getEmail(): String? = sharedPreferences.getString(KEY_USER_EMAIL, null)

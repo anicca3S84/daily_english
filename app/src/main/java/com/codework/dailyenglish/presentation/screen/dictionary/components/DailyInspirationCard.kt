@@ -32,7 +32,7 @@ fun DailyInspirationCard(
 ) {
     Card(
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF0FDF4)), // Màu xanh mint lá dịu nhẹ cho cảm hứng hằng ngày
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF0FDF4)),
         modifier = Modifier.fillMaxWidth()
     ) {
         Box(
@@ -40,7 +40,6 @@ fun DailyInspirationCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Trang trí dấu mở ngoặc kép mờ cỡ lớn
             Text(
                 text = "“",
                 fontSize = 80.sp,

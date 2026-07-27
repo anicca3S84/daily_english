@@ -66,7 +66,7 @@ class AiViewModel @Inject constructor(
                     maxCharLimit = if (initialPremium) 300 else 150
                 )
             }
-            AppAdManager.isPremiumUser = initialPremium // <--- THÊM DÒNG NÀY
+            AppAdManager.isPremiumUser = initialPremium
 
             getMyProfileUseCase().onSuccess { freshUser ->
                 _state.update {
@@ -76,7 +76,7 @@ class AiViewModel @Inject constructor(
                         maxCharLimit = if (freshUser.isPremium) 300 else it.maxCharLimit
                     )
                 }
-                AppAdManager.isPremiumUser = freshUser.isPremium // <--- THÊM DÒNG NÀY
+                AppAdManager.isPremiumUser = freshUser.isPremium
             }
         }
     }
@@ -88,11 +88,14 @@ class AiViewModel @Inject constructor(
         val currentState = _state.value
 
         if (trimmedText.length > currentState.maxCharLimit) {
-            sendGlobalEffect(BaseEffect.ShowToast(UiText.DynamicString("Tin nhắn không được quá ${currentState.maxCharLimit} ký tự.")))
+            sendGlobalEffect(
+                BaseEffect.ShowToast(
+                    UiText.DynamicString("The message cannot exceed ${currentState.maxCharLimit} characters.")
+                )
+            )
             return
         }
 
-        // Kiểm tra nhanh ở Client: Nếu hết lượt, mở Dialog xác nhận nâng cấp
         if (!currentState.isPremium && currentState.remainingMessages <= 0) {
             _state.update { it.copy(isShowLimitConfirmDialog = true) }
             return
@@ -211,10 +214,7 @@ class AiViewModel @Inject constructor(
                     val finalSpeechText = voiceState.spokenText
                     _state.update { it.copy(voiceCapturedText = "") }
                     sendMessage(finalSpeechText)
-
-                    // XÓA BỎ: voiceToTextParser.stopListening()
-                    // THAY THẾ BẰNG:
-                    voiceToTextParser.reset() // Reset trạng thái StateFlow của parser để chuẩn bị cho lần sau
+                    voiceToTextParser.reset()
                 }
 
                 voiceState.error?.let { err ->

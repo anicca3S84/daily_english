@@ -172,20 +172,17 @@ fun CourseScreen(
                         )
                     }
 
-                    // 2. StateWrapper bọc cục bộ riêng khu vực danh sách khóa học
                     item {
                         StateWrapper(
                             uiState = state.dashboardState,
                             modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 250.dp),
                             loadingType = LoadingType.CIRCULAR,
-                            enablePullToRefresh = false, // Vô hiệu hóa ở đây vì đã bọc PullToRefreshBox ở ngoài cùng
+                            enablePullToRefresh = false,
                             onRetry = { onEvent(CourseEvent.OnRefreshData) }
                         ) { courseList ->
                             val safeCourses = courseList ?: emptyList()
 
-                            // Kiểm tra nếu xảy ra lỗi kết nối mạng và không có dữ liệu hiển thị:
                             if (state.dashboardState.error != null && safeCourses.isEmpty()) {
-                                // Trả về Box rỗng cao 250.dp để nút "Try again" tự căn giữa gọn gàng dưới Header
                                 Box(modifier = Modifier.fillMaxWidth().height(250.dp))
                             } else {
                                 Column(
@@ -221,7 +218,6 @@ fun CourseScreen(
                         }
                     }
 
-                    // 3. Banner quảng cáo luôn hiển thị dưới cùng của danh sách
                     if (!state.isPremium) {
                         item {
                             Spacer(modifier = Modifier.height(Spaces.Space16))

@@ -131,7 +131,6 @@ class TranslateViewModel @Inject constructor(
                         }
                     }
             } catch (e: Exception) {
-                // SỬA LỖI: Bẫy mọi ngoại lệ mạng/phân tích dữ liệu để đảm bảo tắt Translating an toàn
                 Log.e("TranslateViewModel", "Lỗi trong quá trình dịch thuật: ${e.message}", e)
                 _state.update {
                     it.copy(
@@ -244,7 +243,6 @@ class TranslateViewModel @Inject constructor(
                 if (voiceToTextParser.state.value.isListening) {
                     voiceToTextParser.stopListening()
 
-                    // SỬA LỖI: Dịch ngay văn bản thô đang hiển thị khi bấm dừng thủ công
                     val currentText = _state.value.sourceText
                     if (currentText.isNotBlank()) {
                         _state.update {

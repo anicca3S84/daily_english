@@ -143,7 +143,7 @@ fun HomeContent(
                 onRetry = { onEvent(HomeEvent.OnRetry) }
             ) { data ->
 
-                if (state.weeklyStatsState.error != null && (data == null || data.isEmpty())) {
+                if (state.weeklyStatsState.error != null && data.isNullOrEmpty()) {
                     Box(modifier = Modifier.fillMaxWidth().height(200.dp))
                 } else {
                     WeeklyProgressCard(weeklyStats = data ?: emptyList())

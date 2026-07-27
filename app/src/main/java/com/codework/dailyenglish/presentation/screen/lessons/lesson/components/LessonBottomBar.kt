@@ -41,10 +41,8 @@ fun LessonBottomBar(
         else -> true
     }
 
-    // Text mặc định sẽ là Finish nếu là bước cuối, ngược lại là Next
     val nextOrFinishText = if (isLastStep) "Finish" else "Next"
 
-    // Logic quyết định text hiển thị trên button
     val buttonText = when (val data = currentStep?.data) {
         is StepData.Question -> if (data.isAnswerEvaluated) nextOrFinishText else "Check"
         else -> nextOrFinishText

@@ -65,7 +65,11 @@ fun AiScreen(
         if (isGranted) {
             onEvent(AiEvent.OnMicToggle(context))
         } else {
-            Toast.makeText(context, "Vui lòng cấp quyền ghi âm để sử dụng tính năng này", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context,
+                "Please grant microphone permission to use this feature.",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 

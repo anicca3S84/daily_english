@@ -57,11 +57,9 @@ class DictionaryViewModel @Inject constructor(
 
     private fun checkUserPremiumStatus() {
         viewModelScope.launch {
-            // Đọc từ bộ nhớ Local
             val localUser = getUserInfoUseCase()
             _state.update { it.copy(isPremium = localUser?.isPremium ?: false) }
 
-            // Đồng bộ ngầm thông tin mới nhất từ API
             getMyProfileUseCase().onSuccess { freshUser ->
                 _state.update { it.copy(isPremium = freshUser.isPremium) }
             }
@@ -233,7 +231,6 @@ class DictionaryViewModel @Inject constructor(
                 val clickedWord = event.word
 
                 viewModelScope.launch {
-                    // Click phát là lưu luôn từ này vào Local DB
                     saveRecentSearchUseCase(
                         wordId = clickedWord.id,
                         wordText = clickedWord.word
@@ -260,7 +257,6 @@ class DictionaryViewModel @Inject constructor(
 
 
             is DictionaryEvent.OnRecentSearchClick -> {
-                // Điều hướng thẳng sang màn detail khi click từ lịch sử
                 sendEffect(
                     DictionaryEffect.NavigateToWordDetail(
                         wordId = event.recentWord.wordId
@@ -270,23 +266,20 @@ class DictionaryViewModel @Inject constructor(
 
             is DictionaryEvent.OnDeleteRecentSearch -> {
                 viewModelScope.launch {
-                    // Xóa từ này trong Room DB local
                     deleteRecentSearchUseCase(event.wordId)
                 }
             }
 
             is DictionaryEvent.OnClearRecentSearches -> {
                 viewModelScope.launch {
-                    // Xóa toàn bộ lịch sử trong Room DB local
                     clearRecentSearchesUseCase()
                 }
             }
 
             is DictionaryEvent.OnWordOfTheDayClick -> {
-                // Điều hướng sang màn detail của từ "Serendipity"
                 sendEffect(
                     DictionaryEffect.NavigateToWordDetail(
-                        wordId = "serendipity_id" // Thay bằng ID thực tế nếu cần
+                        wordId = "serendipity_id"
                     )
                 )
             }

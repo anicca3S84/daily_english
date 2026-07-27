@@ -51,7 +51,7 @@ class CourseViewModel @Inject constructor(
 
             CourseEvent.OnDismissSubscriptionPopup -> {
                 _state.update { it.copy(showSubscriptionPopup = false) }
-                loadDashboardData() // Refresh lại danh sách để mở khóa lập tức nếu vừa mua VIP thành công
+                loadDashboardData()
             }
 
 

@@ -82,11 +82,9 @@ fun MultipleChoiceQuestion(
                     )
                 }
             }
-            // Đưa Spacer vào đây để khoảng cách này chỉ xuất hiện khi có file nghe
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // Đã di chuyển Column chứa danh sách đáp án vào bên trong Column cuộn chính
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             content.options.forEachIndexed { index, option ->
                 val letter = when (index) {
@@ -108,5 +106,5 @@ fun MultipleChoiceQuestion(
                 )
             }
         }
-    } // Dấu ngoặc đóng của Column cuộn chính ở cuối cùng
+    }
 }

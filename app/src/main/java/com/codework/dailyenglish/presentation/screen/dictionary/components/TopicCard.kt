@@ -30,20 +30,19 @@ import com.codework.dailyenglish.domain.vocabulary.model.VocabTopic
 
 @Composable
 fun TopicCard(
-    topic: VocabTopic, // Sử dụng trực tiếp Model VocabTopic của bạn
+    topic: VocabTopic,
     onClick: () -> Unit
 ) {
-    // Áp dụng màu nền dịu nhẹ tương ứng cho từng chủ đề (để làm nổi bật ảnh minh họa phía trên)
     val bgColor = when (topic.name.lowercase()) {
-        "business"   -> Color(0xFFEEF2FF) // Indigo nhạt
-        "travel"     -> Color(0xFFE0F2FE) // Sky Blue
-        "food"       -> Color(0xFFFFF7D6) // Vàng kem
-        "animals"    -> Color(0xFFDCFCE7) // Xanh lá nhạt
-        "technology" -> Color(0xFFF3E8FF) // Lavender
-        "health"     -> Color(0xFFFFE4E6) // Hồng nhạt
-        "sports"     -> Color(0xFFFFEDD5) // Cam đào nhạt
-        "education"  -> Color(0xFFCCFBF1) // Teal nhạt
-        else         -> Color(0xFFF8FAFC) // Xám xanh rất nhạt
+        "business"   -> Color(0xFFEEF2FF)
+        "travel"     -> Color(0xFFE0F2FE)
+        "food"       -> Color(0xFFFFF7D6)
+        "animals"    -> Color(0xFFDCFCE7)
+        "technology" -> Color(0xFFF3E8FF)
+        "health"     -> Color(0xFFFFE4E6)
+        "sports"     -> Color(0xFFFFEDD5)
+        "education"  -> Color(0xFFCCFBF1)
+        else         -> Color(0xFFF8FAFC)
     }
 
     Card(
@@ -85,7 +84,6 @@ fun TopicCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                // 2. Sử dụng đúng thuộc tính `topic.totalWords` từ Model của bạn
                 Text(
                     text = "${topic.totalWords} words",
                     fontSize = 11.sp,

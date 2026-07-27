@@ -34,20 +34,16 @@ class ReminderManager(private val context: Context) {
     }
 
     fun rescheduleDailyReminders() {
-        // 1. Hủy lịch hẹn cũ trước để đảm bảo không bị trùng lặp
         cancelAllReminders()
 
-        // 2. Chỉ đặt lịch duy nhất 1 lần sau 5 giây
         val calendar = Calendar.getInstance().apply {
             add(Calendar.SECOND, 5)
         }
 
         val intent = Intent(context, ReminderReceiver::class.java).apply {
-            // Gửi kèm notification_id là 1
             putExtra("notification_id", 1)
         }
 
-        // Sử dụng ID là 1 và giữ lại cờ FLAG_MUTABLE để tránh bị lỗi hệ thống
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             1,
@@ -93,12 +89,11 @@ class ReminderManager(private val context: Context) {
         }
     }
 
-    // Hàm hủy lịch cũng thu gọn lại để dọn duy nhất ID số 1
     private fun cancelAllReminders() {
         val intent = Intent(context, ReminderReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            1, // Khớp với ID 1 lúc tạo
+            1,
             intent,
             PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
         )

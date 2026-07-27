@@ -17,7 +17,6 @@ class StudyTimeManagerUseCase @Inject constructor(
     suspend fun syncIfEnoughTime() {
         val totalSeconds = localPreferences.getUnsyncedSeconds()
 
-        // Chỉ đồng bộ lên server khi số giây tích lũy ở local lớn hơn 180 giây (3 phút)
         if (totalSeconds >= 180) {
             val result = statisticRepository.syncStudyTime(totalSeconds)
 

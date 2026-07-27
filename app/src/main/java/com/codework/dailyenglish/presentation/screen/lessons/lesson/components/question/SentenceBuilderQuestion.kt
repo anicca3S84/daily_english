@@ -63,7 +63,6 @@ fun SentenceBuilderQuestion(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
-        // CỤM 1: HEADER
         Text(
             text = "Put the words in order",
             fontSize = 22.sp,
@@ -94,20 +93,18 @@ fun SentenceBuilderQuestion(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(18.dp)
                 ) {
-                    // Nút Play 3D
                     PlayButton3D(onClick = { onPlayAudio(null, correctSentence, ttsSpeed) })
 
                     AudioWaveform(
                         modifier = Modifier
                             .weight(1f)
                             .height(36.dp),
-                        color = Color(0xFF3B82F6) // Màu sóng xanh dương đồng bộ với nút
+                        color = Color(0xFF3B82F6)
                     )
                 }
             }
         }
 
-        // CỤM 3: DROP ZONE (Khu vực chứa các từ đã chọn)
         val dropZoneActive = selectedIndices.isNotEmpty()
         val dropZoneBg by animateColorAsState(targetValue = when {
             isEvaluated && isCorrect == true -> Color(0xFFD7FFB8)
@@ -145,7 +142,6 @@ fun SentenceBuilderQuestion(
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // 1. Hiển thị các từ đã chọn
                 selectedIndices.forEach { originalIndex ->
                     WordButton3D(
                         text = words[originalIndex],
@@ -157,7 +153,6 @@ fun SentenceBuilderQuestion(
                     )
                 }
 
-                // 2. Chỉ hiển thị ô trống nét đứt tương ứng với số từ còn thiếu của câu đúng
                 val emptySlotsCount = maxOf(0, correctWordsCount - selectedIndices.size)
                 repeat(emptySlotsCount) {
                     Box(
@@ -194,7 +189,6 @@ fun SentenceBuilderQuestion(
             HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE5E7EB), thickness = 1.dp)
         }
 
-        // CỤM 5: WORD BANK (Khu vực các nút từ vựng lựa chọn)
         Box(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
