@@ -4,8 +4,6 @@
 
 **Daily English** is a native Android app for learning English through short, game-like lessons (micro-learning + gamification). It covers vocabulary, grammar, listening and speaking, and adds an AI tutor, a dictionary, flashcards and a translator in one place.
 
-This app is the graduation project *"Building an online English learning application on a mobile platform"* (Hanoi University of Civil Engineering, Faculty of Information Technology) by Huỳnh Minh Hiếu, supervised by MSc. Nguyễn Hồng Hạnh.
-
 <p align="center">
   <img src="docs/screenshots/01-login.jpg" width="170" alt="Login">
   <img src="docs/screenshots/02-home.jpg" width="170" alt="Home">
