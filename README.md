@@ -208,21 +208,10 @@ cd daily_english
 
 > Keep API keys out of the repository. Use `local.properties` only.
 
-## 8. Results and future work
-
-**Results**
+## 8. Results
 
 - A complete product combining gamification and AI.
 - Clean Architecture, MVI, Jetpack Compose and Spring Boot applied consistently.
 - Learning, payment and advertising features all work end to end.
 
-**Next steps**
 
-- Optimise performance and publish on Google Play.
-- Run a self-hosted AI model to replace third-party APIs and cut running costs.
-- Add social features: friends and online chat between learners.
-
-## 9. Author
-
-**Huỳnh Minh Hiếu** (66PM, student ID 0189466), Hanoi University of Civil Engineering, Faculty of Information Technology.
-Supervisor: MSc. Nguyễn Hồng Hạnh.
